@@ -1,7 +1,6 @@
-from .connection import db
+from connection import db, bro_records
+
 import sys
 
-with open(sys.stdin, 'r') as stdin:
-  for row in stdin.xreadline():
-    fields = row.split("\t")
-    print fields
+for record in bro_records(sys.stdin):
+  print record
