@@ -74,3 +74,23 @@ class BroRecordWindow(object):
         self._collection.append(record)
         self.prune()
 
+    def referrer(self, record):
+        """Checks to see if the current collection contains a record that could
+        be the referrer for the given record.  This is done by checking to
+        see if there are any records in the collection that
+            a) have a host+uri pair that match the passed records referrer
+            b) have a requesting ip address that matches the passed records
+               ip address
+
+        Args:
+            record -- A BroRecord named tuple
+
+        Return:
+            Either a BroRecord that could be the log record that directed
+            the provided record, or None if no such record exists
+        """
+        for r in self.collection:
+            r_path = r.host + r.uri
+            if record.id_orig_h == r.id.orig_h and record.referrer == r_path:
+                return r
+        return None

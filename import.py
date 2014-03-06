@@ -29,3 +29,7 @@ for record in bro_records(input_handle):
 
     collection.append(record)
 
+    records_referrer = collection.referrer(record)
+    if records_referrer:
+        print "{0} -> {1}".format(records_referrer, record)
+
