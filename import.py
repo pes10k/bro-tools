@@ -8,7 +8,10 @@ parser.add_argument('--input', '-i', default=None, type=str,
                     help='Path to bro data to read from. Defaults to stdin.')
 parser.add_argument('--time', '-t', type=float, default=.5,
                     help='The time interval between a site being visited and redirecting to be considered an automatic redirect.')
-parser.add_argument('--verbose', '-v', action='store_true', default=False, help="Print extra debugging information.")
+parser.add_argument('--verbose', '-v', action='store_true', default=False,
+                    help="Print extra debugging information.")
+parser.add_argument('--steps', '-s', type=int, default=3,
+                    help="Number of steps in a chain to look for in the referrer chains.")
 args = parser.parse_args()
 
 input_handle = sys.stdin if not args.input else open(args.input, 'r')
@@ -18,7 +21,7 @@ input_handle = sys.stdin if not args.input else open(args.input, 'r')
 # redirected to (the value)
 redirects = {}
 
-collection = BroRecordWindow(time=args.time, steps=3)
+collection = BroRecordWindow(time=args.time, steps=args.steps)
 
 def log(msg):
     if args.verbose:
