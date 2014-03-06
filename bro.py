@@ -95,8 +95,6 @@ class BroRecordWindow(object):
             Either a BroRecord that could be the log record that directed
             the provided record, or None if no such record exists
         """
-        print "HERE"
-        print len(self._collection)
         for r in self._collection:
             r_path = r.host + r.uri
             referrer_path = record.referrer
@@ -104,9 +102,6 @@ class BroRecordWindow(object):
                 referrer_path = referrer_path[7:]
             elif referrer_path[0:8] == "https://":
                 referrer_path = referrer_path[8:]
-            print referrer_path
-            print r_path
-            print "---"
             if record is not r and record.id_orig_h == r.id_orig_h and referrer_path == r_path:
                 return r
         return None

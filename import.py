@@ -38,7 +38,6 @@ for record in bro_records(input_handle):
     if records_referrer:
         referrer_url = records_referrer.host + records_referrer.uri
         record_url = record.host + record.uri
-        log("found referrer from {0} -> {1}".format(referrer_url, record_url))
 
         if referrer_url not in redirects:
             redirects[referrer_url] = []
