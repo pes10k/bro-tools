@@ -1,6 +1,7 @@
 from bro import bro_records, BroRecordWindow
 import argparse
 import sys
+from pprint import pprint
 
 parser = argparse.ArgumentParser(description='Read bro data and look for redirecting domains.')
 parser.add_argument('--input', '-i', default=None, type=str,
@@ -17,7 +18,7 @@ input_handle = sys.stdin if not args.input else open(args.input, 'r')
 # redirected to (the value)
 redirects = {}
 
-collection = BroRecordWindow(time=args.time, steps=2)
+collection = BroRecordWindow(time=args.time, steps=3)
 
 def log(msg):
     if args.verbose:
