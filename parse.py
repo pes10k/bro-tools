@@ -34,7 +34,7 @@ for record in bro_records(input_handle):
     # Below just grabs out the first 9 letters of the mime type, which is
     # enough to know if its text/plain or text/html of any encoding
     record_type = record.content_type[0:9]
-    if record_type not in ('text/plai', 'text/html'):
+    if record_type not in ('text/plai', 'text/html') and record.status_code != "301":
         continue
 
     collection.append(record)
