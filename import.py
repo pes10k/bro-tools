@@ -33,12 +33,16 @@ for record in bro_records(input_handle):
     if records_referrer:
         referrer_url = records_referrer.host + records_referrer.uri
         record_url = record.host + record.uri
+        print "found referrer from {0} -> {1}".format(referrer_url, record_url)
 
         if referrer_url not in redirects:
             redirects[referrer_url] = []
 
         if record_url not in redirects[referrer_url]:
             redirects[referrer_url].append(record_url)
+
+            if len(redirects[referrer_url]) > 1:
+                print "possible detection at {0}".format(referrer_url)
 
 for url, values in redirects.items():
     if len(values) > 1:
