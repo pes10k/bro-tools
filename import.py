@@ -31,5 +31,17 @@ for record in bro_records(input_handle):
 
     records_referrer = collection.referrer(record)
     if records_referrer:
-        print "{0} -> {1}".format(records_referrer, record)
+        referrer_url = records_referrer.host + records_referrer.uri
+        record_url = record.host + record.uri
 
+        if referrer_url not in redirects:
+            redirects[referrer_url] = []
+
+        if record_url not in redirects[referrer_url]:
+            redirects[referrer_url].append(record_url)
+
+for url, values in redirects.items():
+    if len(values) > 1:
+        print url
+        print values
+        print "---"
