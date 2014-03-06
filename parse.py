@@ -60,16 +60,18 @@ for record in bro_records(input_handle):
         bad_site_url = bad_site.host + bad_site.uri
 
         if combined_root_referrers not in redirects:
-            redirects[combined_root_referrers] = []
+            redirects[combined_root_referrers] = ([], (root_referrer_url, intermediate_referrer_url))
 
         if bad_site_url not in redirects[combined_root_referrers]:
-            redirects[combined_root_referrers].append(bad_site_url)
+            redirects[combined_root_referrers][0].append(bad_site_url)
 
             if len(redirects[combined_root_referrers]) > 1:
                 log("possible detection at {0} -> {1} -> {2}".format(root_referrer_url, intermediate_referrer_url, bad_site_url))
 
-for url, values in redirects.items():
-    if len(values) > 1:
-        print url
-        print values
+for combined_url, (third_level_urls, (first_url, second_url)) in redirects.items():
+    if len(third_level_urls) > 1:
+        print first_url
+        print "\t -> " + second_url
+        for url in third_level_urls:
+            print "\t\t -> " + url
         print "---"
