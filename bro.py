@@ -86,7 +86,7 @@ class BroRecordWindow(object):
         self._collection.append(record)
         return self.prune()
 
-    def referrer(self, record, step=1):
+    def referrer(self, record, step=None):
         """Checks to see if the current collection contains a record that could
         be the referrer for the given record.  This is done by checking to
         see if there are any records in the collection that
@@ -106,6 +106,9 @@ class BroRecordWindow(object):
             ending with one that links to the given record in self._steps
             number of steps, or None if no such record / chain exists
         """
+        if step == None:
+            step = self._steps
+
         for r in self._collection:
             r_path = r.host + r.uri
             referrer_path = record.referrer
