@@ -15,10 +15,12 @@ parser.add_argument('--steps', '-s', type=int, default=3,
                     help="Number of steps in a chain to look for in the referrer chains. Defaults to 3")
 parser.add_argument('--output', '-o', default=None,
                     help="File to write general report to. Defaults to stdout.")
+parser.add_argument('--line-numbers', '-l', action="store_true", default=False,
+                    help="Prints a running count of number of lines processed.")
 args = parser.parse_args()
 
 input_handle = sys.stdin if not args.input else open(args.input, 'r')
-output_handle = std.stdout if not args.output else open(args.output, 'w')
+output_handle = sys.stdout if not args.output else open(args.output, 'w')
 
 # Keep track of found redirects that we've only found redirecting to one
 # item so far.  This will be a list of urls (the key) to a list of destintations
@@ -31,7 +33,14 @@ def log(msg):
     if args.verbose:
         print msg
 
+if args.l:
+    line_count = 0
+
 for record in bro_records(input_handle):
+
+    if args.l:
+        line_count += 1
+        print line_count + "."
 
     # filter out some types of records that we don't care about at all.
     # Below just grabs out the first 9 letters of the mime type, which is
