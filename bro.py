@@ -45,7 +45,7 @@ class BroRecordWindow(object):
         """Remove all BroRecords that occured more than self.time before the
         most recent BroRecord in the collection.
 
-        Returns:
+        Return:
             An int count of the number of objects removed from the collection
         """
 
@@ -70,9 +70,12 @@ class BroRecordWindow(object):
 
         Args:
             record -- A BroRecord, created by the bro_records function
+
+        Return:
+            The number of records that were removed from the window during garbage collection
         """
         self._collection.append(record)
-        self.prune()
+        return self.prune()
 
     def referrer(self, record):
         """Checks to see if the current collection contains a record that could
@@ -91,6 +94,6 @@ class BroRecordWindow(object):
         """
         for r in self._collection:
             r_path = r.host + r.uri
-            if record.id_orig_h == r.id_orig_h and record.referrer == r_path:
+            if record is not r and record.id_orig_h == r.id_orig_h and record.referrer == r_path:
                 return r
         return None

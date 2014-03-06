@@ -27,7 +27,7 @@ for record in bro_records(input_handle):
     if record_type not in ('text/plai', 'text/html'):
         continue
 
-    collection.append(record)
+    log(collection.append(record))
 
     records_referrer = collection.referrer(record)
     if records_referrer:
