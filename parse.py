@@ -1,7 +1,6 @@
 from bro import bro_records, BroRecordWindow
 import argparse
 import sys
-from pprint import pprint
 
 parser = argparse.ArgumentParser(description='Read bro data and look for redirecting domains.')
 parser.add_argument('--input', '-i', default=None, type=str,
@@ -10,8 +9,10 @@ parser.add_argument('--time', '-t', type=float, default=.5,
                     help='The time interval between a site being visited and redirecting to be considered an automatic redirect.')
 parser.add_argument('--verbose', '-v', action='store_true', default=False,
                     help="Print extra debugging information.")
+parser.add_argument('--domains', '-d', action='store_true', default=False,
+                    help="If set, only referrer chains consiting of unique domains will be recorded.")
 parser.add_argument('--steps', '-s', type=int, default=3,
-                    help="Number of steps in a chain to look for in the referrer chains.")
+                    help="Number of steps in a chain to look for in the referrer chains. Defaults to 3")
 args = parser.parse_args()
 
 input_handle = sys.stdin if not args.input else open(args.input, 'r')
@@ -40,6 +41,13 @@ for record in bro_records(input_handle):
 
     record_referrers = collection.referrer(record)
     if record_referrers:
+
+        # If the "domains" flag is passed, check and make sure that all
+        # referrers come from unique domains / hosts, and if not, ignore
+        if args.domains and len(set([r.host for r in record_referrers])) != args.steps:
+            log("found referrer chain, but didn't have distinct domains")
+            continue
+
         root_referrer = record_referrers[0]
         root_referrer_url = root_referrer.host + root_referrer.uri
 
