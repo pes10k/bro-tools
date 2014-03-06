@@ -13,9 +13,12 @@ parser.add_argument('--domains', '-d', action='store_true', default=False,
                     help="If set, only referrer chains consiting of unique domains will be recorded.")
 parser.add_argument('--steps', '-s', type=int, default=3,
                     help="Number of steps in a chain to look for in the referrer chains. Defaults to 3")
+parser.add_argument('--output', '-o', default=None,
+                    help="File to write general report to. Defaults to stdout.")
 args = parser.parse_args()
 
 input_handle = sys.stdin if not args.input else open(args.input, 'r')
+output_handle = std.stdout if not args.output else open(args.output, 'w')
 
 # Keep track of found redirects that we've only found redirecting to one
 # item so far.  This will be a list of urls (the key) to a list of destintations
@@ -70,8 +73,8 @@ for record in bro_records(input_handle):
 
 for combined_url, (third_level_urls, (first_url, second_url)) in redirects.items():
     if len(third_level_urls) > 1:
-        print first_url
-        print "\t -> " + second_url
+        output_handle.write(first_url + "\n")
+        output_handle.write("\t -> " + second_url + "\n")
         for url in third_level_urls:
-            print "\t\t -> " + url
-        print "---"
+            output_handle.write("\t\t -> " + url + "\n")
+        output_handle.write("---\n\n")
