@@ -28,6 +28,11 @@ def bro_records(handle):
                 mapped_values.append(current_value)
             yield record_type._make(mapped_values)
 
+class BroRecord(object):
+
+
+    def __init__(self, field_types, field_names, field_values):
+
 
 class BroRecordWindow(object):
     """Keep track of a sliding window of BroRecord objects, and don't keep more
@@ -40,6 +45,9 @@ class BroRecordWindow(object):
 
         # Window size of bro records to keep in memory
         self._time = time
+
+    def size(self):
+        return len(self._collection)
 
     def prune(self):
         """Remove all BroRecords that occured more than self.time before the
@@ -92,8 +100,13 @@ class BroRecordWindow(object):
             Either a BroRecord that could be the log record that directed
             the provided record, or None if no such record exists
         """
+        print "HERE"
+        print len(self._collection)
         for r in self._collection:
             r_path = r.host + r.uri
+            print record.referrer
+            print r_path
+            print "---"
             if record is not r and record.id_orig_h == r.id_orig_h and record.referrer == r_path:
                 return r
         return None
