@@ -1,4 +1,4 @@
-from connection import bro_records, BroRecordCollection
+from bro import bro_records, BroRecordWindow
 import argparse
 import sys
 
@@ -16,14 +16,14 @@ input_handle = sys.stdin if not args.input else open(args.input, 'r')
 # redirected to (the value)
 redirects = {}
 
-collection = BroRecordCollection(time=args.time)
+collection = BroRecordWindow(time=args.time)
 
 for record in bro_records(input_handle):
 
     # filter out some types of records that we don't care about at all.
     # Below just grabs out the first 9 letters of the mime type, which is
     # enough to know if its text/plain or text/html of any encoding
-    record_type = record.type[0:9]
+    record_type = record.content_type[0:9]
     if record_type not in ('text/plai', 'text/html'):
         continue
 

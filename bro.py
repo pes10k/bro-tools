@@ -12,7 +12,7 @@ def bro_records(handle):
         if not record_type and row[0:7] == "#fields":
             record_type = namedtuple('BroRecord', [a.replace(".", "_") for a in row[8:].split(seperator)])
         if not field_types and row[0:6] == "#types":
-            field_types = row[0:7].split(seperator)
+            field_types = row[7:].split(seperator)
             num_fields = len(field_types)
         elif row[0] != "#":
             row_values = [a if a != "-" else "" for a in row.split(seperator)]
@@ -57,7 +57,7 @@ class BroRecordWindow(object):
         removed_count = 0
         most_recent_time = self._collection[-1].ts
 
-        while len(self._collection) > 1 and self._collection[0].ts + self.time < most_recent_time:
+        while len(self._collection) > 1 and self._collection[0].ts + self._time < most_recent_time:
             self._collection = self._collection[1:]
             removed_count += 1
 
@@ -89,8 +89,8 @@ class BroRecordWindow(object):
             Either a BroRecord that could be the log record that directed
             the provided record, or None if no such record exists
         """
-        for r in self.collection:
+        for r in self._collection:
             r_path = r.host + r.uri
-            if record.id_orig_h == r.id.orig_h and record.referrer == r_path:
+            if record.id_orig_h == r.id_orig_h and record.referrer == r_path:
                 return r
         return None
