@@ -44,7 +44,7 @@ for record in bro_records(input_handle):
 
         # If the "domains" flag is passed, check and make sure that all
         # referrers come from unique domains / hosts, and if not, ignore
-        if args.domains and len(set([r.host for r in record_referrers])) != args.steps:
+        if args.domains and len(set([".".join(r.host.split(".")[-2:]) for r in record_referrers])) != args.steps:
             log("found referrer chain, but didn't have distinct domains")
             continue
 
