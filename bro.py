@@ -28,11 +28,6 @@ def bro_records(handle):
                 mapped_values.append(current_value)
             yield record_type._make(mapped_values)
 
-class BroRecord(object):
-
-
-    def __init__(self, field_types, field_names, field_values):
-
 
 class BroRecordWindow(object):
     """Keep track of a sliding window of BroRecord objects, and don't keep more
@@ -104,9 +99,14 @@ class BroRecordWindow(object):
         print len(self._collection)
         for r in self._collection:
             r_path = r.host + r.uri
-            print record.referrer
+            referrer_path = record.referrer
+            if referrer_path[0:7] == "http://":
+                referrer_path = referrer_path[7:]
+            elif referrer_path[0:8] == "https://":
+                referrer_path = referrer_path[8:]
+            print referrer_path
             print r_path
             print "---"
-            if record is not r and record.id_orig_h == r.id_orig_h and record.referrer == r_path:
+            if record is not r and record.id_orig_h == r.id_orig_h and referrer_path == r_path:
                 return r
         return None
