@@ -1,6 +1,11 @@
 from bro import bro_records, BroRecordWindow
 import argparse
 import sys
+import os
+try:
+    import cPickel as pickle
+else:
+    import pickle
 
 parser = argparse.ArgumentParser(description='Read bro data and look for redirecting domains.')
 parser.add_argument('--input', '-i', default=None, type=str,
@@ -17,6 +22,8 @@ parser.add_argument('--output', '-o', default=None,
                     help="File to write general report to. Defaults to stdout.")
 parser.add_argument('--line-numbers', '-l', action="store_true", default=False,
                     help="Prints a running count of number of lines processed.")
+parser.add_argument('--state', '-s', default=None,
+                    help="If provided, will be used for serializing and restoring the state of the colleciton between run, to allow merging between multiple logs.")
 args = parser.parse_args()
 
 input_handle = sys.stdin if not args.input else open(args.input, 'r')
@@ -25,7 +32,12 @@ output_handle = sys.stdout if not args.output else open(args.output, 'w')
 # Keep track of found redirects that we've only found redirecting to one
 # item so far.  This will be a list of urls (the key) to a list of destintations
 # redirected to (the value)
-redirects = {}
+if args.state and os.isfile(args.state):
+    state_handle = open(args.state, 'r')
+    redirects = pickle.load(state_handle)
+    state_handle.close()
+else:
+    redirects = {}
 
 collection = BroRecordWindow(time=args.time, steps=args.steps)
 
@@ -79,6 +91,13 @@ for record in bro_records(input_handle):
 
             if len(redirects[combined_root_referrers]) > 1:
                 log("possible detection at {0} -> {1} -> {2}".format(root_referrer_url, intermediate_referrer_url, bad_site_url))
+
+# If we have a state path, write the state to disk too
+if args.state:
+    state_out_handle = open(args.state, 'w')
+    pickle.dump(redirects, state_out_handle)
+    state_out_handle.close()
+
 
 for combined_url, (third_level_urls, (first_url, second_url)) in redirects.items():
     if len(third_level_urls) > 1:
