@@ -20,7 +20,7 @@ parser.add_argument('--steps', '-s', type=int, default=3,
                     help="Number of steps in a chain to look for in the referrer chains. Defaults to 3")
 parser.add_argument('--output', '-o', default=None,
                     help="File to write general report to. Defaults to stdout.")
-parser.add_argument('--line-numbers', '-l', action="store_true", default=False,
+parser.add_argument('--linenumbers', '-l', action="store_true", default=False,
                     help="Prints a running count of number of lines processed.")
 parser.add_argument('--state', '-s', default=None,
                     help="If provided, will be used for serializing and restoring the state of the colleciton between run, to allow merging between multiple logs.")
@@ -45,14 +45,15 @@ def log(msg):
     if args.verbose:
         print msg
 
-if args.l:
+if args.linenumbers:
     line_count = 0
 
 for record in bro_records(input_handle):
 
-    if args.l:
+    if args.linenumbers:
         line_count += 1
-        print line_count + "."
+        if line_count % 100 == 0:
+            print line_count
 
     # filter out some types of records that we don't care about at all.
     # Below just grabs out the first 9 letters of the mime type, which is
@@ -61,7 +62,7 @@ for record in bro_records(input_handle):
     if record_type not in ('text/plai', 'text/html') and record.status_code != "301":
         continue
 
-    collection.append(record)
+    removed = collection.append(record)
 
     record_referrers = collection.referrer(record)
     if record_referrers:

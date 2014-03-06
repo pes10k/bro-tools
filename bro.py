@@ -80,9 +80,10 @@ class BroRecordWindow(object):
             record -- A BroRecord, created by the bro_records function
 
         Return:
-            The number of records that were removed from the window during garbage collection
+            The number of records that were removed from the window during garbage collection.
         """
         self._collection.append(record)
+        self._collection.sort(key=lambda x: x.ts)
         return self.prune()
 
     def referrer(self, record, step=None):
