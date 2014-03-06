@@ -33,13 +33,17 @@ class BroRecordWindow(object):
     """Keep track of a sliding window of BroRecord objects, and don't keep more
     than a given amount (defined by a time range) in memory at a time"""
 
-    def __init__(self, time=.5):
+    def __init__(self, time=.5, steps=1):
         # A collection of BroRecords that all occurred less than the given
         # amount of time before the most recent one (in order oldest to newest)
         self._collection = []
 
         # Window size of bro records to keep in memory
         self._time = time
+
+        # The number of hops, backwards in the window, we want to trace
+        # referrers
+        self._steps = steps
 
     def size(self):
         return len(self._collection)
@@ -59,8 +63,10 @@ class BroRecordWindow(object):
 
         removed_count = 0
         most_recent_time = self._collection[-1].ts
+        window_low_bound = self._time * self._steps
 
-        while len(self._collection) > 1 and self._collection[0].ts + self._time < most_recent_time:
+
+        while len(self._collection) > 1 and self._collection[0].ts + window_low_bound < most_recent_time:
             self._collection = self._collection[1:]
             removed_count += 1
 
@@ -80,7 +86,7 @@ class BroRecordWindow(object):
         self._collection.append(record)
         return self.prune()
 
-    def referrer(self, record):
+    def referrer(self, record, step=1):
         """Checks to see if the current collection contains a record that could
         be the referrer for the given record.  This is done by checking to
         see if there are any records in the collection that
@@ -91,9 +97,14 @@ class BroRecordWindow(object):
         Args:
             record -- A BroRecord named tuple
 
+        Keyword Args:
+            step -- Not intended to be set by a caller.  Used when trying to do
+                    recursive traces through the window of referrers
+
         Return:
-            Either a BroRecord that could be the log record that directed
-            the provided record, or None if no such record exists
+            Either a list of BroRecords, starting with the given record and
+            ending with one that links to the given record in self._steps
+            number of steps, or None if no such record / chain exists
         """
         for r in self._collection:
             r_path = r.host + r.uri
@@ -103,5 +114,13 @@ class BroRecordWindow(object):
             elif referrer_path[0:8] == "https://":
                 referrer_path = referrer_path[8:]
             if record is not r and record.id_orig_h == r.id_orig_h and referrer_path == r_path:
-                return r
+                if step == 1:
+                    return [r]
+                else:
+                    parent_items = self.referrer(r, step=step - 1)
+                    if parent_items:
+                        parent_items.append(r)
+                        return parent_items
+                    else:
+                        return None
         return None

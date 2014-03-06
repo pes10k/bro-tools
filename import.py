@@ -17,7 +17,7 @@ input_handle = sys.stdin if not args.input else open(args.input, 'r')
 # redirected to (the value)
 redirects = {}
 
-collection = BroRecordWindow(time=args.time)
+collection = BroRecordWindow(time=args.time, steps=2)
 
 def log(msg):
     if args.verbose:
@@ -34,19 +34,27 @@ for record in bro_records(input_handle):
 
     collection.append(record)
 
-    records_referrer = collection.referrer(record)
-    if records_referrer:
-        referrer_url = records_referrer.host + records_referrer.uri
-        record_url = record.host + record.uri
+    record_referrers = collection.referrer(record)
+    if record_referrers:
+        root_referrer = record_referrers[0]
+        root_referrer_url = root_referrer.host + root_referrer.uri
 
-        if referrer_url not in redirects:
-            redirects[referrer_url] = []
+        intermediate_referrer = record_referrers[1]
+        intermediate_referrer_url = intermediate_referrer.host + intermediate_referrer.uri
 
-        if record_url not in redirects[referrer_url]:
-            redirects[referrer_url].append(record_url)
+        combined_root_referrers = root_referrer_url + "::" + intermediate_referrer_url
 
-            if len(redirects[referrer_url]) > 1:
-                log("possible detection at {0}".format(referrer_url))
+        bad_site = record_referrers[2]
+        bad_site_url = bad_site.host + bad_site.uri
+
+        if combined_root_referrers not in redirects:
+            redirects[combined_root_referrers] = []
+
+        if bad_site_url not in redirects[combined_root_referrers]:
+            redirects[combined_root_referrers].append(bad_site_url)
+
+            if len(redirects[combined_root_referrers]) > 1:
+                log("possible detection at {0} -> {1} -> {2}".format(root_referrer_url, intermediate_referrer_url, bad_site_url))
 
 for url, values in redirects.items():
     if len(values) > 1:
