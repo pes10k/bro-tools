@@ -85,16 +85,16 @@ for record in bro_records(input_handle):
         bad_site_url = bad_site.host + bad_site.uri
 
         if combined_root_referrers not in redirects:
-            redirects[combined_root_referrers] = ([], [], (root_referrer_url, intermediate_referrer_url))
+            redirects[combined_root_referrers] = ([], [], root_referrer_url, intermediate_referrer_url)
 
         if bad_site_url not in redirects[combined_root_referrers][0]:
             # Before adding the URL and BroRecord to the collection of
             # directed to urls, check and make sure that these are unique
             # domains too (if flag is passed)
             if (not args.domains or
-                main_domain(bad_site.host) not in [main_domain(r.host) for r in redirects[combined_root_referrers][1]]):
+                    main_domain(bad_site.host) not in redirects[combined_root_referrers][1]): 
                 redirects[combined_root_referrers][0].append(bad_site_url)
-                redirects[combined_root_referrers][1].append(bad_site)
+                redirects[combined_root_referrers][1].append(main_domain(bad_site.host))
 
             if len(redirects[combined_root_referrers]) > 1:
                 log("possible detection at {0} -> {1} -> {2}".format(root_referrer_url, intermediate_referrer_url, bad_site_url))
@@ -105,7 +105,7 @@ if args.state:
     pickle.dump(redirects, state_out_handle)
     state_out_handle.close()
 
-for combined_url, (third_level_urls, (first_url, second_url)) in redirects.items():
+for combined_url, (domains, third_level_urls, first_url, second_url) in redirects.items():
     if len(third_level_urls) > 1:
         output_handle.write(first_url + "\n")
         output_handle.write("\t -> " + second_url + "\n")
