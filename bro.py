@@ -1,5 +1,8 @@
 from collections import namedtuple
 
+def main_domain(domain):
+    return ".".join(domain.split(".")[-2:])
+
 def bro_records(handle):
     seperator = None
     record_type = None
