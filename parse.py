@@ -4,7 +4,7 @@ import sys
 import os
 try:
     import cPickel as pickle
-else:
+except:
     import pickle
 
 parser = argparse.ArgumentParser(description='Read bro data and look for redirecting domains.')
@@ -22,7 +22,7 @@ parser.add_argument('--output', '-o', default=None,
                     help="File to write general report to. Defaults to stdout.")
 parser.add_argument('--linenumbers', '-l', action="store_true", default=False,
                     help="Prints a running count of number of lines processed.")
-parser.add_argument('--state', '-s', default=None,
+parser.add_argument('--state', '-p', default=None,
                     help="If provided, will be used for serializing and restoring the state of the colleciton between run, to allow merging between multiple logs.")
 args = parser.parse_args()
 
@@ -32,7 +32,7 @@ output_handle = sys.stdout if not args.output else open(args.output, 'w')
 # Keep track of found redirects that we've only found redirecting to one
 # item so far.  This will be a list of urls (the key) to a list of destintations
 # redirected to (the value)
-if args.state and os.isfile(args.state):
+if args.state and os.path.isfile(args.state):
     state_handle = open(args.state, 'r')
     redirects = pickle.load(state_handle)
     state_handle.close()
@@ -87,7 +87,7 @@ for record in bro_records(input_handle):
         if combined_root_referrers not in redirects:
             redirects[combined_root_referrers] = ([], (root_referrer_url, intermediate_referrer_url))
 
-        if bad_site_url not in redirects[combined_root_referrers]:
+        if bad_site_url not in redirects[combined_root_referrers][0]:
             redirects[combined_root_referrers][0].append(bad_site_url)
 
             if len(redirects[combined_root_referrers]) > 1:
