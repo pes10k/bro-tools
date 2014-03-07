@@ -27,7 +27,6 @@ parser.add_argument('--state', '-p', default=None,
 args = parser.parse_args()
 
 input_handle = sys.stdin if not args.input else open(args.input, 'r')
-output_handle = sys.stdout if not args.output else open(args.output, 'w')
 
 # Keep track of found redirects that we've only found redirecting to one
 # item so far.  This will be a list of urls (the key) to a list of destintations
@@ -104,6 +103,8 @@ if args.state:
     state_out_handle = open(args.state, 'w')
     pickle.dump(redirects, state_out_handle)
     state_out_handle.close()
+
+output_handle = sys.stdout if not args.output else open(args.output, 'w')
 
 for combined_url, (domains, third_level_urls, first_url, second_url) in redirects.items():
     if len(third_level_urls) > 1:
