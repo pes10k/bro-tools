@@ -1,6 +1,13 @@
 import gzip
 import logging
 from collections import namedtuple
+import multiprocessing
+
+
+def find_referrers(paths, workers=1):
+    p = multiprocessing.Pool(workers)
+    referrers = p.map(referrer_chains, paths)
+    return referrers
 
 def main_domain(domain):
     return ".".join(domain.split(".")[-2:])
@@ -33,7 +40,7 @@ def bro_records(handle):
                 mapped_values.append(current_value)
             yield record_type._make(mapped_values)
 
-def referrer_chains(path, time=.5, chain_length=2, domains=True):
+def referrer_chains(path, time=.5, chain_length=3, domains=True):
     """Takes a file handle to a stream of bro records and looks for redirects
     of a given length.  It then pickles the resulting dictionary describing
     the records to a handle at out handle

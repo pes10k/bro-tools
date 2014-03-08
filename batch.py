@@ -1,8 +1,6 @@
 import sys
-import os
 import argparse
 import bro
-import multiprocessing
 import logging
 
 parser = argparse.ArgumentParser(description='Read bro data and look for redirecting domains.')
@@ -38,12 +36,9 @@ elif args.verbose:
 else:
     logging.setLevel(logging.ERROR)
 
-p = multiprocessing.Pool(args.workers)
-
-worker_func = lambda f: bro.referrer_chains(f, time=args.time, chain_length=args.steps, domains=args.domains)
-referrers = p.map(worker_func, input_files)
-
 logger.info("Finished parsing records, generating master report")
+referrers = bro.find_referrers(input_files, args.workers)
+print referrers
 
 # Now we need to merge all the referrer records together into a final report
 # and print it out to disk at the given location
