@@ -6,7 +6,7 @@ import multiprocessing
 def _find_helper(job):
     return referrer_chains(*job)
 
-def find_referrers(paths, workers=8, time=.5, chain_length=3, domains=True):
+def find_referrers(paths, workers=8, time=.5, chain_length=3, domains=True, verbose=False, veryverbose=False):
     p = multiprocessing.Pool(workers)
     referrers = p.map(_find_helper, ((p, time, chain_length, domains) for p in paths))
     return referrers
@@ -61,7 +61,8 @@ def referrer_chains(path, time=.5, chain_length=3, domains=True):
     Return:
         A dictionary of referrer chains extracted from data.
     """
-    logging.info(" * {0}: Begining parsing".format(path))
+    log = logging.getLogger("brorecords")
+    log.info(" * {0}: Begining parsing".format(path))
 
     collection = BroRecordWindow(time=time, steps=chain_length)
     redirects = {}
@@ -83,7 +84,7 @@ def referrer_chains(path, time=.5, chain_length=3, domains=True):
             # If the "domains" flag is passed, check and make sure that all
             # referrers come from unique domains / hosts, and if not, ignore
             if domains and len(set([main_domain(r.host) for r in record_referrers])) != chain_length:
-                logging.debug(" - {0}: found referrer chain, but didn't have distinct domains".format(path))
+                log.debug(" - {0}: found referrer chain, but didn't have distinct domains".format(path))
                 continue
 
             root_referrer = record_referrers[0]
@@ -110,8 +111,8 @@ def referrer_chains(path, time=.5, chain_length=3, domains=True):
                     redirects[combined_root_referrers][0].append(main_domain(bad_site.host))
 
                 if len(redirects[combined_root_referrers]) > 1:
-                    logging.debug(" - {0}: possible detection at {1} -> {2} -> {3}".format(path, root_referrer_url, intermediate_referrer_url, bad_site_url))
-    print redirects
+                   log.debug(" - {0}: possible detection at {1} -> {2} -> {3}".format(path, root_referrer_url, intermediate_referrer_url, bad_site_url))
+    log.info(" - {0}: Found {1} chains".format(path, len(redirects)))
     return redirects
 
 def print_report(referrer_chains, output_h, min_chain_nodes=2):
@@ -131,13 +132,13 @@ def print_report(referrer_chains, output_h, min_chain_nodes=2):
     keys.sort()
 
     for k in keys:
-        for combined_url, (domains, first_url, second_url, third_level_urls) in referrer_chains[k]:
-            if len(third_level_urls) >= min_chain_nodes:
-                output_h.write(first_url + "\n")
-                output_h.write("\t -> " + second_url + "\n")
-                for url in third_level_urls:
-                    output_h.write("\t\t -> " + url + "\n")
-                output_h.write("---\n\n")
+        domains, first_url, second_url, third_level_urls = referrer_chains[k]
+        if len(third_level_urls) >= min_chain_nodes:
+            output_h.write(first_url + "\n")
+            output_h.write("\t -> " + second_url + "\n")
+            for url in third_level_urls:
+                output_h.write("\t\t -> " + url + "\n")
+            output_h.write("---\n\n")
 
 class BroRecordWindow(object):
     """Keep track of a sliding window of BroRecord objects, and don't keep more

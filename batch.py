@@ -25,7 +25,8 @@ parser.add_argument
 args = parser.parse_args()
 
 input_files = args.inputs.split(" ") if args.inputs else sys.stdin.read().strip().split("\n")
-logger = logging.getLogger("bro-records")
+logging.basicConfig()
+logger = logging.getLogger("brorecords")
 
 if args.veryverbose:
     logger.setLevel(logging.DEBUG)
@@ -35,8 +36,7 @@ else:
     logging.setLevel(logging.ERROR)
 
 logger.info("Finished parsing records, generating master report")
-referrers = bro.find_referrers(input_files, args.workers)
-print referrers
+referrers = bro.find_referrers(input_files, args.workers, veryverbose=args.veryverbose, verbose=args.verbose)
 
 # Now we need to merge all the referrer records together into a final report
 # and print it out to disk at the given location
