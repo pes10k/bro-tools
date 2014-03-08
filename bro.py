@@ -1,3 +1,5 @@
+import gzip
+import logging
 from collections import namedtuple
 
 def main_domain(domain):
@@ -31,6 +33,103 @@ def bro_records(handle):
                 mapped_values.append(current_value)
             yield record_type._make(mapped_values)
 
+def referrer_chains(path, time=.5, chain_length=2, domains=True):
+    """Takes a file handle to a stream of bro records and looks for redirects
+    of a given length.  It then pickles the resulting dictionary describing
+    the records to a handle at out handle
+
+    Args:
+        path -- the path to gzipped bro data on disk
+
+    Keyword Args:
+        time         -- the maximum number of seconds that can appear between
+                        redirections to be counted as a valid chain
+        chain_length -- the length of chains to try and extract from the given
+                        bro data
+        domains      -- whether the all domains must be unique in a referrer
+                        chain in order for the chain to be included / saved
+
+    Return:
+        A dictionary of referrer chains extracted from data.
+    """
+    logger = logging.getLogger("bro-records")
+    logger.info(" * {0}: Begining parsing".format(path))
+
+    collection = BroRecordWindow(time=time, steps=chain_length)
+    redirects = {}
+
+    for record in bro_records(gzip.open(path, 'r')):
+
+        # filter out some types of records that we don't care about at all.
+        # Below just grabs out the first 9 letters of the mime type, which is
+        # enough to know if its text/plain or text/html of any encoding
+        record_type = record.content_type[0:9]
+        if record_type not in ('text/plai', 'text/html') and record.status_code != "301":
+            continue
+
+        collection.append(record)
+
+        record_referrers = collection.referrer(record)
+        if record_referrers:
+
+            # If the "domains" flag is passed, check and make sure that all
+            # referrers come from unique domains / hosts, and if not, ignore
+            if domains and len(set([main_domain(r.host) for r in record_referrers])) != chain_length:
+                logger.debug(" - {0}: found referrer chain, but didn't have distinct domains".format(path))
+                continue
+
+            root_referrer = record_referrers[0]
+            root_referrer_url = root_referrer.host + root_referrer.uri
+
+            intermediate_referrer = record_referrers[1]
+            intermediate_referrer_url = intermediate_referrer.host + intermediate_referrer.uri
+
+            combined_root_referrers = root_referrer_url + "::" + intermediate_referrer_url
+
+            bad_site = record_referrers[2]
+            bad_site_url = bad_site.host + bad_site.uri
+
+            if combined_root_referrers not in redirects:
+                redirects[combined_root_referrers] = ([], root_referrer_url, intermediate_referrer_url, [])
+
+            if bad_site_url not in redirects[combined_root_referrers][3]:
+                # Before adding the URL and BroRecord to the collection of
+                # directed to urls, check and make sure that these are unique
+                # domains too (if flag is passed)
+                if (not domains or
+                        main_domain(bad_site.host) not in redirects[combined_root_referrers][0]):
+                    redirects[combined_root_referrers][3].append(bad_site_url)
+                    redirects[combined_root_referrers][0].append(main_domain(bad_site.host))
+
+                if len(redirects[combined_root_referrers]) > 1:
+                    logger.debug(" - {0}: possible detection at {1} -> {2} -> {3}".format(path, root_referrer_url, intermediate_referrer_url, bad_site_url))
+
+    return redirects
+
+def print_report(referrer_chains, output_h, min_chain_nodes=2):
+    """Pretty formats a set of referrer chain records
+
+    Args:
+        referrer_chains -- a dictionary describing a set of rererrer chains, in
+                           the format returned by `referrer_chains`
+        output_h        -- a file handle to write the report to
+
+    Keyword Args:
+        min_chain_nodes -- The minimum number of redirections in the referrer
+                            chains to an end destination to be included in the
+                            formatting
+    """
+    keys = referrer_chains.keys()
+    keys.sort()
+
+    for k in keys:
+        for combined_url, (domains, first_url, second_url, third_level_urls) in referrer_chains[k]:
+            if len(third_level_urls) >= min_chain_nodes:
+                output_h.write(first_url + "\n")
+                output_h.write("\t -> " + second_url + "\n")
+                for url in third_level_urls:
+                    output_h.write("\t\t -> " + url + "\n")
+                output_h.write("---\n\n")
 
 class BroRecordWindow(object):
     """Keep track of a sliding window of BroRecord objects, and don't keep more
@@ -86,7 +185,15 @@ class BroRecordWindow(object):
             The number of records that were removed from the window during garbage collection.
         """
         self._collection.append(record)
-        self._collection.sort(key=lambda x: x.ts)
+
+        # Most of the time the given record will be later than the last
+        # record added (since we keep the collection sorted).  In this common
+        # case, just add the new record to the end of the collection.
+        # Otherwise, add the record and sort the whole thing
+        self._collection.append(record)
+        if record.ts > self._collection[-2].ts:
+            self._collection.sort(key=lambda x: x.ts)
+
         return self.prune()
 
     def referrer(self, record, step=None):
