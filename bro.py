@@ -52,8 +52,7 @@ def referrer_chains(path, time=.5, chain_length=2, domains=True):
     Return:
         A dictionary of referrer chains extracted from data.
     """
-    logger = logging.getLogger("bro-records")
-    logger.info(" * {0}: Begining parsing".format(path))
+    logging.info(" * {0}: Begining parsing".format(path))
 
     collection = BroRecordWindow(time=time, steps=chain_length)
     redirects = {}
@@ -75,7 +74,7 @@ def referrer_chains(path, time=.5, chain_length=2, domains=True):
             # If the "domains" flag is passed, check and make sure that all
             # referrers come from unique domains / hosts, and if not, ignore
             if domains and len(set([main_domain(r.host) for r in record_referrers])) != chain_length:
-                logger.debug(" - {0}: found referrer chain, but didn't have distinct domains".format(path))
+                logging.debug(" - {0}: found referrer chain, but didn't have distinct domains".format(path))
                 continue
 
             root_referrer = record_referrers[0]
@@ -102,8 +101,8 @@ def referrer_chains(path, time=.5, chain_length=2, domains=True):
                     redirects[combined_root_referrers][0].append(main_domain(bad_site.host))
 
                 if len(redirects[combined_root_referrers]) > 1:
-                    logger.debug(" - {0}: possible detection at {1} -> {2} -> {3}".format(path, root_referrer_url, intermediate_referrer_url, bad_site_url))
-
+                    logging.debug(" - {0}: possible detection at {1} -> {2} -> {3}".format(path, root_referrer_url, intermediate_referrer_url, bad_site_url))
+    print redirects
     return redirects
 
 def print_report(referrer_chains, output_h, min_chain_nodes=2):

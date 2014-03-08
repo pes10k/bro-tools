@@ -106,7 +106,7 @@ if args.state:
 
 output_handle = sys.stdout if not args.output else open(args.output, 'w')
 
-for combined_url, (domains, third_level_urls, first_url, second_url) in redirects.items():
+for combined_url, (third_level_urls, domains, first_url, second_url) in redirects.items():
     if len(third_level_urls) > 1:
         output_handle.write(first_url + "\n")
         output_handle.write("\t -> " + second_url + "\n")
