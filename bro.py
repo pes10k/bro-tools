@@ -2,13 +2,16 @@ import gzip
 import logging
 from collections import namedtuple
 import multiprocessing
+import sys
 
 def _find_helper(job):
     return referrer_chains(*job)
 
+sys.modules[__name__].counter = multiprocessing.Value('i', 0)
 def find_referrers(paths, workers=8, time=.5, chain_length=3, domains=True, verbose=False, veryverbose=False):
+    num_jobs = len(paths)
     p = multiprocessing.Pool(workers)
-    referrers = p.map(_find_helper, ((p, time, chain_length, domains) for p in paths))
+    referrers = p.map(_find_helper, ((p, time, chain_length, domains, num_jobs) for p in paths))
     return referrers
 
 def main_domain(domain):
@@ -42,7 +45,7 @@ def bro_records(handle):
                 mapped_values.append(current_value)
             yield record_type._make(mapped_values)
 
-def referrer_chains(path, time=.5, chain_length=3, domains=True):
+def referrer_chains(path, time=.5, chain_length=3, domains=True, total=None):
     """Takes a file handle to a stream of bro records and looks for redirects
     of a given length.  It then pickles the resulting dictionary describing
     the records to a handle at out handle
@@ -57,12 +60,18 @@ def referrer_chains(path, time=.5, chain_length=3, domains=True):
                         bro data
         domains      -- whether the all domains must be unique in a referrer
                         chain in order for the chain to be included / saved
+        total        -- the total number of jobs being processed
 
     Return:
         A dictionary of referrer chains extracted from data.
     """
+    if total:
+        sys.modules[__name__].counter.value += 1
+        job_string = "({0}/{1}) {2}".format(sys.modules[__name__].counter.value, total, path)
+    else:
+        job_string = path
     log = logging.getLogger("brorecords")
-    log.info(" * {0}: Begining parsing".format(path))
+    log.info("{0}: Begining parsing".format(job_string))
 
     collection = BroRecordWindow(time=time, steps=chain_length)
     redirects = {}
@@ -84,7 +93,7 @@ def referrer_chains(path, time=.5, chain_length=3, domains=True):
             # If the "domains" flag is passed, check and make sure that all
             # referrers come from unique domains / hosts, and if not, ignore
             if domains and len(set([main_domain(r.host) for r in record_referrers])) != chain_length:
-                log.debug(" - {0}: found referrer chain, but didn't have distinct domains".format(path))
+                log.debug("{0}: found referrer chain, but didn't have distinct domains".format(job_string))
                 continue
 
             root_referrer = record_referrers[0]
@@ -111,8 +120,8 @@ def referrer_chains(path, time=.5, chain_length=3, domains=True):
                     redirects[combined_root_referrers][0].append(main_domain(bad_site.host))
 
                 if len(redirects[combined_root_referrers]) > 1:
-                   log.debug(" - {0}: possible detection at {1} -> {2} -> {3}".format(path, root_referrer_url, intermediate_referrer_url, bad_site_url))
-    log.info(" - {0}: Found {1} chains".format(path, len(redirects)))
+                   log.debug("{0}: possible detection at {1} -> {2} -> {3}".format(job_string, root_referrer_url, intermediate_referrer_url, bad_site_url))
+    log.info("{0}: Found {1} chains".format(job_string, len(redirects)))
     return redirects
 
 def print_report(referrer_chains, output_h, min_chain_nodes=2):
