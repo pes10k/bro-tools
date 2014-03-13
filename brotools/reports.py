@@ -15,7 +15,9 @@ def _find_chain_filter(r):
     return r.content_type in ('text/plai', 'text/html') and r.status_code != "301"
 
 
-def _find_chain_helper(path, time=.5, min_length=3, verbose=False, veryverbose=False):
+def _find_chain_helper(args):
+
+    path, time, min_length, verbose, veryverbose = args
 
     log = logging.getLogger("brorecords")
     log.info("{0}: Begining parsing".format(path))
