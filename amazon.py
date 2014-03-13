@@ -23,7 +23,7 @@ parser.add_argument('--veryverbose', '-vv', action='store_true',
                     help="Prints lots of debugging / feedback information to the console")
 args = parser.parse_args()
 
-input_files = args.inputs.split(" ") if args.inputs else sys.stdin.read().strip().split("\n")
+input_files = args.inputs.replace("\n", " ").split(" ") if args.inputs else sys.stdin.read().strip().split("\n")
 
 logging.basicConfig()
 logger = logging.getLogger("brorecords")
@@ -33,7 +33,7 @@ if args.veryverbose:
 elif args.verbose:
     logger.setLevel(logging.INFO)
 else:
-    logging.setLevel(logging.ERROR)
+    logger.setLevel(logging.ERROR)
 
 paths = merged_bro_records(input_files, args.workpath)
 relevant_chains = find_chains(paths, time=args.time, min_length=args.steps)

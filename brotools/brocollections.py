@@ -175,9 +175,7 @@ class BroRecordChain(object):
         Keyword Args:
             record_filter -- an optional function that, if provided, should take
                              two arguments of bro records, and should provide
-                             True if they should be included in the same chain
-                             or not.  This is in addition to the already
-                             described matching / filtering
+                             True if the record should be included
 
         Return:
             True if the given record was added to the chain, otherwise False
