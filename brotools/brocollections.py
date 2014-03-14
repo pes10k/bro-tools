@@ -188,19 +188,23 @@ class BroRecordChain(object):
         Return:
             True if the given record was added to the chain, otherwise False
         """
-        if record.id_orig_h != self.id:
+        if record.id_orig_h != self.ip:
+            print "rejected b/c ip"
             return False
 
         tail_record = self.tail()
 
         if record.ts < tail_record.ts:
+            print "rejected bc ts"
             return False
 
         referrer_url = _strip_protocol(record.referrer)
         if self.tail_url != referrer_url:
+            print "rejected bc {0} != {1}".format(self.tail_url, referrer_url)
             return False
 
         if record_filter and not record_filter(tail_record, record):
+            print "reejected bc filter"
             return False
 
         self.tail_url = referrer_url
