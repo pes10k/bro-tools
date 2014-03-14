@@ -16,9 +16,7 @@ def _find_chain_filter(r):
 
 
 def _find_chain_helper(args):
-
     path, time, min_length, verbose, veryverbose = args
-
     log = logging.getLogger("brorecords")
     log.info("{0}: Begining parsing".format(path))
 
@@ -36,7 +34,6 @@ def _find_chain_helper(args):
 
     log.info("{0}: Found {1} amazon including chains".format(path, len(intersting_chains)))
     h.close()
-    os.remove(path)
     return intersting_chains
 
 
