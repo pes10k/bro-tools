@@ -105,7 +105,7 @@ def bro_records(handle):
             row_values = [a if a != "-" else "" for a in row.split(seperator)]
             try:
                 r = BroRecord(*row_values)
-            except TypeError, e:
+            except Exception, e:
                 print "Bad line entry"
                 print "File: {0}".format(handle.name)
                 print "Values: {0}".format(row_values)
