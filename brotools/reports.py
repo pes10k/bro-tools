@@ -28,7 +28,7 @@ def _find_chain_helper(args):
 
     log.info("{0}: Begining parsing".format(dest))
 
-    h = gzip.open(dest)
+    h = open(dest, 'r')
     intersting_chains = []
     for chain in brocollections.bro_chains(h, time=time, record_filter=_find_chain_filter):
         log.debug("{0}: Found chain of length {1}".format(dest, chain.len()))
