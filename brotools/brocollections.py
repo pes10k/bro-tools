@@ -209,7 +209,7 @@ class BroRecordChain(object):
         if record_filter and not record_filter(tail_record, record):
             return False
 
-        self.tail_url = referrer_url
+        self.tail_url = record.host + record.uri
         self.records.append(record)
         return True
 
