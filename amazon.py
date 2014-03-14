@@ -43,6 +43,7 @@ output_h = open(args.output, 'w') if args.output else sys.stdout
 for chains in relevant_chains:
     for c in chains:
         output_h.write(str(c))
+        output_h.write("------\n\n")
 
 if args.output:
     logger.info("Finished writing report to {0}".format(args.output))

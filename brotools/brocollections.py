@@ -138,10 +138,10 @@ class BroRecordChain(object):
         self.records = [record]
 
     def __str__(self):
-        output = ""
+        output = "ip: {0}\n".format(self.ip)
         count = 0
         for r in self.records:
-            output += (" -> " * count) + r.host + r.host + "\n"
+            output += ("    " * count) + (" -> " if count else "") + r.host + r.uri + " ({0})\n".format(r.ts)
             count += 1
         return output
 
@@ -204,7 +204,6 @@ class BroRecordChain(object):
             return False
 
         if record_filter and not record_filter(tail_record, record):
-            print "rejected b/c of filter"
             return False
 
         self.tail_url = referrer_url
