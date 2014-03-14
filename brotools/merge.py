@@ -32,7 +32,7 @@ def merged_bro_records(files, work_dir="/tmp"):
         tmp_name = os.path.join(work_dir, os.path.basename(file_name) + ".gz")
 
         # If the file has already been generated, don't generate it again
-        if os.isfile(tmp_name) and os.path.getsize(tmp_name):
+        if os.path.isfile(tmp_name) and os.path.getsize(tmp_name):
             yield tmp_name
             continue
 

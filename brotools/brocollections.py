@@ -1,6 +1,9 @@
 """Classes and iterators useful for processing collections of bro data"""
 
 from collections import namedtuple
+import logging
+
+BroRecord = None
 
 def _strip_protocol(url):
     if url[0:7] == "http://":
@@ -60,6 +63,7 @@ def bro_chains(handle, time=.5, record_filter=None):
         # create a new chain with this record as the root
         if not altered_chain:
             chains.append(BroRecordChain(r))
+            first_good_chain_index = len(chains) - 1
         # Otherwise, move the updated chain to the end of the chain list,
         # so that the last updated record is always the first in the
         # list of chains
@@ -70,7 +74,7 @@ def bro_chains(handle, time=.5, record_filter=None):
         # Now, return any completed chains that have been found, which
         # just means any any chains that have their last element more than
         # the given cut off time ago.
-        if first_good_chain_index == None:
+        if first_good_chain_index is None:
             for c in chains:
                 yield c
             chains = []
@@ -189,22 +193,19 @@ class BroRecordChain(object):
             True if the given record was added to the chain, otherwise False
         """
         if record.id_orig_h != self.ip:
-            print "rejected b/c ip"
             return False
 
         tail_record = self.tail()
 
         if record.ts < tail_record.ts:
-            print "rejected bc ts"
             return False
 
         referrer_url = _strip_protocol(record.referrer)
         if self.tail_url != referrer_url:
-            print "rejected bc {0} != {1}".format(self.tail_url, referrer_url)
             return False
 
         if record_filter and not record_filter(tail_record, record):
-            print "reejected bc filter"
+            print "rejected b/c of filter"
             return False
 
         self.tail_url = referrer_url

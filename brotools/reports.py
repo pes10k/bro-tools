@@ -11,8 +11,9 @@ sys.modules[__name__].counter = multiprocessing.Value('i', 0)
 
 # Helpers for extracting chains from bro data
 
-def _find_chain_filter(r):
-    return r.content_type in ('text/plai', 'text/html') and r.status_code != "301"
+def _find_chain_filter(prev_r, r):
+    short_content_type = r.content_type[:9]
+    return short_content_type in ('text/plai', 'text/html') and r.status_code != "301"
 
 
 def _find_chain_helper(args):
