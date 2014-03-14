@@ -23,7 +23,8 @@ def _find_chain_helper(args):
     log = logging.getLogger("brorecords")
 
     log.info("Merging {0} files into {1}".format(len(files), dest))
-    merge.merge(files, dest)
+    if not merge.merge(files, dest):
+        return []
 
     log.info("{0}: Begining parsing".format(dest))
 

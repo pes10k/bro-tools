@@ -17,7 +17,7 @@ def merge(files, dest_path):
 
     # If the file has already been generated, don't generate it again
     if os.path.isfile(dest_path) and os.path.getsize(dest_path):
-        return dest_path
+        return True
 
     read_headers = False
     headers = ""
@@ -32,6 +32,9 @@ def merge(files, dest_path):
                 else:
                     lines.append(line)
 
+    if len(headers) == 0 or len(lines) == 0:
+        return False
+
     # Now sort all the rows.  This will be big
     lines.sort()
     dest_h = gzip.open(dest_path, 'wb')
@@ -39,4 +42,4 @@ def merge(files, dest_path):
     for line in lines:
         dest_h.write(line)
     dest_h.close()
-    return dest_path
+    return True
