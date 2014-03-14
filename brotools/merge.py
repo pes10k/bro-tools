@@ -28,9 +28,9 @@ def merge(files, dest_path):
                 if line[0] == "#":
                     if not read_headers:
                         headers += line
+                        read_headers = True
                 else:
                     lines.append(line)
-            read_headers = True
 
     # Now sort all the rows.  This will be big
     lines.sort()
