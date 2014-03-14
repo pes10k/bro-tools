@@ -1,9 +1,5 @@
 """Classes and iterators useful for processing collections of bro data"""
 
-from collections import namedtuple
-
-BroRecord = None
-
 def _strip_protocol(url):
     if url[0:7] == "http://":
         url = url[7:]

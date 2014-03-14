@@ -16,7 +16,7 @@ def _find_chain_filter(prev_r, r):
 
 
 def _find_chain_helper(args):
-    path, time, min_length, verbose, veryverbose = args
+    path, time, min_length, lite, verbose, veryverbose = args
     log = logging.getLogger("brorecords")
     log.info("{0}: Begining parsing".format(path))
 
@@ -37,9 +37,9 @@ def _find_chain_helper(args):
     return intersting_chains
 
 
-def find_chains(paths, workers=8, time=.5, min_length=3, verbose=False, veryverbose=False):
+def find_chains(paths, workers=8, time=.5, min_length=3, lite=True, verbose=False, veryverbose=False):
     p = multiprocessing.Pool(workers)
-    chains = p.map(_find_chain_helper, ((p, time, min_length, verbose, veryverbose) for p in paths))
+    chains = p.map(_find_chain_helper, ((p, time, min_length, lite, verbose, veryverbose) for p in paths))
     return chains
 
 # Helpers for extracting chaing referrers from bro data

@@ -9,6 +9,8 @@ parser.add_argument('--workers', '-w', default=8, type=int,
                     help="Number of worker processe to use for processing bro data")
 parser.add_argument('--workpath', '-p', default="/tmp", type=str,
                     help="A path on disk to write intermediate work files to.")
+parser.add_argument('--lite', '-l', action="store_true",
+                    help="If true, merged files won't be saved, and will be deleted from disk right after they are used.")
 parser.add_argument('--inputs', '-i', nargs='*',
                     help='A list of gzip files to parse bro data from. If not provided, reads a list of files from stdin')
 parser.add_argument('--time', '-t', type=float, default=.5,
@@ -36,7 +38,7 @@ else:
     logger.setLevel(logging.ERROR)
 
 paths = merged_bro_records(input_files, args.workpath)
-relevant_chains = find_chains(paths, time=args.time, min_length=args.steps)
+relevant_chains = find_chains(paths, time=args.time, min_length=args.steps, lite=args.lite)
 
 output_h = open(args.output, 'w') if args.output else sys.stdout
 
