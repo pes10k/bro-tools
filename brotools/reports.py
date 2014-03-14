@@ -1,6 +1,5 @@
 """Misc functions mostly useful for one off multiprocessing tasks"""
 
-import os
 import brocollections
 import gzip
 import logging

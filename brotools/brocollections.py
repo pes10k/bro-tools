@@ -1,7 +1,6 @@
 """Classes and iterators useful for processing collections of bro data"""
 
 from collections import namedtuple
-import logging
 
 BroRecord = None
 
@@ -102,31 +101,31 @@ def bro_records(handle):
         An iterator returning BroRecord objects
     """
     seperator = None
-    record_type = None
-    field_types = None
-    num_fields = 0
     for raw_row in handle:
         row = raw_row[:-1] # Strip off line end
         if not seperator and row[0:10] == "#separator":
             seperator = row[11:].decode('unicode_escape')
-        if not record_type and row[0:7] == "#fields":
-            record_type = namedtuple('BroRecord', [a.replace(".", "_") for a in row[8:].split(seperator)])
-        if not field_types and row[0:6] == "#types":
-            field_types = row[7:].split(seperator)
-            num_fields = len(field_types)
         elif row[0] != "#":
             row_values = [a if a != "-" else "" for a in row.split(seperator)]
-            mapped_values = []
-            for i in range(num_fields):
-                current_type = field_types[i]
-                if current_type == "time":
-                    current_value = float(row_values[i])
-                elif current_type == "count":
-                    current_value = int(row_values[i])
-                else:
-                    current_value = row_values[i]
-                mapped_values.append(current_value)
-            yield record_type._make(mapped_values)
+            yield BroRecord(*row_values)
+
+
+class BroRecord(object):
+
+    def __init__(self, ts, id_orig_h, id_resp_h, method, host, uri, referrer, user_agent,status_code, content_type, location, cookies):
+        self.ts = float(ts)
+        self.id_orig_h = id_orig_h
+        self.id_resp_h = id_resp_h
+        self.method = method
+        self.host = host
+        self.uri = uri
+        self.referrer = _strip_protocol(referrer)
+        self.user_agent = user_agent
+        self.status_code = status_code
+        self.content_type = content_type
+        self.location = location
+        self.cookies = cookies
+
 
 
 class BroRecordChain(object):
