@@ -12,10 +12,6 @@ sys.modules[__name__].counter = multiprocessing.Value('i', 0)
 
 # Helpers for extracting chains from bro data
 
-def _find_chain_filter(prev_r, r):
-    short_content_type = r.content_type[:9]
-    return short_content_type in ('text/plai', 'text/html') and r.status_code != "301"
-
 
 def _find_chain_helper(args):
     merge_rules, time, min_length, lite = args
@@ -30,7 +26,7 @@ def _find_chain_helper(args):
 
     h = open(dest, 'r')
     intersting_chains = []
-    for chain in brocollections.bro_chains(h, time=time, record_filter=_find_chain_filter):
+    for chain in brocollections.bro_chains(h, time=time):
         log.debug("{0}: Found chain of length {1}".format(dest, chain.len()))
 
         if chain.len() < min_length:
