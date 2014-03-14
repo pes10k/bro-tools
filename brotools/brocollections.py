@@ -201,7 +201,7 @@ class BroRecordChain(object):
             return False
 
         self.tail_url = referrer_url
-        self.collection.append(record)
+        self.records.append(record)
         return True
 
 

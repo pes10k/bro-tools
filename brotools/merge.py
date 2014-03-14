@@ -44,10 +44,10 @@ def merged_bro_records(files, work_dir="/tmp"):
 
         # Now sort all the rows.  This will be big
         lines.sort()
-        tmp_name = os.path.basename(file_name)
-        dest_h = gzip.open(os.path.join(work_dir, tmp_name + ".gz"), 'wb')
+        tmp_name = os.path.join(work_dir, os.path.basename(file_name) + ".gz")
+        dest_h = gzip.open(tmp_name, 'wb')
         dest_h.write(headers)
         for line in lines:
             dest_h.write(line)
         dest_h.close()
-        yield tmp_name + ".gz"
+        yield tmp_name

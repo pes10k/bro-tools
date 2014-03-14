@@ -29,8 +29,8 @@ def _find_chain_helper(args):
 
         if chain.len() < min_length:
             continue
-        if "amazon.com" not in [".".join(r.host.split(".")[-2:]) for r in chain.records]:
-            continue
+#        if "amazon.com" not in [".".join(r.host.split(".")[-2:]) for r in chain.records]:
+#            continue
         log.debug("{0}: Chain contains amazon reference".format(path))
         intersting_chains.append(chain)
 
