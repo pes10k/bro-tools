@@ -103,7 +103,14 @@ def bro_records(handle):
             seperator = row[11:].decode('unicode_escape')
         elif row[0] != "#":
             row_values = [a if a != "-" else "" for a in row.split(seperator)]
-            yield BroRecord(*row_values)
+            try:
+                r = BroRecord(*row_values)
+            except TypeError, e:
+                print "Bad line entry"
+                print "File: {0}".format(handle.name)
+                print "Values: {0}".format(row_values)
+                raise e
+            yield r
 
 
 class BroRecord(object):
