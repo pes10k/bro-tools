@@ -2,6 +2,14 @@
 
 from collections import namedtuple
 
+def _strip_protocol(url):
+    if url[0:7] == "http://":
+        url = url[7:]
+    elif url[0:8] == "https://":
+        url = url[8:]
+    return url
+
+
 def bro_chains(handle, time=.5, record_filter=None):
     """A generator function that yields completed BroRecordChain objects.
 
@@ -123,7 +131,7 @@ class BroRecordChain(object):
 
     def __init__(self, record):
         self.ip = record.id_orig_h
-        self.tail_url = record.host + record.uri
+        self.tail_url = _strip_protocol(record.host + record.uri)
         self.records = [record]
 
     def __str__(self):
@@ -188,12 +196,7 @@ class BroRecordChain(object):
         if record.ts < tail_record.ts:
             return False
 
-        referrer_url = record.referrer
-        if referrer_url[0:7] == "http://":
-            referrer_url = referrer_url[7:]
-        elif referrer_url[0:8] == "https://":
-            referrer_url = referrer_url[8:]
-
+        referrer_url = _strip_protocol(record.referrer)
         if self.tail_url != referrer_url:
             return False
 
