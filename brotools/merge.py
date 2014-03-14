@@ -11,7 +11,7 @@ def group_records(files, workpath="/tmp"):
         if combined_file_name not in files_to_combine:
             files_to_combine[combined_file_name] = []
         files_to_combine[combined_file_name].append(f)
-    return [(v, os.path.join(workpath, os.path.basename(k) + ".gz")) for k, v in files_to_combine.items()]
+    return [(v, os.path.join(workpath, os.path.basename(k))) for k, v in files_to_combine.items()]
 
 def merge(files, dest_path):
 
