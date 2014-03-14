@@ -32,6 +32,10 @@ def bro_chains(handle, time=.5, record_filter=None):
     latest_record_time = 0
     for r in bro_records(handle):
 
+        short_content_type = r.content_type[:9]
+        if short_content_type not in ('text/plai', 'text/html') or r.status_code == "301":
+            continue
+
         latest_record_time = max(latest_record_time, r.ts)
         early_record_cutoff = latest_record_time - time
 
@@ -50,13 +54,14 @@ def bro_chains(handle, time=.5, record_filter=None):
             if first_good_chain_index is None and c.tail().ts > early_record_cutoff:
                 first_good_chain_index = index
 
-            index += 1
             if altered_chain and first_good_chain_index is not None:
                 break
 
+            index += 1
+
         # If we couldn't attach the current record to an existing chain,
         # create a new chain with this record as the root
-        if not altered_chain:
+        if altered_chain is None:
             chains.append(BroRecordChain(r))
             first_good_chain_index = len(chains) - 1
         # Otherwise, move the updated chain to the end of the chain list,
@@ -70,19 +75,19 @@ def bro_chains(handle, time=.5, record_filter=None):
         # just means any any chains that have their last element more than
         # the given cut off time ago.
         if first_good_chain_index is None:
-            for c in chains:
+            for completed_c in chains:
                 yield c
             chains = []
         else:
-            for c in chains[:first_good_chain_index]:
-                yield c
+            for completed_c in chains[:first_good_chain_index]:
+                yield completed_c
             chains = chains[first_good_chain_index:]
 
     # Once we've finished processing all bro records in the set,
     # there will likely still be some chains that haven't been completed.
     # Return them all here
-    for c in chains:
-        yield c
+    for remaining_chain in chains:
+        yield remaining_chain
 
 
 def bro_records(handle):
@@ -137,7 +142,7 @@ class BroRecordChain(object):
 
     def __init__(self, record):
         self.ip = record.id_orig_h
-        self.tail_url = _strip_protocol(record.host + record.uri)
+        self.tail_url = record.host + record.uri
         self.records = [record]
 
     def __str__(self):
@@ -156,24 +161,6 @@ class BroRecordChain(object):
 
     def len(self):
         return len(self.records)
-
-    def domain_position(self, domain):
-        """Returns the position of a given domain (example.org) in the current
-        record chain.
-
-        Args:
-            domain -- an internet domain in the format "example.org"
-
-        Return:
-            The integer position of the bro record describing a request to
-            the given domain in this chain, or None if no such record exists.
-        """
-        index = 0
-        for r in self.records:
-            if r.host == domain:
-                return index
-            index += 1
-        return None
 
     def add_record(self, record, record_filter=None):
         """Attempts to add a given BroRecord to the current referrer chain.
