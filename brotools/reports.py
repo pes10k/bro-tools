@@ -1,6 +1,8 @@
 """Misc functions mostly useful for one off multiprocessing tasks"""
 
+import os
 import brocollections
+import merge
 import gzip
 import logging
 import multiprocessing
@@ -16,32 +18,37 @@ def _find_chain_filter(prev_r, r):
 
 
 def _find_chain_helper(args):
-    path, time, min_length, lite, verbose, veryverbose = args
+    merge_rules, time, min_length, lite, workpath = args
+    files, dest = merge_rules
     log = logging.getLogger("brorecords")
-    log.info("{0}: Begining parsing".format(path))
 
-    h = gzip.open(path)
+    log.info("Merging {0} files into {1}".format(len(files), dest))
+    merge.merge(files, dest)
+
+    log.info("{0}: Begining parsing".format(dest))
+
+    h = gzip.open(dest)
     intersting_chains = []
     for chain in brocollections.bro_chains(h, time=time, record_filter=_find_chain_filter):
-        log.debug("{0}: Found chain of length {1}".format(path, chain.len()))
+        log.debug("{0}: Found chain of length {1}".format(dest, chain.len()))
 
         if chain.len() < min_length:
             continue
         if "amazon.com" not in [".".join(r.host.split(".")[-2:]) for r in chain.records]:
             continue
-        log.debug("{0}: Chain contains amazon reference".format(path))
+        log.debug("{0}: Chain contains amazon reference".format(dest))
         intersting_chains.append(chain)
 
-    log.info("{0}: Found {1} amazon including chains".format(path, len(intersting_chains)))
+    log.info("{0}: Found {1} amazon including chains".format(dest, len(intersting_chains)))
     h.close()
     if lite:
-        os.remove(path)
+        os.remove(dest)
     return intersting_chains
 
 
-def find_chains(paths, workers=8, time=.5, min_length=3, lite=True, verbose=False, veryverbose=False):
+def find_chains(file_sets, workers=8, time=.5, min_length=3, lite=True, workpath="/tmp"):
     p = multiprocessing.Pool(workers)
-    chains = p.map(_find_chain_helper, ((p, time, min_length, lite, verbose, veryverbose) for p in paths))
+    chains = p.map(_find_chain_helper, ((f, time, min_length, lite, workpath) for f in file_sets))
     return chains
 
 # Helpers for extracting chaing referrers from bro data

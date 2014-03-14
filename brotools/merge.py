@@ -4,56 +4,39 @@ across multiple files_to_combine"""
 import gzip
 import os
 
-def merged_bro_records(files, work_dir="/tmp"):
-    """Returns an iterator of path names to gziped combined bro data records,
-    merged and sorted together.
-
-    Args:
-        path -- a path, as a string, to a directory of compressed, divided
-                bro archive files
-
-    Keyword Args:
-        work_dir -- A path to write the temporary files to.  Note that these
-                    files can be safely deleted after they're used
-                    by a caller with os.remove(a_path)
-
-    Return:
-        A generator that returns path names to compressed combined gzip data
-    """
+def group_records(files):
     files_to_combine = {}
-
     for f in files:
         combined_file_name = f[:-5]
         if combined_file_name not in files_to_combine:
             files_to_combine[combined_file_name] = []
         files_to_combine[combined_file_name].append(f)
+    return [(v, k + ".gz") for k, v in files_to_combine.items()]
 
-    for file_name in files_to_combine:
-        tmp_name = os.path.join(work_dir, os.path.basename(file_name) + ".gz")
+def merge(files, dest_path):
 
-        # If the file has already been generated, don't generate it again
-        if os.path.isfile(tmp_name) and os.path.getsize(tmp_name):
-            yield tmp_name
-            continue
+    # If the file has already been generated, don't generate it again
+    if os.path.isfile(dest_path) and os.path.getsize(dest_path):
+        return dest_path
 
-        read_headers = False
-        headers = ""
-        lines = []
-        for compressed_file in files_to_combine[file_name]:
-            with gzip.open(compressed_file, 'r') as source_h:
-                for line in source_h:
-                    if line[0] == "#":
-                        if not read_headers:
-                            headers += line
-                    else:
-                        lines.append(line)
-                read_headers = True
+    read_headers = False
+    headers = ""
+    lines = []
+    for compressed_file in files:
+        with gzip.open(compressed_file, 'r') as source_h:
+            for line in source_h:
+                if line[0] == "#":
+                    if not read_headers:
+                        headers += line
+                else:
+                    lines.append(line)
+            read_headers = True
 
-        # Now sort all the rows.  This will be big
-        lines.sort()
-        dest_h = gzip.open(tmp_name, 'wb')
-        dest_h.write(headers)
-        for line in lines:
-            dest_h.write(line)
-        dest_h.close()
-        yield tmp_name
+    # Now sort all the rows.  This will be big
+    lines.sort()
+    dest_h = gzip.open(dest_path, 'wb')
+    dest_h.write(headers)
+    for line in lines:
+        dest_h.write(line)
+    dest_h.close()
+    return dest_path

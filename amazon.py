@@ -1,4 +1,4 @@
-from brotools.merge import merged_bro_records
+import brotools.merge
 from brotools.reports import find_chains
 import argparse
 import logging
@@ -37,8 +37,8 @@ elif args.verbose:
 else:
     logger.setLevel(logging.ERROR)
 
-paths = merged_bro_records(input_files, args.workpath)
-relevant_chains = find_chains(paths, time=args.time, min_length=args.steps, lite=args.lite)
+paths = brotools.merge.group_records(input_files)
+relevant_chains = find_chains(paths, time=args.time, min_length=args.steps, lite=args.lite, workpath=args.workpath)
 
 output_h = open(args.output, 'w') if args.output else sys.stdout
 
