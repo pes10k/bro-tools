@@ -29,6 +29,13 @@ def merged_bro_records(files, work_dir="/tmp"):
         files_to_combine[combined_file_name].append(f)
 
     for file_name in files_to_combine:
+        tmp_name = os.path.join(work_dir, os.path.basename(file_name) + ".gz")
+
+        # If the file has already been generated, don't generate it again
+        if os.isfile(tmp_name) and os.path.getsize(tmp_name):
+            yield tmp_name
+            continue
+
         read_headers = False
         headers = ""
         lines = []
@@ -44,7 +51,6 @@ def merged_bro_records(files, work_dir="/tmp"):
 
         # Now sort all the rows.  This will be big
         lines.sort()
-        tmp_name = os.path.join(work_dir, os.path.basename(file_name) + ".gz")
         dest_h = gzip.open(tmp_name, 'wb')
         dest_h.write(headers)
         for line in lines:
