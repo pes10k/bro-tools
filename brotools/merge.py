@@ -37,7 +37,7 @@ def merge(files, dest_path):
 
     # Now sort all the rows.  This will be big
     lines.sort()
-    dest_h = gzip.open(dest_path, 'wb')
+    dest_h = open(dest_path, 'w')
     dest_h.write(headers)
     for line in lines:
         dest_h.write(line)
