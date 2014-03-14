@@ -4,14 +4,14 @@ across multiple files_to_combine"""
 import gzip
 import os
 
-def group_records(files):
+def group_records(files, workpath="/tmp"):
     files_to_combine = {}
     for f in files:
         combined_file_name = f[:-5]
         if combined_file_name not in files_to_combine:
             files_to_combine[combined_file_name] = []
         files_to_combine[combined_file_name].append(f)
-    return [(v, k + ".gz") for k, v in files_to_combine.items()]
+    return [(v, os.path.join(workpath, os.path.basename(k) + ".gz")) for k, v in files_to_combine.items()]
 
 def merge(files, dest_path):
 

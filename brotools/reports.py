@@ -18,7 +18,7 @@ def _find_chain_filter(prev_r, r):
 
 
 def _find_chain_helper(args):
-    merge_rules, time, min_length, lite, workpath = args
+    merge_rules, time, min_length, lite = args
     files, dest = merge_rules
     log = logging.getLogger("brorecords")
 
@@ -46,9 +46,9 @@ def _find_chain_helper(args):
     return intersting_chains
 
 
-def find_chains(file_sets, workers=8, time=.5, min_length=3, lite=True, workpath="/tmp"):
+def find_chains(file_sets, workers=8, time=.5, min_length=3, lite=True):
     p = multiprocessing.Pool(workers)
-    chains = p.map(_find_chain_helper, ((f, time, min_length, lite, workpath) for f in file_sets))
+    chains = p.map(_find_chain_helper, ((f, time, min_length, lite) for f in file_sets))
     return chains
 
 # Helpers for extracting chaing referrers from bro data

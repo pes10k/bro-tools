@@ -37,8 +37,8 @@ elif args.verbose:
 else:
     logger.setLevel(logging.ERROR)
 
-paths = brotools.merge.group_records(input_files)
-relevant_chains = find_chains(paths, time=args.time, min_length=args.steps, lite=args.lite, workpath=args.workpath)
+paths = brotools.merge.group_records(input_files, workpath=args.workpath)
+relevant_chains = find_chains(paths, time=args.time, min_length=args.steps, lite=args.lite)
 
 output_h = open(args.output, 'w') if args.output else sys.stdout
 
