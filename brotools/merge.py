@@ -14,7 +14,6 @@ def group_records(files, workpath="/tmp"):
     return [(v, os.path.join(workpath, os.path.basename(k))) for k, v in files_to_combine.items()]
 
 def merge(files, dest_path):
-
     # If the file has already been generated, don't generate it again
     if os.path.isfile(dest_path) and os.path.getsize(dest_path):
         return True
@@ -43,3 +42,38 @@ def merge(files, dest_path):
         dest_h.write(line)
     dest_h.close()
     return True
+
+if __name__ == "__main__":
+    """If we're running as a script directly, read in a list of file names
+    from stdin and attempt to merge those together into the given argument
+    directory"""
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(description='Merge bro records together into a given destination directory. File names to merge are read in from STDIN.')
+    parser.add_argument('--dest', '-d', default=".",
+                        help="Path to a directory to write merged files to on disk. Defaults to the current directory")
+    parser.add_argument('--verbose', '-v', action="store_true",
+                        help="If set, lots of information about the merging process will be printed out.")
+    parser.add_argument('--test', '-t', action="store_true",
+                        help="If set, no files will be written to disk.  Possibly useful in combination with --verbose.")
+    args = parser.parse_args()
+
+    def info(msg):
+        if args.verbose:
+            print msg
+
+
+    input_files = sys.stdin.read().strip().split("\n")
+    info("Received {0} files to merge".format(len(input_files)))
+
+    grouped_files = group_records(input_files, args.dest)
+    info("Will merge files as follows:\n")
+
+    for orig_files, dest_file in grouped_files.items():
+        info(" - {0} will contain:".format(dest_file))
+        for orig_file in orig_files:
+            info("\t - {0}".format(orig_file))
+
+        if not args.test:
+            merge(orig_files, dest)
