@@ -18,18 +18,21 @@ def merge(files, dest_path):
     if os.path.isfile(dest_path) and os.path.getsize(dest_path):
         return True
 
-    read_headers = False
+    read_headers_from_any_file = False
     headers = ""
     lines = []
     for compressed_file in files:
         with gzip.open(compressed_file, 'r') as source_h:
+            read_headers_from_this_file = False
             for line in source_h:
                 if line[0] == "#":
-                    if not read_headers:
+                    if not read_headers_from_any_file:
                         headers += line
-                        read_headers = True
+                        read_headers_from_this_file = True
                 else:
                     lines.append(line)
+            if read_headers_from_this_file:
+                read_headers_from_any_file = True
 
     if len(headers) == 0 or len(lines) == 0:
         return False
@@ -70,10 +73,10 @@ if __name__ == "__main__":
     grouped_files = group_records(input_files, args.dest)
     info("Will merge files as follows:\n")
 
-    for orig_files, dest_file in grouped_files.items():
+    for orig_files, dest_file in grouped_files:
         info(" - {0} will contain:".format(dest_file))
         for orig_file in orig_files:
             info("\t - {0}".format(orig_file))
 
         if not args.test:
-            merge(orig_files, dest)
+            merge(orig_files, dest_file)
