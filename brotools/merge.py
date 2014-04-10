@@ -66,7 +66,6 @@ if __name__ == "__main__":
         if args.verbose:
             print msg
 
-
     input_files = sys.stdin.read().strip().split("\n")
     info("Received {0} files to merge".format(len(input_files)))
 
