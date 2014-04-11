@@ -155,6 +155,9 @@ class BroRecordChain(object):
             count += 1
         return output
 
+    def __iter__(self):
+        return iter(self.records)
+
     def head(self):
         return self.records[0]
 
