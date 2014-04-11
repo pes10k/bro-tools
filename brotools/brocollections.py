@@ -167,7 +167,7 @@ class BroRecordChain(object):
     def len(self):
         return len(self.records)
 
-    def add_record(self, record, record_filter=None):
+    def add_record(self, record, record_filter=None, ignore_self_refs=True):
         """Attempts to add a given BroRecord to the current referrer chain.
         This method checks to see if it makes sense to add the given record
         to the referrer chain (by checking the ip of the requester, whether
@@ -179,9 +179,13 @@ class BroRecordChain(object):
             record -- a BroRecord element to try and add to a referrer chain
 
         Keyword Args:
-            record_filter -- an optional function that, if provided, should take
-                             two arguments of bro records, and should provide
-                             True if the record should be included
+            record_filter    -- an optional function that, if provided, should take
+                                two arguments of bro records, and should provide
+                                True if the record should be included
+            ignore_self_refs -- sometimes pages will record references to
+                                themselves (to do things like setting a cookie
+                                serverside).  Setting this flag to True will
+                                not include these self references.
 
         Return:
             True if the given record was added to the chain, otherwise False
@@ -195,6 +199,9 @@ class BroRecordChain(object):
             return False
 
         referrer_url = _strip_protocol(record.referrer)
+        if ignore_self_refs and self.tail_url == record.host + record.uri:
+            return False
+
         if self.tail_url != referrer_url:
             return False
 
