@@ -47,5 +47,10 @@ for chains in relevant_chains:
         output_h.write(str(c))
         output_h.write("------\n\n")
 
+        if args.veryverbose:
+            for record in c:
+                logger.debug(record)
+            logger.debug("------\n")
+
 if args.output:
     logger.info("Finished writing report to {0}".format(args.output))

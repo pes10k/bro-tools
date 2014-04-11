@@ -27,13 +27,11 @@ def _find_chain_helper(args):
     h = open(dest, 'r')
     intersting_chains = []
     for chain in brocollections.bro_chains(h, time=time):
-        log.debug("{0}: Found chain of length {1}".format(dest, chain.len()))
 
         if chain.len() < min_length:
             continue
         #if not any(["amazon.com" in r.host for r in chain.records]):
         #    continue
-        log.debug("{0}: Chain contains amazon reference".format(dest))
         intersting_chains.append(chain)
 
     log.info("{0}: Found {1} amazon including chains".format(dest, len(intersting_chains)))
@@ -93,10 +91,10 @@ def referrer_chains(path, time=.5, chain_length=3, domains=True, total=None):
     log = logging.getLogger("brorecords")
     log.info("{0}: Begining parsing".format(job_string))
 
-    collection = BroRecordWindow(time=time, steps=chain_length)
+    collection = brocollections.BroRecordWindow(time=time, steps=chain_length)
     redirects = {}
 
-    for record in bro_records(gzip.open(path, 'r')):
+    for record in brocollections.bro_records(gzip.open(path, 'r')):
 
         # filter out some types of records that we don't care about at all.
         # Below just grabs out the first 9 letters of the mime type, which is
@@ -113,7 +111,6 @@ def referrer_chains(path, time=.5, chain_length=3, domains=True, total=None):
             # If the "domains" flag is passed, check and make sure that all
             # referrers come from unique domains / hosts, and if not, ignore
             if domains and len(set([main_domain(r.host) for r in record_referrers])) != chain_length:
-                log.debug("{0}: found referrer chain, but didn't have distinct domains".format(job_string))
                 continue
 
             root_referrer = record_referrers[0]
@@ -139,8 +136,6 @@ def referrer_chains(path, time=.5, chain_length=3, domains=True, total=None):
                     redirects[combined_root_referrers][3].append(bad_site_url)
                     redirects[combined_root_referrers][0].append(main_domain(bad_site.host))
 
-                if len(redirects[combined_root_referrers]) > 1:
-                   log.debug("{0}: possible detection at {1} -> {2} -> {3}".format(job_string, root_referrer_url, intermediate_referrer_url, bad_site_url))
     log.info("{0}: Found {1} chains".format(job_string, len(redirects)))
     return redirects
 

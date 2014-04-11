@@ -107,20 +107,20 @@ def bro_records(handle):
         if not seperator and row[0:10] == "#separator":
             seperator = row[11:].decode('unicode_escape')
         elif row[0] != "#":
-            row_values = [a if a != "-" else "" for a in row.split(seperator)]
             try:
-                r = BroRecord(*row_values)
+                r = BroRecord(row, seperator)
             except Exception, e:
                 print "Bad line entry"
                 print "File: {0}".format(handle.name)
-                print "Values: {0}".format(row_values)
+                print "Values: {0}".format(row)
                 raise e
             yield r
 
 
 class BroRecord(object):
 
-    def __init__(self, ts, id_orig_h, id_resp_h, method, host, uri, referrer, user_agent,status_code, content_type, location, cookies):
+    def __init__(self, line, seperator="\t"):
+        ts, id_orig_h, id_resp_h, method, host, uri, referrer, user_agent, status_code, content_type, location, cookies = [a if a != "-" else "" for a in line.split(seperator)]
         self.ts = float(ts)
         self.id_orig_h = id_orig_h
         self.id_resp_h = id_resp_h
@@ -133,8 +133,10 @@ class BroRecord(object):
         self.content_type = content_type
         self.location = location
         self.cookies = cookies
+        self.line = line
 
-
+    def __str__(self):
+        return self.line
 
 class BroRecordChain(object):
     """Keeps track of a chain of BroRecord items, based on ip, referrer and
