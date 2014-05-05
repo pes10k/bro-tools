@@ -27,7 +27,6 @@ def _find_chain_helper(args):
     h = open(dest, 'r')
     intersting_chains = []
     for chain in brocollections.bro_chains(h, time=time):
-
         if chain.len() < min_length:
             continue
         intersting_chains.append(chain)

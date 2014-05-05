@@ -4,14 +4,29 @@ across multiple files_to_combine"""
 import gzip
 import os
 
-def group_records(files, workpath="/tmp"):
+def group_records(files):
+    """Takes a list of file paths, each referring to a bro record. Its expected
+    that these records are broken up, in some format like <filename>.[0-4].gz.
+    This function groups these files names so that all the files referring to
+    the same filename are grouped.  Given the following filenames:
+        [log.1.gz, log.2.gz, log.3.gz]
+    this returns a list with the following tuples:
+        [([log.1.gz, log.2.gz, log.3.gz], "log")]
+
+    Args:
+        files    -- a list of bro log file paths
+    Return:
+        A list of zero or more two-item tuples, with each tuples first item
+        being the root name of the files being merged, and the second item
+        being a list of the files that should be merged into this file.
+    """
     files_to_combine = {}
     for f in files:
         combined_file_name = f[:-5]
         if combined_file_name not in files_to_combine:
             files_to_combine[combined_file_name] = []
         files_to_combine[combined_file_name].append(f)
-    return [(v, os.path.join(workpath, os.path.basename(k))) for k, v in files_to_combine.items()]
+    return [(v, os.path.basename(k)) for k, v in files_to_combine.items()]
 
 def merge(files, dest_path):
     # If the file has already been generated, don't generate it again
@@ -69,13 +84,13 @@ if __name__ == "__main__":
     input_files = sys.stdin.read().strip().split("\n")
     info("Received {0} files to merge".format(len(input_files)))
 
-    grouped_files = group_records(input_files, args.dest)
+    grouped_files = group_records(input_files)
     info("Will merge files as follows:\n")
 
     for orig_files, dest_file in grouped_files:
-        info(" - {0} will contain:".format(dest_file))
+        info(" - {0} will contain:".format(os.path.join(args.dest, dest_file)))
         for orig_file in orig_files:
             info("\t - {0}".format(orig_file))
 
         if not args.test:
-            merge(orig_files, dest_file)
+            merge(orig_files, os.path.join(args.dest, dest_file))

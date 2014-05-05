@@ -3,6 +3,7 @@ import brotools.reports
 import argparse
 import logging
 import sys
+import os
 
 try:
     import cPickle as pickle
@@ -43,7 +44,7 @@ elif args.verbose:
 else:
     logger.setLevel(logging.ERROR)
 
-paths = brotools.merge.group_records(input_files, workpath=args.workpath)
+paths = [(k, os.path.join(args.workpath, v)) for k, v in brotools.merge.group_records(input_files, workpath=args.workpath)]
 relevant_chains = brotools.reports.find_chains(paths, workers=args.workers, time=args.time, min_length=args.steps, lite=args.lite)
 
 if args.pickle:
