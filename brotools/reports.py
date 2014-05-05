@@ -30,11 +30,9 @@ def _find_chain_helper(args):
 
         if chain.len() < min_length:
             continue
-        #if not any(["amazon.com" in r.host for r in chain.records]):
-        #    continue
         intersting_chains.append(chain)
 
-    log.info("{0}: Found {1} amazon including chains".format(dest, len(intersting_chains)))
+    log.info("{0}: Found {1} chains".format(dest, len(intersting_chains)))
     h.close()
     if lite:
         os.remove(dest)
