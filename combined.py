@@ -1,6 +1,10 @@
+"""Pulls out all HTTP redirect traces where at least two steps in the chain
+are in common.  The report will include all records where at least two different
+traces have at least two different steps in their redirection path in common."""
+
 import sys
 import argparse
-import brotools.collections
+import brotools.reports
 import logging
 
 parser = argparse.ArgumentParser(description='Read bro data and look for redirecting domains.')
@@ -35,7 +39,9 @@ else:
     logging.setLevel(logging.ERROR)
 
 logger.info("Finished parsing records, generating master report")
-referrers = bro.find_referrers(input_files, args.workers, veryverbose=args.veryverbose, verbose=args.verbose)
+referrers = brotools.reports.find_referrers(input_files, args.workers,
+                                            veryverbose=args.veryverbose,
+                                            verbose=args.verbose)
 
 # Now we need to merge all the referrer records together into a final report
 # and print it out to disk at the given location

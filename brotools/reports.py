@@ -59,7 +59,17 @@ def find_referrers(paths, workers=8, time=.5, chain_length=3, domains=True, verb
     referrers = p.map(_find_helper, ((p, time, chain_length, domains, num_jobs) for p in paths))
     return referrers
 
+
 def main_domain(domain):
+    """Returns the domain just below the TLD.  F example.org, would return
+    'example'
+
+    Args:
+        domain -- A fully qualified domain name, such as www.example.org
+
+    Returns:
+        A string, containing just the domain just below the top level domain.
+    """
     return ".".join(domain.split(".")[-2:])
 
 
