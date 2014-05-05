@@ -1,5 +1,5 @@
 import brotools.merge
-from brotools.reports import find_chains
+import brotools.reports
 import argparse
 import logging
 import sys
@@ -9,7 +9,7 @@ try:
 except ImportError:
     import pickle
 
-parser = argparse.ArgumentParser(description='Read bro data and look for redirecting chains that lead to amazon.')
+parser = argparse.ArgumentParser(description='Read bro data and look for redirecting chains.')
 parser.add_argument('--workers', '-w', default=8, type=int,
                     help="Number of worker processe to use for processing bro data")
 parser.add_argument('--workpath', '-p', default="/tmp", type=str,
@@ -44,7 +44,7 @@ else:
     logger.setLevel(logging.ERROR)
 
 paths = brotools.merge.group_records(input_files, workpath=args.workpath)
-relevant_chains = find_chains(paths, workers=args.workers, time=args.time, min_length=args.steps, lite=args.lite)
+relevant_chains = brotools.reports.find_chains(paths, workers=args.workers, time=args.time, min_length=args.steps, lite=args.lite)
 
 if args.pickle:
     with open(args.pickle, 'w') as h:
