@@ -18,7 +18,7 @@ parser.add_argument('--output', '-o', default=None,
 args = parser.parse_args()
 
 input_handle = open(args.input, 'r') if args.input else sys.stdin
-output_handle = open(args.output, 'w') if args.output else sys.STDOUT
+output_handle = open(args.output, 'w') if args.output else sys.stdout
 
 for chain in pickle.load(input_handle):
     output_handle.write(chain.url())
