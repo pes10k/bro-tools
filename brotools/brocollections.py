@@ -120,7 +120,9 @@ def bro_records(handle):
 class BroRecord(object):
 
     def __init__(self, line, seperator="\t"):
-        ts, id_orig_h, id_resp_h, method, host, uri, referrer, user_agent, status_code, content_type, location, cookies = [a if a != "-" else "" for a in line.split(seperator)]
+        values = [a if a != "-" else "" for a in line.split(seperator)]
+
+        ts, id_orig_h, id_resp_h, method, host, uri, referrer, user_agent, status_code, content_type, location = values[:10]
         self.ts = float(ts)
         self.id_orig_h = id_orig_h
         self.id_resp_h = id_resp_h
@@ -132,7 +134,10 @@ class BroRecord(object):
         self.status_code = status_code
         self.content_type = content_type
         self.location = location
-        self.cookies = cookies
+        try:
+            self.cookies = values[11]
+        except IndexError:
+            self.cookies = None
         self.line = line
 
     def __str__(self):
