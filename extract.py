@@ -44,7 +44,7 @@ elif args.verbose:
 else:
     logger.setLevel(logging.ERROR)
 
-paths = [(k, os.path.join(args.workpath, v)) for k, v in brotools.merge.group_records(input_files, workpath=args.workpath)]
+paths = [(k, os.path.join(args.workpath, v)) for k, v in brotools.merge.group_records(input_files)]
 relevant_chains = brotools.reports.find_chains(paths, workers=args.workers, time=args.time, min_length=args.steps, lite=args.lite)
 
 if args.pickle:
