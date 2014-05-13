@@ -161,6 +161,21 @@ class BroRecordChain(object):
     def __iter__(self):
         return iter(self.records)
 
+    def domains(self):
+        """Returns a list of the distinct domains represented in the current
+        redirection chain.  Each domain will only appear in the list once,
+        in the order they appeared in the redirection chain (earliest to
+        latest).
+
+        Return:
+            A list of zero or more unique domains in the redirection chain
+        """
+        hosts = []
+        for r in self:
+            if r.host not in hosts:
+                hosts.append(r.host)
+        return hosts
+
     def head(self):
         return self.records[0]
 
