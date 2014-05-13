@@ -121,19 +121,17 @@ class BroRecord(object):
 
     def __init__(self, line, seperator="\t"):
         values = [a if a != "-" else "" for a in line.split(seperator)]
-
-        ts, id_orig_h, id_resp_h, method, host, uri, referrer, user_agent, status_code, content_type, location = values[:10]
-        self.ts = float(ts)
-        self.id_orig_h = id_orig_h
-        self.id_resp_h = id_resp_h
-        self.method = method
-        self.host = host
-        self.uri = uri
-        self.referrer = _strip_protocol(referrer)
-        self.user_agent = user_agent
-        self.status_code = status_code
-        self.content_type = content_type
-        self.location = location
+        self.ts = float(values[0])
+        self.id_orig_h = values[1]
+        self.id_resp_h = values[2]
+        self.method = values[3]
+        self.host = values[4]
+        self.uri = values[5]
+        self.referrer = _strip_protocol(values[6])
+        self.user_agent = values[7]
+        self.status_code = values[8]
+        self.content_type = values[9]
+        self.location = values[10]
         try:
             self.cookies = values[11]
         except IndexError:
