@@ -112,7 +112,7 @@ def bro_records(handle):
             except Exception, e:
                 print "Bad line entry"
                 print "File: {0}".format(handle.name)
-                print "Values: {0}".format(row)
+                print "Values: {0}".format(row.split(seperator))
                 raise e
             yield r
 
