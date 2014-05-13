@@ -138,6 +138,9 @@ class BroRecord(object):
     def __str__(self):
         return self.line
 
+    def url(self):
+        return u"{host}{uri}".format(host=self.host, uri=self.uri)
+
 class BroRecordChain(object):
     """Keeps track of a chain of BroRecord items, based on ip, referrer and
     timestamp"""
