@@ -37,18 +37,22 @@ def merge(files, dest_path):
     headers = ""
     lines = []
     for compressed_file in files:
-        with gzip.open(compressed_file, 'r') as source_h:
-            read_headers_from_this_file = False
-            for line in source_h:
-                if line[0] == "#":
-                    if not read_headers_from_any_file:
-                        headers += line
-                        read_headers_from_this_file = True
-                else:
-                    lines.append(line)
-            if read_headers_from_this_file:
-                read_headers_from_any_file = True
-
+        lines_in_file = []
+        try:
+            with gzip.open(compressed_file, 'r') as source_h:
+                read_headers_from_this_file = False
+                for line in source_h:
+                    if line[0] == "#":
+                        if not read_headers_from_any_file:
+                            headers += line
+                            read_headers_from_this_file = True
+                    else:
+                        lines_in_file.append(line)
+                if read_headers_from_this_file:
+                    read_headers_from_any_file = True
+        except IOError:
+            lines_in_file = []
+        lines += lines_in_file
     if len(headers) == 0 or len(lines) == 0:
         return False
 
