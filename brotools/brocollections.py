@@ -36,7 +36,16 @@ def bro_chains(handle, time=.5, record_filter=None):
         if short_content_type not in ('text/plai', 'text/html') or r.status_code == "301":
             continue
 
-        latest_record_time = max(latest_record_time, r.ts)
+        # A growing timestamp of the most recent record found yet.  Since
+        # records are required to be ordered (handled elsewhere), we know
+        # that the current record being examined will always be the most recent
+        # one / latest one
+        latest_record_time = r.ts
+
+        # Since we don't allow a step greater than the passed time parameter
+        # between any two records in a chain, we know we're done considering
+        # any chains who have their most recent record being more than `time`
+        # ago
         early_record_cutoff = latest_record_time - time
 
         # First see if there are any chains that this record can be attached
@@ -72,7 +81,7 @@ def bro_chains(handle, time=.5, record_filter=None):
             chains.append(altered_chain)
 
         # Now, return any completed chains that have been found, which
-        # just means any any chains that have their last element more than
+        # just means any chains that have their last element more than
         # the given cut off time ago.
         if first_good_chain_index is None:
             for completed_c in chains:

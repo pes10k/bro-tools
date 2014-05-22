@@ -24,15 +24,19 @@ def _find_chain_helper(args):
 
     log.info("{0}: Begining parsing".format(dest))
 
-    h = open(dest, 'r')
-    intersting_chains = []
-    for chain in brocollections.bro_chains(h, time=time):
-        if chain.len() < min_length:
-            continue
-        intersting_chains.append(chain)
+    with open(dest, 'r') as h:
+        intersting_chains = []
+        try:
+            for chain in brocollections.bro_chains(h, time=time):
+                if chain.len() < min_length:
+                    continue
+                intersting_chains.append(chain)
+        except ValueError:
+            log.error("Ignoring file {0} because of formatting errors in the log".format(dest))
+            return []
 
     log.info("{0}: Found {1} chains".format(dest, len(intersting_chains)))
-    h.close()
+
     if lite:
         os.remove(dest)
     return intersting_chains
