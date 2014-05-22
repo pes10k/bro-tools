@@ -31,7 +31,7 @@ def _find_chain_helper(args):
                 if chain.len() < min_length:
                     continue
                 intersting_chains.append(chain)
-        except ValueError:
+        except:
             log.error("Ignoring file {0} because of formatting errors in the log".format(dest))
             return []
 
