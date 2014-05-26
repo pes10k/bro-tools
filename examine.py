@@ -11,10 +11,13 @@ parser = argparse.ArgumentParser(description="Parse a pickled set of brolog " +
 parser.add_argument('--input', '-i',
                     help="Path to a pickled collection of chains of brolog " +
                     "records to parse and read.")
+parser.add_argument("--output", "-o",
+                    help="Path to write a report of found domains ")
 args = parser.parse_args()
 
 with open(args.input, 'r') as h:
     for chains_in_file in pickle.load(h):
         for chain in chains_in_file:
-            print chain
-            sys.exit()
+            last_record = chain.tail()
+            if "amazon.com" in last_record.host:
+                print chain
