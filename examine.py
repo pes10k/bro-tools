@@ -1,3 +1,4 @@
+import sys
 import argparse
 
 try:
@@ -24,7 +25,8 @@ with open(args.input, 'r') as h:
                 if target_domain in record.host and "tag=" in record.uri:
                     should_print_chain = True
                     break
-            print chain
+            if should_print_chain:
+                print chain
             # first_record = chain.head()
             # last_record = chain.tail()
             # if target_domain in first_record.host:
