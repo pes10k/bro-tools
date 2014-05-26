@@ -21,7 +21,7 @@ with open(args.input, 'r') as h:
         for chain in chains_in_file:
             should_print_chain = False
             for record in chain:
-                if target_domain in chain.host and "tag=" in chain.uri:
+                if target_domain in record.host and "tag=" in record.uri:
                     should_print_chain = True
                     break
             print chain
