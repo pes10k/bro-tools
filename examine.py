@@ -14,6 +14,7 @@ parser.add_argument('--input', '-i',
 args = parser.parse_args()
 
 with open(args.input, 'r') as h:
-    for row in pickle.load(h):
-        print row
-        sys.exit()
+    for chains_in_file in pickle.load(h):
+        for chain in chains_in_file:
+            print chain
+            sys.exit()
