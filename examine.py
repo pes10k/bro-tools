@@ -15,9 +15,20 @@ parser.add_argument("--output", "-o",
                     help="Path to write a report of found domains ")
 args = parser.parse_args()
 
+target_domain = "amazon.com"
+
 with open(args.input, 'r') as h:
     for chains_in_file in pickle.load(h):
         for chain in chains_in_file:
+            first_record = chain.head()
             last_record = chain.tail()
-            if "amazon.com" in last_record.host:
-                print chain
+            if target_domain in first_record.host:
+                continue
+
+            if "tag=" not in last_record.uri:
+                continue
+
+            if target_domain not in last_record.host:
+                continue
+
+            print chain
