@@ -13,6 +13,7 @@ parser.add_argument('--input', '-i',
                     "records to parse and read.")
 args = parser.parse_args()
 
-for row in pickle.load(args.input):
-    print row
-    sys.exit()
+with open(args.input, 'r') as h:
+    for row in pickle.load(h):
+        print row
+        sys.exit()
