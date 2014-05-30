@@ -1,23 +1,29 @@
 """Misc functions mostly useful for one off multiprocessing tasks"""
 
 import os
-import brocollections
 import merge
 import gzip
 import logging
 import multiprocessing
 import sys
+from .graphs import graphs
+from .records import BroRecordWindow, bro_records
 
 sys.modules[__name__].counter = multiprocessing.Value('i', 0)
 
 # Helpers for extracting chains from bro data
 
 
-def _find_chain_helper(args):
+def _find_graphs_helper(args):
+
+    def _filter(r):
+        short_content_type = r.content_type[:9]
+        return (short_content_type in ('text/plai', 'text/html') or
+                r.status_code == "301")
+
     merge_rules, time, min_length, lite = args
     files, dest = merge_rules
     log = logging.getLogger("brorecords")
-
     log.info("Merging {0} files into {1}".format(len(files), dest))
     if not merge.merge(files, dest):
         return []
@@ -25,27 +31,29 @@ def _find_chain_helper(args):
     log.info("{0}: Begining parsing".format(dest))
 
     with open(dest, 'r') as h:
-        intersting_chains = []
+        intersting_graphs = []
         try:
-            for chain in brocollections.bro_chains(h, time=time):
-                if chain.len() < min_length:
+            for g in graphs(h, time=time, record_filter=_filter):
+                if len(g) < min_length:
                     continue
-                intersting_chains.append(chain)
+                intersting_graphs.append(g)
         except:
-            log.error("Ignoring file {0} because of formatting errors in the log".format(dest))
+            err = "Ignoring {0}: formatting errors in the log".format(dest)
+            log.error(err)
             return []
 
-    log.info("{0}: Found {1} chains".format(dest, len(intersting_chains)))
+    log.info("{0}: Found {1} graphs".format(dest, len(intersting_graphs)))
 
     if lite:
         os.remove(dest)
-    return intersting_chains
+    return intersting_graphs
 
 
-def find_chains(file_sets, workers=8, time=.5, min_length=3, lite=True):
+def find_graphs(file_sets, workers=8, time=.5, min_length=3, lite=True):
     p = multiprocessing.Pool(workers)
-    chains = p.map(_find_chain_helper, ((f, time, min_length, lite) for f in file_sets))
-    return chains
+    work_sets = ((f, time, min_length, lite) for f in file_sets)
+    graphs = p.map(_find_graphs_helper, work_sets)
+    return graphs
 
 # Helpers for extracting chaing referrers from bro data
 
@@ -102,10 +110,10 @@ def referrer_chains(path, time=.5, chain_length=3, domains=True, total=None):
     log = logging.getLogger("brorecords")
     log.info("{0}: Begining parsing".format(job_string))
 
-    collection = brocollections.BroRecordWindow(time=time, steps=chain_length)
+    collection = BroRecordWindow(time=time, steps=chain_length)
     redirects = {}
 
-    for record in brocollections.bro_records(gzip.open(path, 'r')):
+    for record in bro_records(gzip.open(path, 'r')):
 
         # filter out some types of records that we don't care about at all.
         # Below just grabs out the first 9 letters of the mime type, which is

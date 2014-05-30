@@ -1,12 +1,12 @@
-"""Classes and iterators useful for processing collections of bro data"""
+"""Functions and classes that attempt to represent and order bro records
+into linear chains, with a single record leading to the next.  Records
+are tied together through IP address, data and referrer header values.
+Note that for most cases this is probably not very useful, since browsing
+patterns make requests better represented by DAGs (ie one resource
+requesting multiple others)."""
 
-def _strip_protocol(url):
-    if url[0:7] == "http://":
-        url = url[7:]
-    elif url[0:8] == "https://":
-        url = url[8:]
-    return url
-
+from urlparse import urlparse
+from .records import bro_records
 
 def bro_chains(handle, time=.5, record_filter=None):
     """A generator function that yields completed BroRecordChain objects.
@@ -98,73 +98,36 @@ def bro_chains(handle, time=.5, record_filter=None):
     for remaining_chain in chains:
         yield remaining_chain
 
-
-def bro_records(handle):
-    """A generator function for iterating over a a collection of bro records.
-    The iterator returns BroRecord objects (named tuples) for each record
-    in the given file
-
-    Args:
-        handle -- a file handle like object to read lines of bro data off of.
-
-    Return:
-        An iterator returning BroRecord objects
-    """
-    seperator = None
-    for raw_row in handle:
-        row = raw_row[:-1] # Strip off line end
-        if not seperator and row[0:10] == "#separator":
-            seperator = row[11:].decode('unicode_escape')
-        elif row[0] != "#":
-            try:
-                r = BroRecord(row, seperator)
-            except Exception, e:
-                print "Bad line entry"
-                print "File: {0}".format(handle.name)
-                print "Values: {0}".format(row.split(seperator))
-                raise e
-            yield r
-
-
-class BroRecord(object):
-
-    def __init__(self, line, seperator="\t"):
-        values = [a if a != "-" else "" for a in line.split(seperator)]
-        self.ts = float(values[0])
-        self.id_orig_h = values[1]
-        self.id_resp_h = values[2]
-        self.method = values[3]
-        self.host = values[4]
-        self.uri = values[5]
-        self.referrer = _strip_protocol(values[6])
-        self.user_agent = values[7]
-        self.status_code = values[8]
-        self.content_type = values[9]
-        self.location = values[10]
-        try:
-            self.cookies = values[11]
-        except IndexError:
-            self.cookies = None
-        self.line = line
-
-    def __str__(self):
-        return self.line
-
-    def url(self):
-        return u"{host}{uri}".format(host=self.host, uri=self.uri)
-
 class BroRecordChain(object):
     """Keeps track of a chain of BroRecord items, based on ip, referrer and
     timestamp"""
 
-    def __init__(self, record):
-        self.ip = record.id_orig_h
-        self.tail_url = record.host + record.uri
-        self.records = [record]
+    def __init__(self, r):
+        url = r.host + r.uri
+        self.ip = r.id_orig_h
+        self.tail_url = url
+
+        # We want to treat the referrer of the first record in the
+        # chain if we can capture it.  Otherwise, if the first record
+        # has no referrer, we star the chain with the url of the
+        # first requested page
+        if r.referrer:
+            self._pre_url = r.referrer
+            parts = urlparse(r.referrer)
+            self._pre_host = parts.netloc
+        else:
+            self._pre_url = None
+            self._pre_host = None
+
+        self.records = [r]
 
     def __str__(self):
         output = "ip: {0}\n".format(self.ip)
         count = 0
+        if self._pre_url:
+            output += self._pre_url + "\n"
+            count += 1
+
         for r in self.records:
             output += ("    " * count) + (" -> " if count else "") + r.host + r.uri + " ({0})\n".format(r.ts)
             count += 1
@@ -188,14 +151,20 @@ class BroRecordChain(object):
                 hosts.append(r.host)
         return hosts
 
-    def head(self):
-        return self.records[0]
+    def head_host(self):
+        if self._pre_url:
+            return self._pre_host
+        else:
+            return self.records[0].host
 
     def tail(self):
         return self.records[-1]
 
     def len(self):
-        return len(self.records)
+        num_records = len(self.records)
+        if self._pre_url:
+            num_records += 1
+        return num_records
 
     def add_record(self, record, record_filter=None, ignore_self_refs=True):
         """Attempts to add a given BroRecord to the current referrer chain.
@@ -228,7 +197,7 @@ class BroRecordChain(object):
         if record.ts < tail_record.ts:
             return False
 
-        referrer_url = _strip_protocol(record.referrer)
+        referrer_url = record.referrer
         if ignore_self_refs and self.tail_url == record.host + record.uri:
             return False
 
@@ -241,65 +210,3 @@ class BroRecordChain(object):
         self.tail_url = record.host + record.uri
         self.records.append(record)
         return True
-
-
-class BroRecordWindow(object):
-    """Keep track of a sliding window of BroRecord objects, and don't keep more
-    than a given amount (defined by a time range) in memory at a time"""
-
-    def __init__(self, time=.5):
-        # A collection of BroRecords that all occurred less than the given
-        # amount of time before the most recent one (in order oldest to newest)
-        self._collection = []
-
-        # Window size of bro records to keep in memory
-        self._time = time
-
-    def size(self):
-        return len(self._collection)
-
-    def prune(self):
-        """Remove all BroRecords that occured more than self.time before the
-        most recent BroRecord in the collection.
-
-        Return:
-            An int count of the number of objects removed from the collection
-        """
-
-        # Simple case that if we have no stored BroRecords, there can't be
-        # any to remove
-        if len(self._collection) == 0:
-            return 0
-
-        removed_count = 0
-        most_recent_time = self._collection[-1].ts
-        window_low_bound = self._time
-
-        while len(self._collection) > 1 and self._collection[0].ts + window_low_bound < most_recent_time:
-            self._collection = self._collection[1:]
-            removed_count += 1
-
-        return removed_count
-
-    def append(self, record):
-        """Adds a BroRecord to the current collection of bro records, and then
-        cleans to watched collection to remove old records (records before the)
-        the sliding time window.
-
-        Args:
-            record -- A BroRecord, created by the bro_records function
-
-        Return:
-            The number of records that were removed from the window during garbage collection.
-        """
-        self._collection.append(record)
-
-        # Most of the time the given record will be later than the last
-        # record added (since we keep the collection sorted).  In this common
-        # case, just add the new record to the end of the collection.
-        # Otherwise, add the record and sort the whole thing
-        self._collection.append(record)
-        if record.ts > self._collection[-2].ts:
-            self._collection.sort(key=lambda x: x.ts)
-
-        return self.prune()
