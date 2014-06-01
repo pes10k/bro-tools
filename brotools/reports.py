@@ -9,10 +9,14 @@ import sys
 from .graphs import graphs
 from .records import BroRecordWindow, bro_records
 
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
 sys.modules[__name__].counter = multiprocessing.Value('i', 0)
 
 # Helpers for extracting chains from bro data
-
 
 def _find_graphs_helper(args):
 
@@ -24,7 +28,18 @@ def _find_graphs_helper(args):
     merge_rules, time, min_length, lite = args
     files, dest = merge_rules
     log = logging.getLogger("brorecords")
+
+    # First check and see if there is already a pickled version of
+    # extracted graphs from this given work set.  If so, we can quick out
+    # here.  For simplicty sake, we just append .pickle to the name of the
+    # path for the combined bro records
+    picked_path = "{0}.pickle".format(dest)
+    if os.path.isfile(picked_path):
+        log.info("Found picked records already at {0}".format(picked_path))
+        return picked_path
+
     log.info("Merging {0} files into {1}".format(len(files), dest))
+
     if not merge.merge(files, dest):
         return []
 
@@ -46,7 +61,12 @@ def _find_graphs_helper(args):
 
     if lite:
         os.remove(dest)
-    return intersting_graphs
+
+    # Now write the resulting collection of graphs to disk as a pickled
+    # collection.
+    with open(picked_path, 'w') as ph:
+        pickle.dump(intersting_graphs, ph)
+    return picked_path
 
 
 def find_graphs(file_sets, workers=8, time=.5, min_length=3, lite=True):

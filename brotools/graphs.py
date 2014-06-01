@@ -29,11 +29,7 @@ def graphs(handle, time=.5, record_filter=None):
         An iterator returns BroRecordGraph objects
     """
     _graphs = []
-    line_num = 0
     for r in bro_records(handle, record_filter=record_filter):
-        line_num += 1
-        if not line_num % 1000:
-            print line_num
         found_graph_for_record = False
         for g in _graphs:
 
