@@ -35,7 +35,7 @@ def debug(msg):
 AMZ_COOKIE_URL = re.compile(r'&?tag=')
 
 input_files_raw = args.inputs if args.inputs else sys.stdin.read().split("\n")
-input_files = (f for f in input_files_raw if len(f.strip()) > 0)
+input_files = [f for f in input_files_raw if len(f.strip()) > 0]
 
 # First step is to build a collection of all nodes in all collections
 # that point to hosts that redirect to amazon cookie stuffing domains.
