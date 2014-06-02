@@ -47,9 +47,11 @@ for pickle_path in input_files:
     with open(pickle_path, 'r') as h:
         debug(" * Unpickled {0}".format(pickle_path))
         graphs = pickle.load(h)
+        debug(" * {0} graphs found".format(len(graphs)))
         for g in graphs:
             for n in g.leaves():
                 if AMZ_COOKIE_URL.match(n.url()):
+                    debug(" * * Found possible url: {0}".format(n.url()))
                     chain = g.chain_from_node(n)
                     output_h.write(str(chain))
                     output_h.write("\n-------\n\n")
