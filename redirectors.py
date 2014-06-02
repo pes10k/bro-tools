@@ -2,7 +2,6 @@
 amazon-cookie-setting domains, and sometimes point elsewhere.  Idea is that
 these redirecting domains may be pay-for-play folks."""
 
-import os
 import urlparse
 import argparse
 import re
@@ -15,7 +14,7 @@ except ImportError:
 
 parser = argparse.ArgumentParser(description=sys.modules[__name__].__doc__)
 parser.add_argument('--inputs', '-i', nargs='*',
-                    help="A list of gzip files to parse BroRecordGraph data " +
+                    help="A list of pickeled BroRecordGraph records to read " +
                     "from. If not provided, reads a list of files from STDIN.")
 parser.add_argument('--output', '-o', default=None,
                     help="File to write general report to. Defaults to STDOUT.")
@@ -28,7 +27,7 @@ parser.add_argument('--cache', '-c', default="/tmp/bro-redirectors",
                     "could write to /tmp/store.data, /tmp/store.pickle, etc.")
 args = parser.parse_args()
 
-is_debug = args.debug
+is_debug = args.verbose
 def debug(msg):
     if is_debug:
         print msg
