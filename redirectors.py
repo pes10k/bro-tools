@@ -129,11 +129,12 @@ except IOError:
 
 
 output_h = open(args.output, 'w') if args.output else sys.stdout
-for domain, chains in redirection_chains.items():
-    if len(chains) == 1:
+for source_domain, dest_domains in redirection_chains.items():
+    if len(dest_domains) == 1:
         continue
-    output_h.write("{0}\n---------\n".format(domain))
-    for c in chains:
-        output_h.write(str(c))
-        output_h.write("\n")
+    output_h.write("{0}\n###n".format(source_domain))
+    for dest_domain, chains in dest_domains.items():
+        for c in chains:
+            output_h.write(str(c))
+            output_h.write("\n")
     output_h.write("\n\n")
