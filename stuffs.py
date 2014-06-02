@@ -15,8 +15,6 @@ try:
 except ImportError:
     import pickle
 
-AMZ_COOKIE_URL = re.compile(r'(?:&|\?)tag=')
-
 parser = argparse.ArgumentParser(description="Find possible cookie stuffing " +
                                  "instances in a pickled collection of " +
                                  "BroRecordGraph objects.")
@@ -28,13 +26,26 @@ parser.add_argument('--regex', default=None,
                     "looking for possible cookie stuffing instances.")
 parser.add_argument('--output', '-o', default=None,
                     help="File to write general report to. Defaults to STDOUT.")
+parser.add_argument('--verbose', '-v', action="store_true",
+                    help="If provided, prints out status information to " +
+                    "STDOUT.")
 args = parser.parse_args()
+
+verbose = args.verbose
+
+def debug(msg):
+    if verbose:
+        print msg
+
+AMZ_COOKIE_URL = re.compile(args.regex or r'(?:&|\?)tag=')
 
 input_files = args.inputs if args.inputs else sys.stdin.read().split("\n")
 output_h = open(args.output, 'w') if args.output else sys.stdout
 
 for pickle_path in input_files:
+    debug("Considering {0}".format(pickle_path))
     with open(pickle_path, 'r') as h:
+        debug(" * Unpickled {0}".format(pickle_path))
         graphs = pickle.load(h)
         for g in graphs:
             for n in g.leaves():
