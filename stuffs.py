@@ -6,6 +6,7 @@
       html documents only)
 """
 
+import urlparse
 import argparse
 import re
 import sys
@@ -37,7 +38,7 @@ def debug(msg):
     if verbose:
         print msg
 
-AMZ_COOKIE_URL = re.compile(args.regex or r'amazon\.com.*(?:&|\?)tag=')
+AMZ_COOKIE_URL = re.compile(r'&?tag=')
 
 input_files = args.inputs if args.inputs else sys.stdin.read().split("\n")
 output_h = open(args.output, 'w') if args.output else sys.stdout
@@ -53,7 +54,8 @@ for pickle_path in input_files:
             debug(" * {0} graphs found".format(len(graphs)))
             for g in graphs:
                 for n in g.leaves():
-                    if AMZ_COOKIE_URL.search(n.url()):
+                    q = urlparse.urlparse(n.url()).query
+                    if "amazon.com" in n.host and AMZ_COOKIE_URL.search(q):
                         debug(" * * Found possible url: {0}".format(n.url()))
                         chain = g.chain_from_node(n)
                         output_h.write(str(chain))

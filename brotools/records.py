@@ -40,8 +40,8 @@ def bro_records(handle, record_filter=None):
                 print "Values: {0}".format(row.split(seperator))
                 raise e
 
-            # if record_filter and not record_filter(r):
-            #     continue
+            if record_filter and not record_filter(r):
+                continue
             yield r
 
 
