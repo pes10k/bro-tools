@@ -204,14 +204,13 @@ class BroRecordGraph(object):
         if not g.has_node(br):
             return None
 
-        def _max_depth_from_child(node, count=0):
+        def _max_depth(node, count=0):
             children = g.successors(node)
             if len(children) == 0:
                 return count
-            for c in children:
-                return _max_depth_from_child(c, count=(count + 1))
+            return max([_max_depth(c, count=(count + 1)) for c in children])
 
-        return _max_depth_from_child(br)
+        return _max_depth(br)
 
 
     def children_of_node(self, br):
