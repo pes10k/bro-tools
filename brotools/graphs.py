@@ -132,13 +132,22 @@ class BroRecordGraph(object):
         return True
 
     def nodes(self):
-        """Returns an array of BroRecords, from oldest to newest, that are in
+        """Returns an list of BroRecords, from oldest to newest, that are in
         the graph.
 
         Return:
             A list of zero or more BroRecords
         """
         return self._nodes_sorted
+
+    def leaves(self):
+        """Returns a iterator of BroRecords, each of which are leaves in t
+        graph (meaining record nodes that are there referrer for no other node).
+
+        Returns:
+            An iterator of BroRecord nodes"""
+        g = self._g
+        return (n for n in g.nodes_iter() if not g.successors(n))
 
     def graph(self):
         """Returns the underlying graph representation for the BroRecords

@@ -5,11 +5,6 @@ import logging
 import sys
 import os
 
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-
 parser = argparse.ArgumentParser(description='Read bro data and look for redirecting graphs.')
 parser.add_argument('--workers', '-w', default=8, type=int,
                     help="Number of worker processe to use for processing bro data")
