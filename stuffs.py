@@ -37,7 +37,7 @@ def debug(msg):
     if verbose:
         print msg
 
-AMZ_COOKIE_URL = re.compile(args.regex or r'www\.amazon\.com.*(?:&|\?)tag=')
+AMZ_COOKIE_URL = re.compile(args.regex or r'amazon\.com.*(?:&|\?)tag=')
 
 input_files = args.inputs if args.inputs else sys.stdin.read().split("\n")
 output_h = open(args.output, 'w') if args.output else sys.stdout
