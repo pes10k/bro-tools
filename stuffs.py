@@ -37,7 +37,7 @@ def debug(msg):
     if verbose:
         print msg
 
-AMZ_COOKIE_URL = re.compile(args.regex or r'(?:&|\?)tag=')
+AMZ_COOKIE_URL = re.compile(args.regex or r'amazon\.com.*(?:&|\?)tag=')
 
 input_files = args.inputs if args.inputs else sys.stdin.read().split("\n")
 output_h = open(args.output, 'w') if args.output else sys.stdout
@@ -50,7 +50,7 @@ for pickle_path in input_files:
         debug(" * {0} graphs found".format(len(graphs)))
         for g in graphs:
             for n in g.leaves():
-                if AMZ_COOKIE_URL.match(n.url()):
+                if AMZ_COOKIE_URL.search(n.url()):
                     debug(" * * Found possible url: {0}".format(n.url()))
                     chain = g.chain_from_node(n)
                     output_h.write(str(chain))
