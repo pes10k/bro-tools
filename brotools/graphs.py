@@ -149,6 +149,36 @@ class BroRecordGraph(object):
         g = self._g
         return (n for n in g.nodes_iter() if not g.successors(n))
 
+    def node_domains(self):
+        """Returns a dict representing a mapping from domain to a list of all
+        nodes in the collection that are requests against that domain.
+
+        Return:
+            A dict with keys being domains (as strings), and values being
+            lists of one or more BroRecord objects
+        """
+        mapping = {}
+        for n in self._g.nodes_iter:
+            try:
+                mapping[n.host].append(n)
+            except KeyError:
+                mapping[n.host] = [n]
+        return mapping
+
+    def nodes_for_domain(self, domain):
+        """Returns a list of nodes in the collection where the requested host
+        matches the provided domain.
+
+        Args:
+            domain -- a valid domain, such as example.org
+
+        Return:
+            A list of zero or more nodes in the current collection that
+            represent requests to the given domain
+        """
+        g = self._g
+        return [n for n in g.nodes_iter() if n.host == domain]
+
     def graph(self):
         """Returns the underlying graph representation for the BroRecords
 
@@ -156,6 +186,27 @@ class BroRecordGraph(object):
             The underlying graph representation, a networkx.DiGraph object
         """
         return self._g
+
+    def parent_of_node(self, br):
+        """Returns a BroRecord object that is the referrer of the given record
+        in the graph, if available.
+
+        Args:
+            br -- a BroRecord
+
+        Return:
+            Either a BroRecord if the passed BroRecord is in the graph and
+            has a parent, or None if the given BroRecord either isn't in
+            the graph or has no parent.
+        """
+        g = self._g
+        if not g.has_node(br):
+            return None
+        parents = g.predecessors(br)
+        if len(parents) != 1:
+            return None
+        else:
+            return parents[0]
 
     def chain_from_node(self, br):
         """Returns a BroRecordChain object, describing the chain of requests

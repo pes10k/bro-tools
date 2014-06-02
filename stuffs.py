@@ -43,6 +43,8 @@ input_files = args.inputs if args.inputs else sys.stdin.read().split("\n")
 output_h = open(args.output, 'w') if args.output else sys.stdout
 
 for pickle_path in input_files:
+    if not pickle_path:
+        continue
     debug("Considering {0}".format(pickle_path))
     try:
         with open(pickle_path, 'r') as h:
