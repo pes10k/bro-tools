@@ -110,12 +110,18 @@ except IOError:
                         if d not in domain_mapping or "amazon.com" in d:
                             continue
                         for n in domain_mapping[d]:
-                            debug(" * * {0} appears to redirect to be suspect".format(n.host))
                             if n.host not in redirection_chains:
                                 redirection_chains[n.host] = {}
 
                             children = g.children_of_node(n)
                             for cn in children:
+                                # No point in including posts redirecting to
+                                # the same domain
+                                if cn.host == n.host:
+                                    continue
+
+                                debug(" * * {0} appears to be suspect".format(
+                                    n.host))
                                 if cn.host not in redirection_chains[n.host]:
                                     redirection_chains[n.host][cn.host] = []
                                 chain = g.chain_from_node(cn)
