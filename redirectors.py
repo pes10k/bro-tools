@@ -90,11 +90,13 @@ try:
         debug("Successfully loaded 'cached redirection chains' from {0}".format(
             chains_cache_path))
 except IOError:
-    # Keys here will be the domains of hosts that sometimes redirect to
-    # amazon setting domains.  We special case do not include amazon domains
-    # that refer to amazon domains
     debug("Unable to load 'cached redirection chains' from {0}. Building...".format(
         chains_cache_path))
+    # Keys here will be the domains of hosts that sometimes redirect to
+    # amazon setting domains.  We special case do not include amazon domains
+    # that refer to amazon domains.
+    # Values are dictionaries too, with keys being domains directed to, and
+    # and values of those sub dictionaries being a list of chains
     redirection_chains = {}
     for in_path in input_files:
         try:
@@ -108,12 +110,17 @@ except IOError:
                         if d not in domain_mapping or "amazon.com" in d:
                             continue
                         for n in domain_mapping[d]:
-                            chain = g.chain_from_node(n)
                             debug(" * * {0} appears to redirect to be suspect".format(n.host))
-                            try:
-                                redirection_chains[n.host].append(chain)
-                            except KeyError:
-                                redirection_chains[n.host] = [chain]
+                            if n.host not in redirection_chains:
+                                redirection_chains[n.host] = {}
+
+                            children = g.children_of_node(n)
+                            for cn in children:
+                                if cn.host not in redirection_chains[n.host]:
+                                    redirection_chains[n.host][cn.host] = []
+                                chain = g.chain_from_node(cn)
+                                redirection_chains[n.host][cn.host].append(chain)
+
         except IOError:
             pass
     with open(chains_cache_path, 'w') as cache_h:

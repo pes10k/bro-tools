@@ -187,6 +187,22 @@ class BroRecordGraph(object):
         """
         return self._g
 
+    def children_of_node(self, br):
+        """Returns a list of BroRecord objects that were directed to from
+        the record represented by the given BroRecord.
+
+        Args:
+            br -- a BroRecord
+
+        Return:
+            A list of zero or more BroRecords, or None if the given BroRecord
+            is not in the current graph.
+        """
+        g = self._g
+        if not g.has_node(br):
+            return None
+        return g.successors(br)
+
     def parent_of_node(self, br):
         """Returns a BroRecord object that is the referrer of the given record
         in the graph, if available.
