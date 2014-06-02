@@ -127,6 +127,7 @@ except IOError:
 
                                 debug(" * * {0} appears to be suspect".format(
                                     n.host))
+                                debug(" ! ! {0} -> {1}".format(n.url(), cn.url()))
                                 if cn.host not in redirection_chains[n.host]:
                                     redirection_chains[n.host][cn.host] = []
                                 chain = g.chain_from_node(cn)
