@@ -208,10 +208,15 @@ class BroRecordGraph(object):
             children = g.successors(node)
             if len(children) == 0:
                 return count
-            return max([_max_depth(c, count=(count + 1)) for c in children])
+            # Occasionally there is a recursion depth error here,
+            # which is baffling at the moment.  So, for now, just escape
+            # our way out of it
+            try:
+                return max([_max_depth(c, (count + 1)) for c in children])
+            except RuntimeError:
+                return count + 1
 
         return _max_depth(br)
-
 
     def children_of_node(self, br):
         """Returns a list of BroRecord objects that were directed to from
