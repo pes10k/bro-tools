@@ -158,7 +158,7 @@ class BroRecordGraph(object):
             lists of one or more BroRecord objects
         """
         mapping = {}
-        for n in self._g.nodes_iter:
+        for n in self._g.nodes_iter():
             try:
                 mapping[n.host].append(n)
             except KeyError:

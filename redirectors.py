@@ -123,6 +123,8 @@ except IOError:
 
 output_h = open(args.output, 'w') if args.output else sys.stdout
 for domain, chains in redirection_chains.items():
+    if len(chains) == 1:
+        continue
     output_h.write("{0}\n---------\n".format(domain))
     for c in chains:
         output_h.write(str(c))
