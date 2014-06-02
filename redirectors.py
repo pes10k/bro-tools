@@ -120,6 +120,11 @@ except IOError:
                                 if cn.host == n.host:
                                     continue
 
+                                # If the child node has its own children,
+                                # then don't consider it either
+                                if g.max_child_depth(cn) > 0:
+                                    continue
+
                                 debug(" * * {0} appears to be suspect".format(
                                     n.host))
                                 if cn.host not in redirection_chains[n.host]:

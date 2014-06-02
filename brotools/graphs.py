@@ -187,6 +187,33 @@ class BroRecordGraph(object):
         """
         return self._g
 
+    def max_child_depth(self, br):
+        """Returns the count of the longest path from the given node to a leaf
+        under the node.  If the given node has no children, the returned value
+        will be 0.  If the given node is not in the graph, None is returned.
+
+        Args:
+            br -- a BroRecord
+
+        Returns:
+            None if the given record is not in the graph, and otherwise returns
+            an integer.
+        """
+        g = self._g
+
+        if not g.has_node(br):
+            return None
+
+        def _max_depth_from_child(node, count=0):
+            children = g.successors(node)
+            if len(children) == 0:
+                return count
+            for c in children:
+                return _max_depth_from_child(c, count=(count + 1))
+
+        return _max_depth_from_child(br)
+
+
     def children_of_node(self, br):
         """Returns a list of BroRecord objects that were directed to from
         the record represented by the given BroRecord.
