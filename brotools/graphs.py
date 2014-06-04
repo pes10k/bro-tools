@@ -212,6 +212,40 @@ class BroRecordGraph(object):
         """
         return self._g
 
+    def remaining_child_time(self, br):
+        """Returns the amount of time that the browsing session - captured
+        by this graph - continued under the given node.  This is the same
+        thing, and computed as, the max of times between the given node
+        and all nodes below it.
+
+        Args:
+            br -- a BroRecord
+
+        Return:
+            A float, describing a number of seconds, or None if the given
+            node is not in the graph.
+        """
+        g = self._g
+
+        if not g.has_node(br):
+            return None
+
+        def _time_below_node(node, parent=None):
+            if parent:
+                cur_time = node.ts - parent.ts
+            else:
+                cur_time = 0
+            children = g.children_of_node(node)
+
+            if len(children) == 0:
+                return cur_time
+
+            max_time = max([_time_below_node(n, parent=node) for n in children])
+            return cur_time + max_time
+
+        return _time_below_node(self._root)
+
+
     def max_child_depth(self, br):
         """Returns the count of the longest path from the given node to a leaf
         under the node.  If the given node has no children, the returned value
