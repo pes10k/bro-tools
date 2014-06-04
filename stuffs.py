@@ -6,59 +6,20 @@
       html documents only)
 """
 
-import urlparse
-import argparse
-import re
 import sys
+import brotools.reports
+from stuffing.amazon import is_cookie_set
 
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
+parser = brotools.reports.default_cli_parser(sys.modules[__name__].__doc__)
+ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 
-parser = argparse.ArgumentParser(description="Find possible cookie stuffing " +
-                                 "instances in a pickled collection of " +
-                                 "BroRecordGraph objects.")
-parser.add_argument('--inputs', '-i', nargs='*',
-                    help="A list of gzip files to parse BroRecordGraph data " +
-                    "from. If not provided, reads a list of files from STDIN.")
-parser.add_argument('--regex', default=None,
-                    help="An alternate regular expression to use when " +
-                    "looking for possible cookie stuffing instances.")
-parser.add_argument('--output', '-o', default=None,
-                    help="File to write general report to. Defaults to STDOUT.")
-parser.add_argument('--verbose', '-v', action="store_true",
-                    help="If provided, prints out status information to " +
-                    "STDOUT.")
-args = parser.parse_args()
-
-verbose = args.verbose
-
-def debug(msg):
-    if verbose:
-        print msg
-
-AMZ_COOKIE_URL = re.compile(r'&?tag=')
-
-input_files = args.inputs if args.inputs else sys.stdin.read().split("\n")
-output_h = open(args.output, 'w') if args.output else sys.stdout
-
-for pickle_path in input_files:
-    if not pickle_path:
-        continue
-    debug("Considering {0}".format(pickle_path))
-    try:
-        with open(pickle_path, 'r') as h:
-            debug(" * Unpickled {0}".format(pickle_path))
-            graphs = pickle.load(h)
-            debug(" * {0} graphs found".format(len(graphs)))
-            for g in graphs:
-                for n in g.leaves():
-                    q = urlparse.urlparse(n.url()).query
-                    if "amazon.com" in n.host and AMZ_COOKIE_URL.search(q):
-                        debug(" * * Found possible url: {0}".format(n.url()))
-                        chain = g.chain_from_node(n)
-                        output_h.write(str(chain))
-                        output_h.write("\n-------\n\n")
-    except IOError:
-        pass
+for path, data in ins:
+    debug("Considering {0}".format(path))
+    debug(" * {0} graphs found".format(len(data)))
+    for g in data:
+        for n in g.leaves():
+            if is_cookie_set(n):
+                debug(" * * Found possible url: {0}".format(n.url()))
+                chain = g.chain_from_node(n)
+                out.write(str(chain))
+                out.write("\n-------\n\n")

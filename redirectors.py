@@ -2,9 +2,8 @@
 amazon-cookie-setting domains, and sometimes point elsewhere.  Idea is that
 these redirecting domains may be pay-for-play folks."""
 
-import urlparse
-import argparse
-import re
+from stuffing.amazon import is_cookie_set
+from .brotools.reports import default_cli_parser
 import sys
 
 try:
@@ -12,15 +11,7 @@ try:
 except ImportError:
     import pickle
 
-parser = argparse.ArgumentParser(description=sys.modules[__name__].__doc__)
-parser.add_argument('--inputs', '-i', nargs='*',
-                    help="A list of pickeled BroRecordGraph records to read " +
-                    "from. If not provided, reads a list of files from STDIN.")
-parser.add_argument('--output', '-o', default=None,
-                    help="File to write general report to. Defaults to STDOUT.")
-parser.add_argument('--verbose', '-v', action="store_true",
-                    help="If provided, prints out status information to " +
-                    "STDOUT.")
+parser = default_cli_parser(sys.modules[__name__].__doc__)
 parser.add_argument('--cache', '-c', default="/tmp/bro-redirectors",
                     help="If set, a root stub name that intermediate results " +
                     "can be stored at.  So if given /tmp/store, this script " +
@@ -31,8 +22,6 @@ is_debug = args.verbose
 def debug(msg):
     if is_debug:
         print msg
-
-AMZ_COOKIE_URL = re.compile(r'&?tag=')
 
 input_files_raw = args.inputs if args.inputs else sys.stdin.read().split("\n")
 input_files = [f for f in input_files_raw if len(f.strip()) > 0]
@@ -60,8 +49,7 @@ except IOError: # If the cache doesn't exist, then build it
                 graphs = pickle.load(h)
                 for g in graphs:
                     for n in g.leaves():
-                        q = urlparse.urlparse(n.url()).query
-                        if "amazon.com" in n.host and AMZ_COOKIE_URL.search(q):
+                        if is_cookie_set(n):
                             parent = g.parent_of_node(n)
                             if g.parent_of_node(parent):
                                 redirecting_domains.add(parent.host)
@@ -144,9 +132,9 @@ output_h = open(args.output, 'w') if args.output else sys.stdout
 for source_domain, dest_domains in redirection_chains.items():
     if len(dest_domains) == 1:
         continue
-    output_h.write("{0}\n###n".format(source_domain))
+    output_h.write("{0}\n########\n".format(source_domain))
     for dest_domain, chains in dest_domains.items():
         for c in chains:
             output_h.write(str(c))
             output_h.write("\n")
-    output_h.write("\n\n")
+    output_h.write("\n\n\n")

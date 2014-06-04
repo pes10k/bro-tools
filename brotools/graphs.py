@@ -83,6 +83,23 @@ class BroRecordGraph(object):
         # latest
         self._nodes_sorted = [br]
 
+    def __str__(self):
+
+        def _print_sub_tree(node, parent=None, level=0):
+            response = ("  " * level)
+            if parent:
+                dif = node.ts - parent.ts
+                response += "|-" + str(round(dif, 2)) + "-> "
+            response += node.url() + "\n"
+
+            children = self.children_of_node(node)
+            for c in children:
+                response += _print_sub_tree(c, parent=node, level=(level + 1))
+            return response
+
+        output = str(self._root.ts) + "\n"
+        return output + _print_sub_tree(self._root)
+
     def __len__(self):
         return len(self._nodes_sorted)
 
