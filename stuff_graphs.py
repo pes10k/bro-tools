@@ -4,7 +4,7 @@ cookie stuffing instance."""
 import sys
 import brotools.reports
 import brotools.records
-from stuffing.amazon import stuffs_in_graph
+import stuffing.amazon
 
 parser = brotools.reports.default_cli_parser(sys.modules[__name__].__doc__)
 parser.add_argument('--graphs', '-g', default="/tmp/bro-redirectors",
@@ -25,7 +25,7 @@ for path, graphs in ins:
         # Iterate over all nodes in the graph until we hit one that has
         # a cookie stuffing attempt in it.  But no need to iterate further
         # after we hit the first stuffing node
-        stuffs = stuffs_in_graph(g)
+        stuffs = stuffing.amazon.stuffs_in_graph(g)
         if len(stuffs) > 0:
             debug(" * Found possible cookie stuffing at: {0}".format(
                 stuffs[0].url()))
