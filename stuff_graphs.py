@@ -25,10 +25,10 @@ for path, graphs in ins:
         # Iterate over all nodes in the graph until we hit one that has
         # a cookie stuffing attempt in it.  But no need to iterate further
         # after we hit the first stuffing node
-        stuffs = stuffing.amazon.stuffs_in_graph(g)
+        stuffs = stuffing.amazon.stuffs_in_graph(g, time=5)
         if len(stuffs) > 0:
             debug(" * Found possible cookie stuffing at: {0}".format(
                 stuffs[0].url()))
             debug(" * Root node: {0}".format(g._root.url()))
             out.write(str(g))
-            out.write("\n\n\n")
+            out.write("\n\n")
