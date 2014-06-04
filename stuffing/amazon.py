@@ -25,3 +25,28 @@ def is_cookie_set(br):
         return False
 
     return True
+
+def stuffs_in_graph(graph, time=2):
+    """Returns a list of all nodes in a given BroRecordGraph that are suspected
+    cookie stuffing attempts.
+
+    Args:
+        graph -- a BroRecordGraph instance
+
+    Keyword Args:
+        time -- the maximum amount of time that can pass between a node
+                and the node that referred it for it to still count as
+                a stuffing attempt
+
+    Return:
+        A list of zero or more BroRecord instances
+    """
+    nodes = []
+    for node in (n for n in graph.nodes() if is_cookie_set(n)):
+        parent = graph.parent_of_node(node)
+        if not parent:
+            continue
+        time_diff = parent.ts - node.ts
+        if time_diff <= time:
+            nodes.append(node)
+    return nodes
