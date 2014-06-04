@@ -66,6 +66,7 @@ class BroRecordGraph(object):
     def __init__(self, br):
         self._g = nx.DiGraph()
         self.ip = br.id_orig_h
+        self.user_agent = br.user_agent
 
         # The root element of the graph can either be the referrer of the given
         # bro record, if it exists, or otherwise the record itself.
@@ -102,6 +103,13 @@ class BroRecordGraph(object):
         # in order to save ourselves having to walk the entire line of nodes
         # again in a clear miss situation
         if br.id_orig_h != self.ip:
+            return None
+
+        # Similarly, we can special case situations where user agents
+        # don't match.  Since all records in a single graph will have
+        # the same user agent, we can quick reject any records that have
+        # a user agent other than the first user agent seen in the graph.
+        if br.user_agent != self.user_agent:
             return None
 
         for n in self._nodes_sorted[::-1]:
