@@ -4,7 +4,7 @@ and collections of BroRecords."""
 import re
 import urlparse
 
-AMZ_COOKIE_URL = re.compile(r'&?tag=')
+AMZ_COOKIE_URL = re.compile(r'(?:&|\?|^)tag=')
 
 def is_cookie_set(br):
     """Returns a boolean description of whether the given BroRecord looks like
