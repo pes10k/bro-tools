@@ -23,7 +23,7 @@ for path, graphs in ins:
         # Iterate over all nodes in the graph until we hit one that has
         # a cookie stuffing attempt in it.  But no need to iterate further
         # after we hit the first stuffing node
-        for node in (n for n in g.nodes() if is_cookie_set(n) and n != g._root):
+        for node in (n for n in g.nodes() if is_cookie_set(n) and "amazon.com" not in n.host):
             debug(" * Found possible cookie stuffing at: {0}".format(node.url()))
             debug(" * Root node: {0}".format(g._root.url()))
             out.write(str(g))
