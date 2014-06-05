@@ -235,7 +235,7 @@ class BroRecordGraph(object):
                 cur_time = node.ts - parent.ts
             else:
                 cur_time = 0
-            children = g.children_of_node(node)
+            children = self.children_of_node(node)
 
             if len(children) == 0:
                 return cur_time
