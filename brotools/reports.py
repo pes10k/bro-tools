@@ -6,7 +6,6 @@ import logging
 import multiprocessing
 import sys
 import argparse
-import sys
 from .graphs import graphs
 
 try:
