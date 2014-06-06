@@ -235,20 +235,29 @@ class BroRecordGraph(object):
         if not g.has_node(br):
             return None
 
-        def _time_below_node(node, parent=None):
+        def _time_below(node, parent=None):
             if parent:
                 cur_time = node.ts - parent.ts
             else:
                 cur_time = 0
-            children = self.children_of_node(node)
+            cs = self.children_of_node(node)
 
-            if len(children) == 0:
+            if len(cs) == 0:
                 return cur_time
 
-            max_time = max([_time_below_node(n, parent=node) for n in children])
-            return cur_time + max_time
+            try:
+                max_time = max([_time_below(n, parent=node) for n in cs])
+                return cur_time + max_time
+            except RuntimeError:
+                msg = ("Infinite recursive loop in `remaining_child_time`\n" +
+                      "\n" +
+                      "Node:\n" +
+                      str(node) + "\n\n" +
+                      "Graph:\n" +
+                      str(self))
+                raise(Exception(msg))
 
-        return _time_below_node(self._root)
+        return _time_below(self._root)
 
     def max_child_depth(self, br):
         """Returns the count of the longest path from the given node to a leaf
