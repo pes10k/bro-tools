@@ -165,7 +165,6 @@ class AmazonHistory(object):
         self._cookie_stuffs = []
         self._cookie_sets = []
         self._cart_requests = []
-
         self.consider(graph)
 
     def consider(self, graph):
@@ -198,6 +197,18 @@ class AmazonHistory(object):
         self._cart_requests += [(n, graph) for n in cart_adds]
 
         return len(stuff_nodes), len(cookie_set_nodes), len(cart_adds)
+
+    def counts(self):
+        """Returns a brief summary of the number of relevant requests currently
+        in the collection.
+
+        Return:
+            A tuple of three values, the counts of the number of
+            cookie stuffs, legit-seeming cookie stuffs, and cart requests
+            found in the given graph.
+        """
+        return (len(self._cookie_stuffs), len(self._cookie_sets),
+                len(self._cart_requests))
 
     def prune(self, seconds=3600):
         """Prunes the cart add requests to remove additions to the cart that
@@ -362,7 +373,8 @@ class AmazonCheckout(object):
         output += "--------------------\n"
         for r, g, t in self.cookie_history():
             type_str = "STUFF" if t == STUFF else "SET  "
-            output += "{0} {1} {2}\n".format(type_str, r.date_str, r.ur)
+            output += "{0} {1} {2} {3}\n".format(type_str, r.date_str,
+                                                 referrer_tag(r), r.ur)
         return output
 
     def add_cookie_set(self, record, graph):

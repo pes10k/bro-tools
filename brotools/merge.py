@@ -50,8 +50,10 @@ def merge(files, dest_path):
                         lines_in_file.append(line)
                 if read_headers_from_this_file:
                     read_headers_from_any_file = True
-        except IOError:
+        except IOError, e:
             lines_in_file = []
+            raise e
+
         lines += lines_in_file
     if len(headers) == 0 or len(lines) == 0:
         return False
