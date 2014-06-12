@@ -1,4 +1,5 @@
 from cached_property import cached_property
+import urlparse
 
 def bro_records(handle, record_filter=None):
     """A generator function for iterating over a a collection of bro records.
@@ -76,6 +77,10 @@ class BroRecord(object):
     def url(self):
         return u"{host}{uri}".format(host=self.host, uri=self.uri)
 
+    @cached_property
+    def query_params(self):
+        return urlparse.parse_qs(self.uri)
+
     def is_referrer_of(self, r):
         """Returns a boolean response of whether it looks like the current
         BroRecord object is the referrer of the passed BroRecord.  This
@@ -133,7 +138,8 @@ class BroRecordWindow(object):
         most_recent_time = self._collection[-1].ts
         window_low_bound = self._time
 
-        while len(self._collection) > 1 and self._collection[0].ts + window_low_bound < most_recent_time:
+        while (len(self._collection) > 1 and
+            self._collection[0].ts + window_low_bound < most_recent_time):
             self._collection = self._collection[1:]
             removed_count += 1
 

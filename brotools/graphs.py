@@ -107,6 +107,11 @@ class BroRecordGraph(object):
         self._nodes_by_url = {}
         self._nodes_by_url[br.url] = [br]
 
+        # Finally, also keep a reference to all nodes by host, where keys
+        # are domains, and the values are a list of all records in the
+        # graph to that domain
+        self._nodes_by_host = {}
+        self._nodes_by_host[br.host] = [br]
 
     def __str__(self):
 
@@ -189,6 +194,11 @@ class BroRecordGraph(object):
         if br.url not in self._nodes_by_url:
             self._nodes_by_url[br.url] = []
         self._nodes_by_url[br.url].append(br)
+
+        if br.host not in self._nodes_by_host:
+            self._nodes_by_host[br.host] = []
+        self._nodes_by_host[br.host].append(br)
+
         return True
 
     def nodes(self):
@@ -199,6 +209,23 @@ class BroRecordGraph(object):
             A list of zero or more BroRecords
         """
         return self._nodes_sorted
+
+    def nodes_for_host(self, host):
+        """Returns a list of all nodes in the graph that are requests to
+        a given host.
+
+        Args:
+            host -- a string describing a host / domain
+
+        Return:
+            A list of one or more BroRecords all requesting the given
+            host, or None if there are no requests in the graph to the given
+            host.
+        """
+        try:
+            return self._nodes_by_host[host]
+        except KeyError:
+            return None
 
     def leaves(self):
         """Returns a iterator of BroRecords, each of which are leaves in t
