@@ -148,5 +148,8 @@ def unpickled_inputs(paths):
     processed_in_paths = (p.strip() for p in in_paths if len(p.strip()) > 0)
     for p in processed_in_paths:
         with open(p, 'r') as h:
-            yield p, pickle.load(h)
+            try:
+                yield p, pickle.load(h)
+            except EOFError:
+                pass
 
