@@ -368,6 +368,7 @@ class AmazonCheckout(object):
         output = "IP: {0}\n".format(self.ip)
         output += "Agent: {0}\n".format(self.user_agent)
         output += "Checkout Time: {0}\n".format(self.cart_record.date_str)
+        output += "URL: {0}\n".format(self.cart_record.url)
         output += "\n"
         output += "History\n"
         output += "--------------------\n"
