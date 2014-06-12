@@ -28,7 +28,7 @@ def referrer_tag(br):
     query_params = br.query_params
     try:
         tags = query_params['tag']
-        return None if len(tags) > 0 else tags[0]
+        return None if len(tags) == 0 else tags[0]
     except KeyError:
         return None
 
