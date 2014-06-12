@@ -44,7 +44,7 @@ for path, graphs in ins:
         if sets:
             debug(" * Sets  : {0}".format(sets))
         if carts:
-            debug(" * Carts : {0}".format(sets))
+            debug(" * Carts : {0}".format(carts))
         if values:
             debug("")
 
