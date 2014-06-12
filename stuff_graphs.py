@@ -21,7 +21,7 @@ for path, graphs in ins:
         stuffs = stuffing.amazon.stuffs_in_graph(g, time=5)
         if len(stuffs) > 0:
             debug(" * Found possible cookie stuffing at: {0}".format(
-                stuffs[0].url()))
-            debug(" * Root node: {0}".format(g._root.url()))
+                stuffs[0].url))
+            debug(" * Root node: {0}".format(g._root.url))
             out.write(str(g))
             out.write("\n\n")

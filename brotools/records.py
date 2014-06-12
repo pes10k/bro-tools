@@ -1,3 +1,4 @@
+import datetime
 from cached_property import cached_property
 import urlparse
 
@@ -80,6 +81,12 @@ class BroRecord(object):
     @cached_property
     def query_params(self):
         return urlparse.parse_qs(self.uri)
+
+    @cached_property
+    def date_str(self):
+        date = datetime.datetime.fromtimestamp(int(self.ts))
+        human_date = date.strftime('%Y-%m-%d %H:%M:%S')
+        return human_date
 
     def is_referrer_of(self, r):
         """Returns a boolean response of whether it looks like the current

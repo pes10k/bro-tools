@@ -5,7 +5,6 @@ lead to a given page, and its children being the pages visted next."""
 import networkx as nx
 from .records import bro_records
 from .chains import BroRecordChain
-import datetime
 
 def graphs(handle, time=.5, record_filter=None):
     """A generator function yields BroRecordGraph objects that represent
@@ -127,9 +126,7 @@ class BroRecordGraph(object):
                 response += _print_sub_tree(c, parent=node, level=(level + 1))
             return response
 
-        date = datetime.datetime.fromtimestamp(int(self._root.ts))
-        human_date = date.strftime('%Y-%m-%d %H:%M:%S')
-        output = self.ip + "\n" + human_date + "\n"
+        output = self.ip + "\n" + self._root.date_str + "\n"
         if self._root.name:
             output += self._root.name + "\n"
         output += "-----\n"
