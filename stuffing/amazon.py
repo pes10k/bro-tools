@@ -375,7 +375,7 @@ class AmazonCheckout(object):
         for r, g, t in self.cookie_history():
             type_str = "STUFF" if t == STUFF else "SET  "
             output += "{0} {1} {2} {3}\n".format(type_str, r.date_str,
-                                                 referrer_tag(r), r.ur)
+                                                 referrer_tag(r), r.url)
         return output
 
     def add_cookie_set(self, record, graph):
