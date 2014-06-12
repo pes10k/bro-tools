@@ -50,5 +50,6 @@ for path, graphs in ins:
 
 for h in history_by_client.values():
     for c in h.checkouts(seconds=args.secs, cookie_ttl=args.ttl):
-        out.write(str(c))
-        out.write("\n\n\n")
+        if len(c.cookie_history()) > 0:
+            out.write(str(c))
+            out.write("\n\n\n")
