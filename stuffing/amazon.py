@@ -231,14 +231,14 @@ class AmazonHistory(object):
         self._cart_requests.sort(key=lambda x: x[0].ts)
         removed_count = 0
         last_kept_request = None
-        for r in self._cart_requests:
-
+        for v in self._cart_requests:
+            r, g = v
             if not last_kept_request:
                 last_kept_request = r
                 continue
 
             if r.ts - last_kept_request.ts < seconds:
-                self._cart_requests.remove(r)
+                self._cart_requests.remove(v)
                 removed_count += 1
                 continue
 
