@@ -25,7 +25,7 @@ def referrer_tag(br):
         The affiliate marketing tag, if it exists in the bro record, otherwise
         None.
     """
-    query_params = br.query_params()
+    query_params = br.query_params
     try:
         tags = query_params['tag']
         return None if len(tags) > 0 else tags[0]
