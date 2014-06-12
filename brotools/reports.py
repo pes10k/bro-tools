@@ -51,9 +51,10 @@ def _find_graphs_helper(args):
                 if len(g) < min_length:
                     continue
                 intersting_graphs.append(g)
-        except:
+        except Exception, e:
             err = "Ignoring {0}: formatting errors in the log".format(dest)
             log.error(err)
+            raise e
             return []
 
     log.info("{0}: Found {1} graphs".format(dest, len(intersting_graphs)))

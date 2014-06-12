@@ -33,7 +33,7 @@ def graphs(handle, time=.5, record_filter=None):
     # are all the currently active graphs being tracked for that client
     all_client_graphs = {}
     for r in bro_records(handle, record_filter=record_filter):
-        hash_key = r.ip + "|" + r.user_agent
+        hash_key = r.id_orig_h + "|" + r.user_agent
 
         # By default, assume that we've seen a request by this client
         # before, so start looking for a graph we can add this record to
