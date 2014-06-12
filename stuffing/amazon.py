@@ -187,8 +187,8 @@ class AmazonHistory(object):
         # Remove all cookie *stuff* nodes that also appear in the cookie *set*
         # nodes collection, since the former will be a subset of the latter
         for n in stuff_nodes:
-            if n in cookie_set_nodes:
-                cookie_set_nodes.remove(n)
+            if (n, graph) in cookie_set_nodes:
+                cookie_set_nodes.remove((n, graph))
 
         cart_adds = cart_adds_in_graph(graph)
 
