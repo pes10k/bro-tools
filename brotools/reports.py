@@ -136,6 +136,8 @@ def unpickled_inputs(paths):
         on disk, as a string, that was unpickled, and the second being the
         object that was unpickled.
     """
+    log = logging.getLogger("brorecords")
+
     # First try assuming we've gotten a single string of file paths, and if
     # that doesn't seem right, assume we've gotten a list of file paths
     try:
@@ -151,5 +153,6 @@ def unpickled_inputs(paths):
             try:
                 yield p, pickle.load(h)
             except EOFError:
+                log.info(" * Pickle error, skipping: {0}".format(p))
                 pass
 
