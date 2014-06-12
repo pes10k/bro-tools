@@ -28,37 +28,53 @@ def graphs(handle, time=.5, record_filter=None):
     Return:
         An iterator returns BroRecordGraph objects
     """
-    _graphs = []
+    # To avoid needing to iterate over all the graphs, keys in this collection
+    # are a simple concatination of IP and user agent, and the values
+    # are all the currently active graphs being tracked for that client
+    all_client_graphs = {}
     for r in bro_records(handle, record_filter=record_filter):
-        found_graph_for_record = False
-        for g in _graphs:
+        hash_key = r.ip + "|" + r.user_agent
 
-            # First make sure that our graphs are not too old.  If they
-            # are, yield them and then remove them from our considered
-            # set
-            if (r.ts - g.latest_ts) > time:
-                yield g
-                _graphs.remove(g)
-                continue
+        # By default, assume that we've seen a request by this client
+        # before, so start looking for a graph we can add this record to
+        # to in the list of all graphs currently tracked for the client
+        try:
+            graphs = all_client_graphs[hash_key]
+            found_graph_for_record = False
+            for g in graphs:
+                # First make sure that our graphs are not too old.  If they
+                # are, yield them and then remove them from our considered
+                # set
+                if (r.ts - g.latest_ts) > time:
+                    yield g
+                    graphs.remove(g)
+                    continue
 
-            # If the current graph is not too old to represent a valid
-            # browsing session then, see if it is valid for the given
-            # bro record.  If so, then we don't need to consider any other
-            # graphs on this iteration
-            if g.add_node(r):
-                found_graph_for_record = True
-                break
+                # If the current graph is not too old to represent a valid
+                # browsing session then, see if it is valid for the given
+                # bro record.  If so, then we don't need to consider any other
+                # graphs on this iteration
+                if g.add_node(r):
+                    found_graph_for_record = True
+                    break
 
-        # Last, if we haven't found a graph to add the current record to,
-        # create a new graph and add the record to it
-        if not found_graph_for_record:
-            _graphs.append(BroRecordGraph(r))
+            # Last, if we haven't found a graph to add the current record to,
+            # create a new graph and add the record to it
+            if not found_graph_for_record:
+                graphs.append(BroRecordGraph(r))
 
-    # Last, if we've considered every record in the collection, we need to
+        # If we've never seen any requests for this client, then
+        # there is no way the request could be part of any graph we're tracking,
+        # so create a new collection of graphs to search
+        except KeyError:
+            all_client_graphs[hash_key] = [BroRecordGraph(r)]
+
+    # Last, if we've considered every bro record in the collection, we need to
     # yield the remaining graphs to the caller, to make sure they see
     # ever relevant record
-    for g in _graphs:
-        yield g
+    for graphs in all_client_graphs.values():
+        for g in graphs:
+            yield g
 
 
 class BroRecordGraph(object):
@@ -73,7 +89,8 @@ class BroRecordGraph(object):
         self._g.add_node(br)
         self._root = br
 
-        # Keep track of
+        # Keep track of what range of time this graph represents
+        self.earliest_ts = br.ts
         self.latest_ts = br.ts
 
         # Since we expect that we'll see nodes in a sorted order (ie
@@ -83,6 +100,14 @@ class BroRecordGraph(object):
         # latest
         self._nodes_sorted = [br]
 
+        # To make searching for referrers faster, we also keep a referrence
+        # to each node by its url.  Here, each record's url is the key
+        # and the corresponding value is a list of all records requesting
+        # that url
+        self._nodes_by_url = {}
+        self._nodes_by_url[br.url] = [br]
+
+
     def __str__(self):
 
         def _print_sub_tree(node, parent=None, level=0):
@@ -90,7 +115,7 @@ class BroRecordGraph(object):
             if parent:
                 dif = node.ts - parent.ts
                 response += "|-" + str(round(dif, 2)) + "-> "
-            response += node.url() + "\n"
+            response += node.url + "\n"
 
             children = self.children_of_node(node)
             for c in children:
@@ -134,10 +159,12 @@ class BroRecordGraph(object):
         if br.user_agent != self.user_agent:
             return None
 
-        for n in self._nodes_sorted[::-1]:
-            if n.is_referrer_of(br):
-                return n
-        return None
+        try:
+            for n in self._nodes_by_url[br.url]:
+                if n.ts < br.ts:
+                    return n
+        except KeyError:
+            return None
 
     def add_node(self, br):
         """Attempts to add the given BroRecord as a child (successor) of its
@@ -156,9 +183,12 @@ class BroRecordGraph(object):
 
         time_difference = br.ts - referrer_node.ts
         self._g.add_weighted_edges_from([(referrer_node, br, time_difference)])
-        self.latest_ts = br.ts
+        self.latest_ts = max(br.ts, self.latest_ts)
         self._nodes_sorted.append(br)
 
+        if br.url not in self._nodes_by_url:
+            self._nodes_by_url[br.url] = []
+        self._nodes_by_url[br.url].append(br)
         return True
 
     def nodes(self):

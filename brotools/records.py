@@ -1,9 +1,4 @@
-def _strip_protocol(url):
-    if url[0:7] == "http://":
-        url = url[7:]
-    elif url[0:8] == "https://":
-        url = url[8:]
-    return url
+from cached_property import cached_property
 
 def bro_records(handle, record_filter=None):
     """A generator function for iterating over a a collection of bro records.
@@ -55,7 +50,14 @@ class BroRecord(object):
         self.method = values[3]
         self.host = values[4]
         self.uri = values[5]
-        self.referrer = _strip_protocol(values[6])
+
+        referrer = values[6]
+        if referrer[0:7] == "http://":
+            referrer = referrer[7:]
+        elif referrer[0:8] == "https://":
+            referrer = referrer[8:]
+
+        self.referrer = referrer
         self.user_agent = values[7]
         self.status_code = values[8]
         self.content_type = values[9]
@@ -70,6 +72,7 @@ class BroRecord(object):
     def __str__(self):
         return self.line
 
+    @cached_property
     def url(self):
         return u"{host}{uri}".format(host=self.host, uri=self.uri)
 
@@ -90,7 +93,7 @@ class BroRecord(object):
         if r.id_orig_h != self.id_orig_h:
             return False
 
-        if self.url() != r.referrer:
+        if self.url != r.referrer:
             return False
 
         if r.ts <= self.ts:
