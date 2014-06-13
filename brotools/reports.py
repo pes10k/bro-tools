@@ -152,7 +152,7 @@ def unpickled_inputs(paths):
         with open(p, 'r') as h:
             try:
                 yield p, pickle.load(h)
-            except EOFError:
+            except:
                 log.info(" * Pickle error, skipping: {0}".format(p))
                 pass
 
