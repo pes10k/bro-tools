@@ -29,6 +29,7 @@ end_ts = None
 if args.end:
     end_ts = time.mktime(dateutil.parser.parse(args.end).timetuple())
 
+debug("Getting ready to start reading graphs")
 for path, graphs in ins:
     debug("Considering {0}".format(path))
     debug("Found {0} graphs".format(len(graphs)))
@@ -46,6 +47,6 @@ for path, graphs in ins:
         if end_ts and g.earliest_ts > end_ts:
             continue
 
-        debug(" * Found matching graph wiht root {0}".format(g._root.url))
+        debug(" * Found matching graph with root {0}".format(g._root.url))
         out.write(str(g))
         out.write("\n\n")
