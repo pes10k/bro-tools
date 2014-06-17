@@ -9,9 +9,12 @@ import stuffing.amazon
 parser = brotools.reports.default_cli_parser(sys.modules[__name__].__doc__)
 ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 
+debug("Preparing to start reading pickled data")
+index = 0
 for path, graphs in ins:
-    debug("Considering {0}".format(path))
-    debug("Found {0} graphs".format(len(graphs)))
+    index += 1
+    debug("{0}. Considering {1}".format(index, path))
+    debug("{0}. Found {1} graphs".format(index, len(graphs)))
     for g in graphs:
         if "amazon.com" in g._root.host:
             continue
