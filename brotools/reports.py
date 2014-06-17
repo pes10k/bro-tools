@@ -85,7 +85,7 @@ def default_cli_parser(description=None):
         An initilized `argparse.ArgumentParser` instance with defaults
         for reading and writing IO.
     """
-    p = argparse.ArgumentParser(description=sys.modules[__name__].__doc__)
+    p = argparse.ArgumentParser(description=description)
     p.add_argument('--inputs', '-i', nargs='*',
                    help="A list of pickeled BroRecordGraph records to read " +
                    "from. If not provided, reads a list of files from STDIN.")
