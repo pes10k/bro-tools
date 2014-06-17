@@ -162,7 +162,7 @@ class BroRecordGraph(object):
             return None
 
         try:
-            for n in self._nodes_by_url[br.url]:
+            for n in self._nodes_by_url[br.referrer]:
                 if n.ts < br.ts:
                     return n
         except KeyError:
