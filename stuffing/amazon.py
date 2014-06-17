@@ -131,6 +131,10 @@ def stuffs_in_graph(graph, time=2, sub_time=2):
         if not parent:
             continue
 
+        # Amazon can't stuff its self (other than metaphorically...)
+        if parent.host in AMAZON_DOMAINS:
+            continue
+
         time_diff = parent.ts - node.ts
         if time_diff > time:
             continue
