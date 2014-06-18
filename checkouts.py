@@ -17,15 +17,15 @@ parser.add_argument('--secs', type=int, default=3600,
                     help="The minimum time in seconds that must pass between " +
                     "a client's requests to the Amazon 'add to cart' page " +
                     "for those requests to be treated as a seperate checkout")
-ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
+count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 
 history_by_client = {}
-count = 0
-debug("Preparing to start reading pickled data")
+index = 0
+debug("Preparing to start reading {0} pickled data".format(count))
 for path, graphs in ins:
-    count += 1
-    debug("{0}. Considering {1}".format(count, path))
-    debug("{0}. Found {1} graphs".format(count, len(graphs)))
+    index += 1
+    debug("{0}-{1}. Considering {2}".format(index, count, path))
+    debug("{0}-{1}. Found {2} graphs".format(index, count, len(graphs)))
     for g in graphs:
         hash_key = g.ip + " " + g.user_agent
         try:

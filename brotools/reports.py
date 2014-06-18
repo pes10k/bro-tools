@@ -105,7 +105,8 @@ def parse_default_cli_args(parser):
                   from the `default_cli_parser` function in this module
 
     Return:
-        A tuple with four values,
+        A tuple with five values,
+            - the count of the number of items that are provided to process
             - an iterator for reading unpickled data from
             - a file handle for writing output to
             - a function that should be used for writing error messages
@@ -114,6 +115,8 @@ def parse_default_cli_args(parser):
     args = parser.parse_args()
 
     inputs = unpickled_inputs(args.inputs or sys.stdin.read())
+    num_inputs = next(inputs)
+
     output_h = open(args.output, 'w') if args.output else sys.stdout
 
     is_debug = args.verbose
@@ -121,33 +124,39 @@ def parse_default_cli_args(parser):
         if is_debug:
             print msg
 
-    return inputs, output_h, debug, args
+    return num_inputs, inputs, output_h, debug, args
 
 def unpickled_inputs(paths):
     """Returns an iterator for reading pickled files off disk.
 
+    Note that this function should not be called directly, since it acts
+    funny.  On first call it yields the number of pickled files its going to
+    return, with subsequent calls returning pairs of file names and
+    pickled data.
+
     Args:
-        paths -- a list of paths to pickled objects on disk, or a single string
-                 that contains multiple lines of text, each with a single file
-                 name read in (such as read from STDIN).
+        paths -- a list of paths to pickled objects on disk
 
     Returns:
-        An iterator that returns two values, the first being the path
-        on disk, as a string, that was unpickled, and the second being the
-        object that was unpickled.
+        On first call it returns the count of the number of values it will
+        parse and return.  Subsequent calls return pairs of values, the first
+        being the path on disk, as a string, that was unpickled, and the second
+        being the object that was unpickled.
     """
     log = logging.getLogger("brorecords")
 
     # First try assuming we've gotten a single string of file paths, and if
     # that doesn't seem right, assume we've gotten a list of file paths
     try:
-        in_paths = (p for p in paths.split("\n"))
+        in_paths = [p for p in paths.split("\n")]
     except AttributeError: # Catch if we're calling split on a list of files
         in_paths = paths
 
     # Next, do some simple trimming to make sure we deal with common issues,
     # like a trailing empty string in a list, etc.
-    processed_in_paths = (p.strip() for p in in_paths if len(p.strip()) > 0)
+    processed_in_paths = [p.strip() for p in in_paths if len(p.strip()) > 0]
+    yield len(processed_in_paths)
+
     for p in processed_in_paths:
         with open(p, 'r') as h:
             try:
