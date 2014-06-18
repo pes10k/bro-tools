@@ -140,7 +140,7 @@ def unpickled_inputs(paths):
     Returns:
         On first call it returns the count of the number of values it will
         parse and return.  Subsequent calls return pairs of values, the first
-        being the path on disk, as a string, that was unpickled, and the second
+        being the path on disk, as a string, that was unpickled, and the second
         being the object that was unpickled.
     """
     log = logging.getLogger("brorecords")
