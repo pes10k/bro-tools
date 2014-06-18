@@ -19,7 +19,7 @@ parser.add_argument('--start', default=None,
 parser.add_argument('--end', default=None,
                     help="A filter for the latest possible record to " +
                     "consider, as a date string.")
-ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
+count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 
 start_ts = None
 if args.start:
@@ -29,10 +29,12 @@ end_ts = None
 if args.end:
     end_ts = time.mktime(dateutil.parser.parse(args.end).timetuple())
 
-debug("Getting ready to start reading graphs")
+debug("Getting ready to start reading {0} graphs".format(count))
+index = 0
 for path, graphs in ins:
-    debug("Considering {0}".format(path))
-    debug("Found {0} graphs".format(len(graphs)))
+    index += 1
+    debug("{0}-{1}. Considering {2}".format(index, count, path))
+    debug("{0}-{1}. Found {2} graphs".format(index, count, len(graphs)))
     for g in graphs:
 
         if args.ip and args.ip != g.ip:
