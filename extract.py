@@ -26,7 +26,7 @@ parser.add_argument('--veryverbose', '-vv', action='store_true',
                     help="Prints lots of debugging / feedback information to the console")
 args = parser.parse_args()
 
-input_files = args.inputs.replace("\n", " ").split(" ") if args.inputs else sys.stdin.read().strip().split("\n")
+input_files = args.inputs if args.inputs else sys.stdin.read().strip().split("\n")
 
 logging.basicConfig()
 logger = logging.getLogger("brorecords")
