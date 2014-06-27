@@ -207,6 +207,14 @@ class BroRecordGraph(object):
         """
         return self._nodes_sorted
 
+    def hosts(self):
+        """Returns a list of all of the hosts represented in the graph.
+
+        Return:
+            A list of zero or more strings
+        """
+        return self._nodes_by_host.keys()
+
     def nodes_for_host(self, host):
         """Returns a list of all nodes in the graph that are requests to
         a given host.
