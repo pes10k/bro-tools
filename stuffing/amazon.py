@@ -10,27 +10,27 @@ class AmazonAffiliateHistory(AffiliateHistory):
     with amazon affiliates.
     """
 
-    @classmethod
     @cached_property
+    @classmethod
     def checkout_urls(cls):
         return ('handle-buy-box',)
 
-    @classmethod
     @cached_property
+    @classmethod
     def referrer_tag(cls, record):
         return 'tag'
 
-    @classmethod
     @cached_property
+    @classmethod
     def cookie_set_pattern(cls):
         return re.compile(r'(?:&|\?|^)tag=')
 
-    @classmethod
     @cached_property
+    @classmethod
     def domains(cls):
         return (("amazon.com", FULL_DOMAIN), ("www.amazon.com", FULL_DOMAIN))
 
-    @classmethod
     @cached_property
+    @classmethod
     def name(cls):
         return "Amazon Affiliate"

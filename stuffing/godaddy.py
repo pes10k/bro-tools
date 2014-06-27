@@ -7,8 +7,8 @@ from .affiliate import AffiliateHistory, PARTIAL_DOMAIN
 
 class GodaddyAffiliateHistory(AffiliateHistory):
 
-    @classmethod
     @cached_property
+    @classmethod
     def checkout_urls(cls):
         """Returns a list of strings, each of which, if found in a url
         on the current marketer, would count as a checkout attempt.  So,
@@ -30,22 +30,22 @@ class GodaddyAffiliateHistory(AffiliateHistory):
             'hosting/vps-hosting-config.aspx',
         )
 
-    @classmethod
     @cached_property
+    @classmethod
     def referrer_tag(cls, record):
         return 'cvosrc'
 
-    @classmethod
     @cached_property
+    @classmethod
     def cookie_set_pattern(cls):
         return re.compile(r'(?:&|\?|^|;)isc=')
 
-    @classmethod
     @cached_property
+    @classmethod
     def domains(cls):
         return [("godaddy.", PARTIAL_DOMAIN)]
 
-    @classmethod
     @cached_property
+    @classmethod
     def name(cls):
         return "GoDaddy Affiliate"

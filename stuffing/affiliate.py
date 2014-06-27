@@ -45,8 +45,8 @@ class AffiliateHistory(object):
     Required class methods for all subclasses
     """
 
-    @classmethod
     @cached_property
+    @classmethod
     def checkout_urls(cls):
         """Returns a list of strings, each of which, if found in a url
         on the current marketer, would count as a checkout attempt.  So,
@@ -60,8 +60,8 @@ class AffiliateHistory(object):
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
             "must implement a `checkout_urls` method")
 
-    @classmethod
     @cached_property
+    @classmethod
     def referrer_tag(cls):
         """Returns the name of the query parameter used when setting an
         affiliate marketing cookie.
@@ -73,8 +73,8 @@ class AffiliateHistory(object):
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
             "must implement a `referrer_tag` method")
 
-    @classmethod
     @cached_property
+    @classmethod
     def cookie_set_pattern(cls):
         """Returns a regex object used for checking to see if the url on
         a BroRecord instance would set an affiliate marketing cookie.
@@ -85,8 +85,8 @@ class AffiliateHistory(object):
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
             "must implement a `cookie_set_pattern` method")
 
-    @classmethod
     @cached_property
+    @classmethod
     def domains(cls):
         """Returns a list of tuples, each tuple being a pair of a domain and
         a constant (either PARTIAL_DOMAIN or FULL_DOMAIN), specifying the
@@ -105,8 +105,8 @@ class AffiliateHistory(object):
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
             "must implement a `domains` method")
 
-    @classmethod
     @cached_property
+    @classmethod
     def name(cls):
         """Returns a human readable description of the type of affiliate
         marketing being tracked by this collection, such as Amazon or
