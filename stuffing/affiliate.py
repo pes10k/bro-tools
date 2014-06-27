@@ -183,7 +183,7 @@ class AffiliateHistory(object):
             True if it looks a request to add an item to a shopping cart,
             and otherwise False.
         """
-        for segment in cls.checkout_urls:
+        for segment in cls.checkout_urls():
             if segment in record.uri:
                 return True
         return False
@@ -201,7 +201,7 @@ class AffiliateHistory(object):
             cookie to be set, and otherwise False.
         """
         q = urlparse.urlparse(record.uri).query
-        if not cls.cookie_set_pattern.search(q):
+        if not cls.cookie_set_pattern().search(q):
             return False
 
         return True
@@ -222,7 +222,7 @@ class AffiliateHistory(object):
         """
         query_params = record.query_params
         try:
-            tags = query_params[cls.referrer_tag]
+            tags = query_params[cls.referrer_tag()]
             return None if len(tags) == 0 else tags[0]
         except KeyError:
             return None
