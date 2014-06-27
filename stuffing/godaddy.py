@@ -2,12 +2,10 @@
 and collections of BroRecords."""
 
 import re
-from cached_property import cached_property
 from .affiliate import AffiliateHistory, PARTIAL_DOMAIN
 
 class GodaddyAffiliateHistory(AffiliateHistory):
 
-    @cached_property
     @classmethod
     def checkout_urls(cls):
         """Returns a list of strings, each of which, if found in a url
@@ -30,22 +28,22 @@ class GodaddyAffiliateHistory(AffiliateHistory):
             'hosting/vps-hosting-config.aspx',
         )
 
-    @cached_property
     @classmethod
     def referrer_tag(cls, record):
         return 'cvosrc'
 
-    @cached_property
     @classmethod
     def cookie_set_pattern(cls):
-        return re.compile(r'(?:&|\?|^|;)isc=')
+        try:
+            return cls._cookie_set_pattern
+        except AttributeError:
+            cls._cookie_set_pattern = re.compile(r'(?:&|\?|^|;)isc=')
+            return cls._cookie_set_pattern
 
-    @cached_property
     @classmethod
     def domains(cls):
         return [("godaddy.", PARTIAL_DOMAIN)]
 
-    @cached_property
     @classmethod
     def name(cls):
         return "GoDaddy Affiliate"

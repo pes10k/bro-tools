@@ -2,7 +2,6 @@
 and collections of BroRecords."""
 
 import re
-from cached_property import cached_property
 from .affiliate import AffiliateHistory, FULL_DOMAIN
 
 class AmazonAffiliateHistory(AffiliateHistory):
@@ -10,27 +9,26 @@ class AmazonAffiliateHistory(AffiliateHistory):
     with amazon affiliates.
     """
 
-    @cached_property
     @classmethod
     def checkout_urls(cls):
         return ('handle-buy-box',)
 
-    @cached_property
     @classmethod
     def referrer_tag(cls, record):
         return 'tag'
 
-    @cached_property
     @classmethod
     def cookie_set_pattern(cls):
-        return re.compile(r'(?:&|\?|^)tag=')
+        try:
+            return cls._cookie_set_pattern
+        except AttributeError:
+            cls._cookie_set_pattern = re.compile(r'(?:&|\?|^)tag=')
+            return cls._cookie_set_pattern
 
-    @cached_property
     @classmethod
     def domains(cls):
         return (("amazon.com", FULL_DOMAIN), ("www.amazon.com", FULL_DOMAIN))
 
-    @cached_property
     @classmethod
     def name(cls):
         return "Amazon Affiliate"

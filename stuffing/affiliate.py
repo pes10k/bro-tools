@@ -2,7 +2,6 @@
 a collection of browsing history."""
 
 import urlparse
-from cached_property import cached_property
 
 # Values used for tracking whether a given bro record represents a cookie
 # stuffing incident (STUFF), a seemingly valid one (SET), or a request
@@ -45,7 +44,6 @@ class AffiliateHistory(object):
     Required class methods for all subclasses
     """
 
-    @cached_property
     @classmethod
     def checkout_urls(cls):
         """Returns a list of strings, each of which, if found in a url
@@ -60,7 +58,6 @@ class AffiliateHistory(object):
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
             "must implement a `checkout_urls` method")
 
-    @cached_property
     @classmethod
     def referrer_tag(cls):
         """Returns the name of the query parameter used when setting an
@@ -73,7 +70,6 @@ class AffiliateHistory(object):
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
             "must implement a `referrer_tag` method")
 
-    @cached_property
     @classmethod
     def cookie_set_pattern(cls):
         """Returns a regex object used for checking to see if the url on
@@ -85,7 +81,6 @@ class AffiliateHistory(object):
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
             "must implement a `cookie_set_pattern` method")
 
-    @cached_property
     @classmethod
     def domains(cls):
         """Returns a list of tuples, each tuple being a pair of a domain and
@@ -105,7 +100,6 @@ class AffiliateHistory(object):
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
             "must implement a `domains` method")
 
-    @cached_property
     @classmethod
     def name(cls):
         """Returns a human readable description of the type of affiliate
@@ -164,7 +158,7 @@ class AffiliateHistory(object):
             A list of zero or more BroRecords
         """
         nodes = []
-        for domain_name, match_type in cls.domains:
+        for domain_name, match_type in cls.domains():
             if match_type is FULL_DOMAIN:
                 domain_nodes = graph.nodes_for_host(domain_name)
                 if domain_nodes:
@@ -471,7 +465,7 @@ class AffiliateCheckout(object):
         self._history = None
 
     def __str__(self):
-        output = "Type: {0}\n".format(self.__class__.name)
+        output = "Type: {0}\n".format(self.__class__.name())
         output += "IP: {0}\n".format(self.ip)
         output += "Agent: {0}\n".format(self.user_agent)
         output += "Checkout Time: {0}\n".format(self.cart_record.date_str)

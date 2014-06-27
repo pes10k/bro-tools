@@ -60,10 +60,10 @@ for path, graphs in ins:
         for marketer in marketers:
             # First extract the dict for this marketer
             try:
-                client_dict = history_by_client[marketer.name]
+                client_dict = history_by_client[marketer.name()]
             except:
                 client_dict = {}
-                history_by_client[marketer.name] = client_dict
+                history_by_client[marketer.name()] = client_dict
 
             # Next, try to extract a history object for this client
             # out of the dict of clients for the given marketer
@@ -77,7 +77,7 @@ for path, graphs in ins:
 
             values = stuffs + sets + carts
             if values:
-                debug("Marketer: {0}".format(marketer.name))
+                debug("Marketer: {0}".format(marketer.name()))
                 debug("For IP: {0}".format(hash_key))
                 debug("-----")
             if stuffs:
