@@ -2,7 +2,6 @@
 amazon session tokens, as a loose proxy for how many clients are sharing an ip
 behind a NAT."""
 
-import pprint
 import re
 import sys
 import brotools.reports
@@ -78,6 +77,7 @@ for key, tokens in ip_tokens.items():
     parts = key.split(" ")
     ip = parts[0]
     ua = " ".join(parts[1:])
+    print key, ip, ua, parts
     out.write("IP: {0}\n".format(ip))
     out.write("UA: {0}\n".format(ua))
     for t, dates in tokens.items():
