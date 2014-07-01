@@ -67,7 +67,7 @@ num_reused_ips = sum([1 if len(v) > 1 else 0 for v in ip_tokens.values()])
 out.write("IP Aliasing\n")
 out.write("# IPs: {0}\n".format(len(ip_tokens)))
 out.write("Reused IPS: {0}\n".format(num_reused_ips))
-out.write("----------\n\n")
+out.write("==========\n\n")
 for ip, tokens in ip_tokens.items():
     if len(tokens) == 1:
         continue
@@ -75,6 +75,7 @@ for ip, tokens in ip_tokens.items():
     for t, dates in tokens.items():
         is_collision = collision(dates)
         out.write("Collision: {0}\n".format("YES" if is_collision else "NO"))
+        out.write("-----\n")
         out.write(" * Session Token: {0}\n".format(t))
         for d in dates:
             out.write(" * * {0}\n".format(d))
@@ -85,7 +86,7 @@ num_reused_ip_ua = sum([1 if len(v) > 1 else 0 for v in ip_ua_tokens.values()])
 out.write("IP/UA Aliasing\n")
 out.write("# IPs / UA Pairs: {0}\n".format(len(ip_ua_tokens)))
 out.write("Reused IPS / UA Pairs: {0}\n".format(num_reused_ip_ua))
-out.write("----------\n")
+out.write("==========\n\n")
 for key, tokens in ip_ua_tokens.items():
     if len(tokens) == 1:
         continue
@@ -97,6 +98,7 @@ for key, tokens in ip_ua_tokens.items():
     for t, dates in tokens.items():
         is_collision = collision(dates)
         out.write("Collision: {0}\n".format("YES" if is_collision else "NO"))
+        out.write("-----\n")
         out.write(" * Session Token: {0}\n".format(t))
         for d in dates:
             out.write(" * * {0}\n".format(d))
