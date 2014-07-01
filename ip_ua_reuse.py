@@ -57,6 +57,8 @@ out.write("# IPs: {0}\n".format(len(ip_tokens)))
 out.write("Reused IPS: {0}\n".format(num_reused_ips))
 out.write("----------\n\n")
 for ip, tokens in ip_tokens.items():
+    if len(tokens) == 1:
+        continue
     out.write("IP: {0}\n".format(ip))
     for t, dates in tokens.items():
         out.write(" * Session Token: {0}\n".format(t))
@@ -71,6 +73,8 @@ out.write("# IPs / UA Pairs: {0}\n".format(len(ip_ua_tokens)))
 out.write("Reused IPS / UA Pairs: {0}\n".format(num_reused_ip_ua))
 out.write("----------\n")
 for key, tokens in ip_tokens.items():
+    if len(tokens) == 1:
+        continue
     parts = key.split(" ")
     ip = parts[0]
     ua = " ".join(parts[1:])
