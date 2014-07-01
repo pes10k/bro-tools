@@ -465,7 +465,7 @@ class AffiliateCheckout(object):
         self._history = None
 
     def __str__(self):
-        output = "Type: {0}\n".format(self.__class__.name())
+        output = "Type: {0}\n".format(self.site_h.__class__.name())
         output += "IP: {0}\n".format(self.ip)
         output += "Agent: {0}\n".format(self.user_agent)
         output += "Checkout Time: {0}\n".format(self.cart_record.date_str)
