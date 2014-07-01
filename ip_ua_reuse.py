@@ -10,6 +10,19 @@ import brotools.records
 parser = brotools.reports.default_cli_parser(sys.modules[__name__].__doc__)
 count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 
+def collision(*args):
+    """Returns a boolean description of whether there are any overlapping
+    dates in the two given, sorted date ranges."""
+    sorted(args, key=lambda x: x[0])
+    last_date = None
+    for a in args:
+        if not last_date:
+            last_date = a[-1]
+            continue
+        if last_date > a[0]:
+            return True
+    return False
+
 amz_token_pattern = re.compile('session-token=([^\;]+)')
 
 debug("Getting ready to start reading {0} graphs".format(count))
@@ -60,6 +73,8 @@ for ip, tokens in ip_tokens.items():
         continue
     out.write("IP: {0}\n".format(ip))
     for t, dates in tokens.items():
+        is_collision = collision(dates)
+        out.write("Collision: {0}\n".format("YES" if is_collision else "NO"))
         out.write(" * Session Token: {0}\n".format(t))
         for d in dates:
             out.write(" * * {0}\n".format(d))
@@ -80,6 +95,8 @@ for key, tokens in ip_ua_tokens.items():
     out.write("IP: {0}\n".format(ip))
     out.write("UA: {0}\n".format(ua))
     for t, dates in tokens.items():
+        is_collision = collision(dates)
+        out.write("Collision: {0}\n".format("YES" if is_collision else "NO"))
         out.write(" * Session Token: {0}\n".format(t))
         for d in dates:
             out.write(" * * {0}\n".format(d))
