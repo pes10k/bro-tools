@@ -20,6 +20,7 @@ def collision(*args):
             last_date = a[-1]
             continue
         if last_date > a[0]:
+            last_date = a[-1]
             return True
     return False
 
