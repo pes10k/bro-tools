@@ -386,7 +386,7 @@ class AffiliateHistory(object):
             # the cart, then automatically start a new checkout
             # collection to track what happens to this this request
             if t == CART:
-                checkouts.append(AffiliateCheckout(r, g, cookie_ttl, self))
+                checkouts.append(AffiliateCheckout(r, g, self, cookie_ttl))
                 continue
 
             # Otherwise, if this is not a request to add something to a cart,
