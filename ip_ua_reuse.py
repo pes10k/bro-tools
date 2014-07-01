@@ -73,11 +73,11 @@ out.write("==========\n\n")
 for ip, tokens in ip_tokens.items():
     if len(tokens) == 1:
         continue
+    is_collision = collision(tokens.values())
     out.write("IP: {0}\n".format(ip))
+    out.write("Collision: {0}\n".format("YES" if is_collision else "NO"))
+    out.write("-----\n")
     for t, dates in tokens.items():
-        is_collision = collision(dates)
-        out.write("Collision: {0}\n".format("YES" if is_collision else "NO"))
-        out.write("-----\n")
         out.write(" * Session Token: {0}\n".format(t))
         for d in dates:
             out.write(" * * {0}\n".format(d))
@@ -99,12 +99,12 @@ for key, tokens in ip_ua_tokens.items():
     parts = key.split(" ")
     ip = parts[0]
     ua = " ".join(parts[1:])
+    is_collision = collision(tokens.values())
     out.write("IP: {0}\n".format(ip))
     out.write("UA: {0}\n".format(ua))
+    out.write("Collision: {0}\n".format("YES" if is_collision else "NO"))
+    out.write("-----\n")
     for t, dates in tokens.items():
-        is_collision = collision(dates)
-        out.write("Collision: {0}\n".format("YES" if is_collision else "NO"))
-        out.write("-----\n")
         out.write(" * Session Token: {0}\n".format(t))
         for d in dates:
             out.write(" * * {0}\n".format(d))
