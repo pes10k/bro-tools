@@ -75,10 +75,10 @@ for ip, tokens in ip_tokens.items():
     for t, dates in tokens.items():
         is_collision = collision(dates)
         out.write("Collision: {0}\n".format("YES" if is_collision else "NO"))
+        out.write("Session Token: {0}\n".format(t))
         out.write("-----\n")
-        out.write(" * Session Token: {0}\n".format(t))
         for d in dates:
-            out.write(" * * {0}\n".format(d))
+            out.write(" * {0}\n".format(d))
     out.write("\n")
 out.write("\n\n")
 
@@ -98,9 +98,9 @@ for key, tokens in ip_ua_tokens.items():
     for t, dates in tokens.items():
         is_collision = collision(dates)
         out.write("Collision: {0}\n".format("YES" if is_collision else "NO"))
+        out.write("Session Token: {0}\n".format(t))
         out.write("-----\n")
-        out.write(" * Session Token: {0}\n".format(t))
         for d in dates:
-            out.write(" * * {0}\n".format(d))
+            out.write(" * {0}\n".format(d))
     out.write("\n")
 out.write("\n\n")
