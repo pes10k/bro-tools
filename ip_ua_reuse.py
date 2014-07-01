@@ -24,7 +24,11 @@ for path, graphs in ins:
     debug("{0}-{1}. Considering {2}".format(index, count, path))
     debug("{0}-{1}. Found {2} graphs".format(index, count, len(graphs)))
     for g in graphs:
-        nodes = g.nodes_for_host('www.amazon.com') + g.nodes_for_host("amazon.com")
+        nodes = []
+        if g.nodes_for_host('www.amazon.com'):
+            nodes += g.nodes_for_host('www.amazon.com')
+        if g.nodes_for_host("amazon.com"):
+            nodes += g.nodes_for_host("amazon.com")
         for n in nodes:
             if not n.cookies:
                 continue
