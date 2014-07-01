@@ -71,13 +71,12 @@ out.write("IP/UA Aliasing\n")
 out.write("# IPs / UA Pairs: {0}\n".format(len(ip_ua_tokens)))
 out.write("Reused IPS / UA Pairs: {0}\n".format(num_reused_ip_ua))
 out.write("----------\n")
-for key, tokens in ip_tokens.items():
+for key, tokens in ip_ua_tokens.items():
     if len(tokens) == 1:
         continue
     parts = key.split(" ")
     ip = parts[0]
     ua = " ".join(parts[1:])
-    print key, ip, ua, parts
     out.write("IP: {0}\n".format(ip))
     out.write("UA: {0}\n".format(ua))
     for t, dates in tokens.items():
