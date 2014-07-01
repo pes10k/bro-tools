@@ -63,10 +63,12 @@ for path, graphs in ins:
             ip_ua_tokens[key][token].append(n.ts)
 
 num_reused_ips = sum([1 if len(v) > 1 else 0 for v in ip_tokens.values()])
+num_collisions = sum([1 if collision(dates) else 0 for dates in [t for t in ip_tokens.values()].values()])
 
 out.write("IP Aliasing\n")
 out.write("# IPs: {0}\n".format(len(ip_tokens)))
 out.write("Reused IPS: {0}\n".format(num_reused_ips))
+out.write("Collisions {0}\n".format(num_collisions))
 out.write("==========\n\n")
 for ip, tokens in ip_tokens.items():
     if len(tokens) == 1:
@@ -83,9 +85,11 @@ for ip, tokens in ip_tokens.items():
 out.write("\n\n")
 
 num_reused_ip_ua = sum([1 if len(v) > 1 else 0 for v in ip_ua_tokens.values()])
+num_collisions = sum([1 if collision(dates) else 0 for dates in [t for t in ip_ua_tokens.values()].values()])
 out.write("IP/UA Aliasing\n")
 out.write("# IPs / UA Pairs: {0}\n".format(len(ip_ua_tokens)))
 out.write("Reused IPS / UA Pairs: {0}\n".format(num_reused_ip_ua))
+out.write("Collisions {0}\n".format(num_collisions))
 out.write("==========\n\n")
 for key, tokens in ip_ua_tokens.items():
     if len(tokens) == 1:
