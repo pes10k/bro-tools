@@ -68,7 +68,7 @@ num_collisions = sum([1 if collision(tokens.values()) else 0 for tokens in [t fo
 out.write("IP Aliasing\n")
 out.write("# IPs: {0}\n".format(len(ip_tokens)))
 out.write("Reused IPS: {0}\n".format(num_reused_ips))
-out.write("Collisions {0}\n".format(num_collisions))
+out.write("Collisions: {0}\n".format(num_collisions))
 out.write("==========\n\n")
 for ip, tokens in ip_tokens.items():
     if len(tokens) == 1:
@@ -91,7 +91,7 @@ num_collisions = sum([1 if collision(tokens.values()) else 0 for tokens in [t fo
 out.write("IP/UA Aliasing\n")
 out.write("# IPs / UA Pairs: {0}\n".format(len(ip_ua_tokens)))
 out.write("Reused IPS / UA Pairs: {0}\n".format(num_reused_ip_ua))
-out.write("Collisions {0}\n".format(num_collisions))
+out.write("Collisions: {0}\n".format(num_collisions))
 out.write("==========\n\n")
 for key, tokens in ip_ua_tokens.items():
     if len(tokens) == 1:
