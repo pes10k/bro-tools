@@ -222,7 +222,7 @@ class AffiliateHistory(object):
         """
         query_params = record.query_params
         try:
-            tags = query_params[cls.referrer_tag()]
+            tags = query_params[cls.referrer_tag(record)]
             return None if len(tags) == 0 else tags[0]
         except KeyError:
             return None
