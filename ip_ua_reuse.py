@@ -42,13 +42,13 @@ for path, graphs in ins:
                 ip_tokens[g.ip] = {}
             if token not in ip_tokens[g.ip]:
                 ip_tokens[g.ip][token] = []
-            ip_tokens[g.ip][token].append(g.ts)
+            ip_tokens[g.ip][token].append(n.ts)
 
             if key not in ip_ua_tokens:
                 ip_ua_tokens[key] = {}
             if token not in ip_ua_tokens[key]:
                 ip_ua_tokens[key][token] = []
-            ip_ua_tokens[key][token].append(g.ts)
+            ip_ua_tokens[key][token].append(n.ts)
 
 num_reused_ips = sum([1 if len(v) > 1 else 0 for v in ip_tokens.values()])
 
