@@ -13,9 +13,9 @@ count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 def collision(*args):
     """Returns a boolean description of whether there are any overlapping
     dates in the two given, sorted date ranges."""
-    sorted(args, key=lambda x: x[0])
+    date_ranges = sorted(args, key=lambda x: x[0])
     last_date = None
-    for a in args:
+    for a in date_ranges:
         if not last_date:
             last_date = a[-1]
             continue
