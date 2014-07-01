@@ -20,8 +20,8 @@ def collision(*args):
             last_date = a[-1]
             continue
         if last_date > a[0]:
-            last_date = a[-1]
             return True
+        last_date = a[-1]
     return False
 
 amz_token_pattern = re.compile('session-token=([^\;]+)')
