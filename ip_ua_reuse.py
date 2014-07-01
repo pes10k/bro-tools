@@ -81,6 +81,7 @@ for ip, tokens in ip_tokens.items():
         out.write("-----\n")
         for d in dates:
             out.write(" * {0}\n".format(d))
+        out.write("\n")
     out.write("\n")
 out.write("\n\n")
 
@@ -107,5 +108,6 @@ for key, tokens in ip_ua_tokens.items():
         out.write("-----\n")
         for d in dates:
             out.write(" * {0}\n".format(d))
+        out.write("\n")
     out.write("\n")
 out.write("\n\n")
