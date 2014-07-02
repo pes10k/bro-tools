@@ -11,7 +11,7 @@ import brotools.reports
 from stuffing.amazon import is_cookie_set
 
 parser = brotools.reports.default_cli_parser(sys.modules[__name__].__doc__)
-ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
+count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 
 for path, data in ins:
     debug("Considering {0}".format(path))

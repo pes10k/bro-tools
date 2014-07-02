@@ -232,6 +232,24 @@ class BroRecordGraph(object):
         except KeyError:
             return None
 
+    def nodes_for_hosts(self, *args):
+        """Returns a list of all nodes in the graph that are requests to
+        any of the given hosts.
+
+        Args:
+            args -- one or more host names, as strings
+
+        Return:
+            A list of zero or more BroRecords, that were made to one of the
+            given hosts.
+        """
+        nodes = []
+        for host in args:
+            nodes_for_host = self.nodes_for_host(host)
+            if nodes_for_host:
+                nodes += nodes_for_host
+        return nodes
+
     def leaves(self):
         """Returns a iterator of BroRecords, each of which are leaves in t
         graph (meaining record nodes that are there referrer for no other node).

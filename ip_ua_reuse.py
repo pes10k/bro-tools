@@ -2,10 +2,10 @@
 amazon session tokens, as a loose proxy for how many clients are sharing an ip
 behind a NAT."""
 
-import re
 import sys
 import brotools.reports
 import brotools.records
+import stuffing.amazon
 
 parser = brotools.reports.default_cli_parser(sys.modules[__name__].__doc__)
 count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
@@ -24,8 +24,6 @@ def collision(*args):
         last_date = a[-1]
     return False
 
-amz_token_pattern = re.compile('session-token=([^\;]+)')
-
 debug("Getting ready to start reading {0} graphs".format(count))
 index = 0
 
@@ -37,20 +35,12 @@ for path, graphs in ins:
     debug("{0}-{1}. Considering {2}".format(index, count, path))
     debug("{0}-{1}. Found {2} graphs".format(index, count, len(graphs)))
     for g in graphs:
-        nodes = []
-        if g.nodes_for_host('www.amazon.com'):
-            nodes += g.nodes_for_host('www.amazon.com')
-        if g.nodes_for_host("amazon.com"):
-            nodes += g.nodes_for_host("amazon.com")
+        nodes = g.nodes_for_hosts("www.amazon.com", "amazon.com")
         for n in nodes:
-            if not n.cookies:
-                continue
-            match = amz_token_pattern.search(n.cookies)
-            if not match:
+            token = stuffing.amazon.session_token(n)
+            if not token:
                 continue
             key = g.ip + " " + n.user_agent
-            token = match.group(1)
-
             if g.ip not in ip_tokens:
                 ip_tokens[g.ip] = {}
             if token not in ip_tokens[g.ip]:
