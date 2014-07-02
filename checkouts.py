@@ -57,14 +57,21 @@ for path, graphs in ins():
     debug("{0}-{1}. Found {2} graphs".format(index, count, len(graphs)))
     for g in graphs:
         for marketer in marketers:
+
+            # See if we can find a session tracking cookie for this visitor
+            # in this graph.  If not, then we know there are no cookie stuffs,
+            # checkouts, or other relevant activity in the graph we
+            # care about, so we can continue
+            hash_key = marketer.session_id_for_graph(g)
+            if not hash_key:
+                continue
+
             # First extract the dict for this marketer
             try:
                 client_dict = history_by_client[marketer.name()]
             except:
                 client_dict = {}
                 history_by_client[marketer.name()] = client_dict
-
-            hash_key = marketer.session_id_for_graph(g)
 
             # Next, try to extract a history object for this client
             # out of the dict of clients for the given marketer
@@ -79,7 +86,7 @@ for path, graphs in ins():
             values = stuffs + sets + carts
             if values:
                 debug("Marketer: {0}".format(marketer.name()))
-                debug("For session: {0}".format(hash_key))
+                debug("Session: {0}".format(hash_key))
                 debug("-----")
             if stuffs:
                 debug(" * Stuffs: {0}".format(stuffs))
