@@ -79,7 +79,7 @@ for path, graphs in ins():
             values = stuffs + sets + carts
             if values:
                 debug("Marketer: {0}".format(marketer.name()))
-                debug("For IP: {0}".format(hash_key))
+                debug("For session: {0}".format(hash_key))
                 debug("-----")
             if stuffs:
                 debug(" * Stuffs: {0}".format(stuffs))
