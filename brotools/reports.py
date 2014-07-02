@@ -114,8 +114,7 @@ def parse_default_cli_args(parser):
     """
     args = parser.parse_args()
 
-    inputs = unpickled_inputs(args.inputs or sys.stdin.read())
-    num_inputs = next(inputs)
+    num_inputs, inputs = unpickled_inputs(args.inputs or sys.stdin.read())
 
     output_h = open(args.output, 'w') if args.output else sys.stdout
 
@@ -127,23 +126,20 @@ def parse_default_cli_args(parser):
     return num_inputs, inputs, output_h, debug, args
 
 def unpickled_inputs(paths):
-    """Returns an iterator for reading pickled files off disk.
-
-    Note that this function should not be called directly, since it acts
-    funny.  On first call it yields the number of pickled files its going to
-    return, with subsequent calls returning pairs of file names and
-    pickled data.
+    """Returns the count of files that will try to be unpickled, along with
+    a iterator function that returns the contents of those unpickled files.
 
     Args:
         paths -- a list of paths to pickled objects on disk
 
     Returns:
-        On first call it returns the count of the number of values it will
-        parse and return.  Subsequent calls return pairs of values, the first
-        being the path on disk, as a string, that was unpickled, and the second
-        being the object that was unpickled.
+        Two values, first an integer count of the number of values it will
+        parse and return, and second, a generator function that returns
+        pairs of values, the first being the path on disk, as a string, that was
+        unpickled, and the second being the object that was unpickled.
     """
     log = logging.getLogger("brorecords")
+
 
     # First try assuming we've gotten a single string of file paths, and if
     # that doesn't seem right, assume we've gotten a list of file paths
@@ -155,13 +151,16 @@ def unpickled_inputs(paths):
     # Next, do some simple trimming to make sure we deal with common issues,
     # like a trailing empty string in a list, etc.
     processed_in_paths = [p.strip() for p in in_paths if len(p.strip()) > 0]
-    yield len(processed_in_paths)
 
-    for p in processed_in_paths:
-        with open(p, 'r') as h:
-            try:
-                yield p, pickle.load(h)
-            except:
-                log.info(" * Pickle error, skipping: {0}".format(p))
-                pass
+    def _unpickled_files():
+        for p in processed_in_paths:
+            with open(p, 'r') as h:
+                try:
+                    yield p, pickle.load(h)
+                except:
+                    log.info(" * Pickle error, skipping: {0}".format(p))
+                    pass
+
+    return len(processed_in_paths), _unpickled_files
+
 
