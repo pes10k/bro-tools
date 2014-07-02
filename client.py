@@ -44,10 +44,10 @@ for path, graphs in ins:
             continue
 
         if start_ts and g.latest_ts < start_ts:
-            continue
+            break
 
         if end_ts and g.earliest_ts > end_ts:
-            continue
+            break
 
         debug(" * Found matching graph with root {0}".format(g._root.url))
         out.write(str(g))

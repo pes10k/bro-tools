@@ -151,6 +151,7 @@ def unpickled_inputs(paths):
     # Next, do some simple trimming to make sure we deal with common issues,
     # like a trailing empty string in a list, etc.
     processed_in_paths = [p.strip() for p in in_paths if len(p.strip()) > 0]
+    processed_in_paths.sort()
 
     def _unpickled_files():
         for p in processed_in_paths:
