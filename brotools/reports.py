@@ -162,6 +162,6 @@ def unpickled_inputs(paths):
                     log.info(" * Pickle error, skipping: {0}".format(p))
                     pass
 
-    return len(processed_in_paths), _unpickled_files()
+    return len(processed_in_paths), _unpickled_files
 
 
