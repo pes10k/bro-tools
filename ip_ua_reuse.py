@@ -30,7 +30,7 @@ index = 0
 ip_tokens = {}
 ip_ua_tokens = {}
 
-for path, graphs in ins:
+for path, graphs in ins():
     index += 1
     debug("{0}-{1}. Considering {2}".format(index, count, path))
     debug("{0}-{1}. Found {2} graphs".format(index, count, len(graphs)))

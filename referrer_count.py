@@ -12,7 +12,7 @@ debug("Getting ready to start reading {0} graphs".format(count))
 index = 0
 num_records = 0
 num_rec_with_referrer = 0
-for path, graphs in ins:
+for path, graphs in ins():
     index += 1
     debug("{0}-{1}. Considering {2}".format(index, count, path))
     debug("{0}-{1}. Found {2} graphs".format(index, count, len(graphs)))
