@@ -36,12 +36,12 @@ num_ips = sum([len(ips) for ips in token_ips.values()])
 
 out.write("Session Tokens: {}\n".format(len(token_ips)))
 out.write("IPs: {}\n".format(num_ips))
-out.write("Avg IPs Per Token: {}\n".format(float(len(token_ips)) / num_ips))
+out.write("Avg IPs Per Token: {}\n".format(num_ips / float(len(token_ips))))
 out.write("==========\n")
 for token, ips in token_ips.items():
     out.write("\n")
     out.write("Token: {}\n".format(token))
     out.write("IPs: {}\n".format(len(ips)))
-    out.write("-----")
+    out.write("-----\n")
     for ip in ips:
         out.write(" * {}\n".format(ip))
