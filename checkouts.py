@@ -56,7 +56,6 @@ for path, graphs in ins():
     debug("{0}-{1}. Considering {2}".format(index, count, path))
     debug("{0}-{1}. Found {2} graphs".format(index, count, len(graphs)))
     for g in graphs:
-        hash_key = g.ip + " " + g.user_agent
         for marketer in marketers:
             # First extract the dict for this marketer
             try:
@@ -64,6 +63,8 @@ for path, graphs in ins():
             except:
                 client_dict = {}
                 history_by_client[marketer.name()] = client_dict
+
+            hash_key = marketer.session_id_for_graph(g)
 
             # Next, try to extract a history object for this client
             # out of the dict of clients for the given marketer

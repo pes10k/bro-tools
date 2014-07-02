@@ -22,27 +22,26 @@ class AffiliateHistory(object):
     marketing cookie sets (and stuffs), and hitting the shopping cart.
     """
 
-    def __init__(self, graph):
-        """The initializer takes an initial graph, which will be parsed to
-        create the initial set of history points in this collection.
-
-        Args:
-            graph -- a BroRecordGraph instance
-        """
-        self.ip = graph.ip
-        self.user_agent = graph.user_agent
-
-        # Each of these lists will contain tuples of two values,
-        # (record, graph), the BroRecord of the actual request, and
-        # the BroRecordGraph that the request came from
-        self._cookie_stuffs = []
-        self._cookie_sets = []
-        self._cart_requests = []
-        self.consider(graph)
-
     """
     Required class methods for all subclasses
     """
+
+    @classmethod
+    def session_id(cls, record):
+        """Returns a value that can be used for tracking someone visiting
+        this affiliate marketer across subsequent requests.
+
+        Args:
+            record -- a BroRecord instance
+
+        Return:
+            Either a string that uniquely identifies a visitor across
+            subsequent visits to this affiliate marketer, or None if
+            the given request does not contain such an identifier.
+        """
+        raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
+            "must implement a `checkout_urls` class method.")
+
 
     @classmethod
     def checkout_urls(cls):
@@ -56,7 +55,7 @@ class AffiliateHistory(object):
             A tuple or list of zero or more strings
         """
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
-            "must implement a `checkout_urls` method")
+            "must implement a `checkout_urls` class method.")
 
     @classmethod
     def referrer_tag(cls):
@@ -68,7 +67,7 @@ class AffiliateHistory(object):
             for a request that would set an affiliate marketing cookie.
         """
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
-            "must implement a `referrer_tag` method")
+            "must implement a `referrer_tag` class method.")
 
     @classmethod
     def cookie_set_pattern(cls):
@@ -79,7 +78,7 @@ class AffiliateHistory(object):
             A re.RegexObject instance
         """
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
-            "must implement a `cookie_set_pattern` method")
+            "must implement a `cookie_set_pattern` class method.")
 
     @classmethod
     def domains(cls):
@@ -98,7 +97,7 @@ class AffiliateHistory(object):
             A list of tuples, each tuple having a string and an integer in it.
         """
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
-            "must implement a `domains` method")
+            "must implement a `domains` class method.")
 
     @classmethod
     def name(cls):
@@ -113,11 +112,31 @@ class AffiliateHistory(object):
             marketing being tracked by this collection.
         """
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
-            "must implement a `name` method")
+            "must implement a `name` class method.")
 
     """
     Implemented class methods
     """
+
+    @classmethod
+    def session_id_for_graph(cls, graph):
+        """Finds the session id used in this graph, identifiying the client
+        to the marketer.  If there is more than one, then the first
+        one found will be used.
+
+        Args:
+            graph -- a BroRecordGraph instance
+
+        Return:
+            The first session id for this visitor found in the graph, or
+            None if no session id was found.
+        """
+        nodes = cls.nodes_for_domains(graph)
+        for n in nodes:
+            token = cls.session_id(n)
+            if token:
+                return token
+        return None
 
     @classmethod
     def checkouts_in_graph(cls, graph):
@@ -269,6 +288,36 @@ class AffiliateHistory(object):
 
         return stuffing_nodes
 
+    """
+    Instance Methods
+    """
+
+    def __init__(self, graph):
+        """The initializer takes an initial graph, which will be parsed to
+        create the initial set of history points in this collection.
+
+        Args:
+            graph -- a BroRecordGraph instance
+        """
+        # A collection of all IP addresses this visitor has requested from,
+        # with the ip addresses being strings
+        self.ips = set()
+        self.ips.add(graph.ip)
+
+        # A collection of all us
+        self.user_agent = graph.user_agent
+
+        # The tracking token used for this visitor to this marketer
+        self.session_id = self.__class__.session_id_for_graph(graph)
+
+        # Each of these lists will contain tuples of two values,
+        # (record, graph), the BroRecord of the actual request, and
+        # the BroRecordGraph that the request came from
+        self._cookie_stuffs = []
+        self._cookie_sets = []
+        self._cart_requests = []
+        self.consider(graph)
+
     def consider(self, graph):
         """Examines a given graph of web requests, and extracts the
         relevant points were interested in tracking (instances of cookie
@@ -279,7 +328,10 @@ class AffiliateHistory(object):
             graph -- a BroRecordGraph instance
 
         Return:
-            A tuple of three values, the counts of the number of
+            A tuple of four values
+                - the session / tracking value for the
+
+                the counts of the number of
             cookie stuffs, legit-seeming cookie stuffs, and cart requests
             found in the given graph.
         """
@@ -295,7 +347,11 @@ class AffiliateHistory(object):
         cart_adds = self.__class__.checkouts_in_graph(graph)
         self._cart_requests += [(n, graph) for n in cart_adds]
 
-        return len(stuff_nodes), len(cookie_set_nodes), len(cart_adds)
+        counts = len(stuff_nodes), len(cookie_set_nodes), len(cart_adds)
+        if sum(counts) > 0:
+            self.ips.add(graph.ip)
+
+        return counts
 
     def counts(self):
         """Returns a brief summary of the number of relevant requests currently
@@ -441,9 +497,6 @@ class AffiliateCheckout(object):
         self.ts = record.ts
         self.site_h = history
 
-        self.ip = graph.ip
-        self.user_agent = graph.user_agent
-
         self.cart_record = record
         self.cart_graph = graph
 
@@ -466,8 +519,9 @@ class AffiliateCheckout(object):
 
     def __str__(self):
         output = "Type: {0}\n".format(self.site_h.__class__.name())
-        output += "IP: {0}\n".format(self.ip)
-        output += "Agent: {0}\n".format(self.user_agent)
+        output += "IPs: {0}\n".format(",".join(self.site_h.ips))
+        output += "Agent: {0}\n".format(self.site_h.user_agent)
+        output += "Session ID: {0}\n".format(self.site_h.session_id)
         output += "Checkout Time: {0}\n".format(self.cart_record.date_str)
         output += "URL: {0}\n".format(self.cart_record.url)
         output += "\n"

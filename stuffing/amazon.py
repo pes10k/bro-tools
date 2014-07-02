@@ -33,6 +33,10 @@ class AmazonAffiliateHistory(AffiliateHistory):
     """
 
     @classmethod
+    def session_id(cls, record):
+        return session_token(record)
+
+    @classmethod
     def checkout_urls(cls):
         return ('handle-buy-box',)
 
