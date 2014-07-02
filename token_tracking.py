@@ -38,7 +38,7 @@ out.write("Session Tokens: {}\n".format(len(token_ips)))
 out.write("IPs: {}\n".format(num_ips))
 out.write("Avg IPs Per Token: {}\n".format(float(len(token_ips)) / num_ips))
 out.write("==========\n")
-for token, ips in token_ips.values():
+for token, ips in token_ips.items():
     out.write("\n")
     out.write("Token: {}\n".format(token))
     out.write("IPs: {}\n".format(len(ips)))
