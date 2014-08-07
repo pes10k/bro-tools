@@ -96,6 +96,39 @@ def default_cli_parser(description=None):
                    "STDOUT.")
     return p
 
+def marketing_cli_parser(description=None):
+    """Provides the same extended functionality of the `default_cli_parser`
+    function, but also adds additional arguments for which affiliate marketers
+    the user would like to include in the operation.
+
+    Args:
+        description -- Description of the program we're parsing arguments for
+
+    Return:
+        An initilized `argparse.ArgumentParser` instance with defaults
+        for reading and writing IO, and for selecting which affiliate marketers
+        we'd like to investigate.
+    """
+    parser = default_cli_parser(description)
+    parser.add_argument('--amazon', action="store_true",
+                        help="Whether to look for Amazon cookie stuffing. " +
+                        "If no marketer is specified, all will be used " +
+                        "(Amazon, GoDaddy, etc.)")
+    parser.add_argument('--godaddy', action="store_true",
+                        help="Whether to look for GoDaddy cookie stuffing. " +
+                        "If no marketer is specified, all will be used " +
+                        "(Amazon, GoDaddy, etc.)")
+    parser.add_argument('--pussycash', action="store_true",
+                        help="Whether to look for PussyCash affilate " +
+                        "marketing cookie stuffing.")
+    parser.add_argument('--sextronics', action="store_true",
+                        help="Whether to look for Sextronics affilate " +
+                        "marketing cookie stuffing.")
+    parser.add_argument('--moreniche', action="store_true",
+                        help="Whether to look for MoreNitch affiliate " +
+                        "marketing cookie stuffing.")
+    return parser
+
 def parse_default_cli_args(parser):
     """Parses the arguments passed with the commandline, and returns objects
     instantiated to handle the above common case options.
@@ -125,6 +158,52 @@ def parse_default_cli_args(parser):
 
     return num_inputs, inputs, output_h, debug, args
 
+def parse_marketing_cli_args(parser):
+    """Parses the arguments passed with the commandline, and returns objects
+    instantiated to handle the above common case options.
+
+    Args:
+        parser -- An `argparse.ArgumentParser` instance, likely returned
+                  from the `marketing_cli_parser` function in this module
+
+    Return:
+        A tuple with five values,
+            - the count of the number of items that are provided to process
+            - an iterator for reading unpickled data from
+            - a file handle for writing output to
+            - a function that should be used for writing error messages
+            - a list of AffiliateHistory subclasses to examine the graphs with
+            - the `Namespace` object returned from calling `parser.parse_args()`
+    """
+    num_inputs, inputs, output_h, debug, args = parse_default_cli_args(parser)
+
+    marketers = []
+    any_affiliates = any([args.amazon, args.godaddy, args.pussycash,
+                          args.sextronics, args.moreniche])
+
+    if not any_affiliates or args.pussycash:
+        import stuffing.pussycash
+        marketers += stuffing.pussycash.CLASSES
+
+    if not any_affiliates or args.sextronics:
+        import stuffing.sextronics
+        marketers += stuffing.sextronics.CLASSES
+
+    if not any_affiliates or args.amazon:
+        import stuffing.amazon
+        marketers.append(stuffing.amazon.AmazonAffiliateHistory)
+
+    if not any_affiliates or args.godaddy:
+        import stuffing.godaddy
+        marketers.append(stuffing.godaddy.GodaddyAffiliateHistory)
+
+    if not any_affiliates or args.moreniche:
+        import stuffing.moreniche
+        marketers += stuffing.moreniche.CLASSES
+
+    return num_inputs, inputs, output_h, debug, marketers, args
+
+
 def unpickled_inputs(paths):
     """Returns the count of files that will try to be unpickled, along with
     a iterator function that returns the contents of those unpickled files.
@@ -139,7 +218,6 @@ def unpickled_inputs(paths):
         unpickled, and the second being the object that was unpickled.
     """
     log = logging.getLogger("brorecords")
-
 
     # First try assuming we've gotten a single string of file paths, and if
     # that doesn't seem right, assume we've gotten a list of file paths

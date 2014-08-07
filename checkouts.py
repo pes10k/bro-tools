@@ -6,58 +6,17 @@ for the purchase."""
 import sys
 import brotools.reports
 import brotools.records
-import stuffing.pussycash
-import stuffing.sextronics
-import stuffing.moreniche
-from stuffing.godaddy import GodaddyAffiliateHistory
-from stuffing.amazon import AmazonAffiliateHistory
 
-parser = brotools.reports.default_cli_parser(sys.modules[__name__].__doc__)
+parser = brotools.reports.marketing_cli_parser(sys.modules[__name__].__doc__)
 parser.add_argument('--ttl', type=int, default=84600,
                     help="The time, in seconds, that an Amazon set affiliate " +
                     "marketing cookie is expected to be valid.  Default is " +
                     "one day (84600 seconds)")
 parser.add_argument('--secs', type=int, default=3600,
                     help="The minimum time in seconds that must pass between " +
-                    "a client's requests to the Amazon 'add to cart' page " +
+                    "a client's requests to the marketers 'add to cart' page " +
                     "for those requests to be treated as a seperate checkout")
-parser.add_argument('--amazon', action="store_true",
-                    help="Whether to look for Amazon cookie stuffing.  Note " +
-                    "that if no marketer is specified, all will be used " +
-                    "(Amazon, GoDaddy, etc.)")
-parser.add_argument('--godaddy', action="store_true",
-                    help="Whether to look for GoDaddy cookie stuffing.  Note " +
-                    "that if no marketer is specified, all will be used " +
-                    "(Amazon, GoDaddy, etc.)")
-parser.add_argument('--pussycash', action="store_true",
-                    help="Whether to look for PussyCash affilate marketing " +
-                    "cookie stuffing.")
-parser.add_argument('--sextronics', action="store_true",
-                    help="Whether to look for Sextronics affilate marketing " +
-                    "cookie stuffing.")
-parser.add_argument('--moreniche', action="store_true",
-                    help="Whether to look for MoreNitch affiliate marketing " +
-                    "cookie stuffing.")
-count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
-
-marketers = []
-any_affiliates = any([args.amazon, args.godaddy, args.pussycash,
-                      args.sextronics, args.moreniche])
-
-if not any_affiliates or args.pussycash:
-    marketers += stuffing.pussycash.CLASSES
-
-if not any_affiliates or args.sextronics:
-    marketers += stuffing.sextronics.CLASSES
-
-if not any_affiliates or args.amazon:
-    marketers.append(AmazonAffiliateHistory)
-
-if not any_affiliates or args.godaddy:
-    marketers.append(GodaddyAffiliateHistory)
-
-if not any_affiliates or args.moreniche:
-    marketers += stuffing.moreniche.CLASSES
+count, ins, out, debug, marketers, args = brotools.reports.parse_marketing_cli_args(parser)
 
 # Multi indexed dict, in the following format:
 #
