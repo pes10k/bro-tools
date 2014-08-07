@@ -39,7 +39,7 @@ class MoreNicheAffiliateHistory(AffiliateHistory):
         if not record.cookies:
             return None
 
-        match = cls._TOKEN_PATTERN(record.cookies)
+        match = cls._TOKEN_PATTERN.search(record.cookies)
         if not match:
             return None
 
