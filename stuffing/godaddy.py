@@ -4,7 +4,20 @@ and collections of BroRecords."""
 import re
 from .affiliate import AffiliateHistory, PARTIAL_DOMAIN
 
+TOKEN_PATTERN = re.compile('visitor=([^\;]+)')
+
 class GodaddyAffiliateHistory(AffiliateHistory):
+
+    @classmethod
+    def session_id(cls, record):
+        if not record.cookies:
+            return None
+
+        match = TOKEN_PATTERN.search(record.cookies)
+        if not match:
+            return None
+
+        return match.group(1)
 
     @classmethod
     def checkout_urls(cls):
