@@ -5,26 +5,37 @@ import re
 import new
 from .affiliate import AffiliateHistory, FULL_DOMAIN, domain_to_class_name
 
-DOMAINS = {
-    "imlive.com": "savebillclickout.ashx",
-    "sexier.com": "buycredit",
-    "www.fetishgalaxy.com": "buycredit",
-    "www.shemale.com": "buycredit",
-    "www.supermen.com" : "buycredit",
-    "phonemates.com": "Services/ControlLoader.ashx",
-    "wildmatch.com": "join",
-    "bangmatch.com": "join"
-}
+DOMAINS = (
+    ("imlive.com", "savebillclickout.ashx", r'spvdr=([^\;]+)'),
+    ("sexier.com", "buycredit", r'vi=([^\;]+)'),
+    ("www.fetishgalaxy.com", "buycredit", r'vi=([^\;]+)'),
+    ("www.shemale.com", "buycredit", r'vi=([^\;]+)'),
+    ("www.supermen.com", "buycredit", r'vi=([^\;]+)'),
+    ("phonemates.com", "Services/ControlLoader.ashx", r'vi=([^\;]+)')
+    ("wildmatch.com", "join", r'vi=([^\;]+)'),
+    ("bangmatch.com", "join", r'vi=([^\;]+)'),
+)
 
 SHARED_PATTERN = re.compile(r'(?:&|\?|^|;)wid=', re.I)
-
 
 class PussyCashAffiliateHistory(AffiliateHistory):
 
     # Set by the dynamically created sublcasses
+    _TOKEN_PATTERN = None
     _CHECKOUT_URL = None
     _DOMAIN = None
     _NAME = None
+
+    @classmethod
+    def session_id(cls, record):
+        if not record.cookies:
+            return None
+
+        match = cls._TOKEN_PATTERN(record.cookies)
+        if not match:
+            return None
+
+        return match.group(1)
 
     @classmethod
     def checkout_urls(cls):
@@ -37,7 +48,7 @@ class PussyCashAffiliateHistory(AffiliateHistory):
         Return:
             A tuple or list of zero or more strings
         """
-        return cls._CHECKOUT_URL
+        return (cls._CHECKOUT_URL,)
 
     @classmethod
     def referrer_tag(cls, record):
@@ -56,11 +67,12 @@ class PussyCashAffiliateHistory(AffiliateHistory):
         return "PussyCash Affiliate"
 
 CLASSES = []
-for domain, url in DOMAINS.items():
+for domain, url, pattern in DOMAINS:
     domain_class_name = domain_to_class_name(domain)
     a_class_name = "PussyCash{0}AffiliateHistory".format(domain_class_name)
     a_class = new.classobj(a_class_name, (PussyCashAffiliateHistory,), {})
     a_class._DOMAIN = [(domain, FULL_DOMAIN)]
     a_class._NAME = "PuussyCash Affiliate: {0}".format(domain)
     a_class._CHECKOUT_URL = url
+    a_class._TOKEN_PATTERN = re.compile(pattern)
     CLASSES.append(a_class)

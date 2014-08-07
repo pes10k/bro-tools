@@ -8,7 +8,7 @@ import brotools.reports
 import brotools.records
 import stuffing.pussycash
 import stuffing.sextronics
-import stuffing.morenitch
+import stuffing.moreniche
 from stuffing.godaddy import GodaddyAffiliateHistory
 from stuffing.amazon import AmazonAffiliateHistory
 
@@ -35,14 +35,14 @@ parser.add_argument('--pussycash', action="store_true",
 parser.add_argument('--sextronics', action="store_true",
                     help="Whether to look for Sextronics affilate marketing " +
                     "cookie stuffing.")
-parser.add_argument('--morenitch', action="store_true",
+parser.add_argument('--moreniche', action="store_true",
                     help="Whether to look for MoreNitch affiliate marketing " +
                     "cookie stuffing.")
 count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 
 marketers = []
 any_affiliates = any([args.amazon, args.godaddy, args.pussycash,
-                      args.sextronics, args.morenitch])
+                      args.sextronics, args.moreniche])
 
 if not any_affiliates or args.pussycash:
     marketers += stuffing.pussycash.CLASSES
@@ -56,8 +56,8 @@ if not any_affiliates or args.amazon:
 if not any_affiliates or args.godaddy:
     marketers.append(GodaddyAffiliateHistory)
 
-if not any_affiliates or args.morenitch:
-    marketers += stuffing.morenitch.CLASSES
+if not any_affiliates or args.moreniche:
+    marketers += stuffing.moreniche.CLASSES
 
 # Multi indexed dict, in the following format:
 #

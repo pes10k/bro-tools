@@ -5,6 +5,28 @@ import re
 import new
 from .affiliate import AffiliateHistory, domain_to_class_name, PARTIAL_DOMAIN
 
+TOKEN_PATTERN = re.compile('ntc=([^\;]+)')
+
+def session_token(record):
+    """Returns the amazon session token cookie in the given request, if one
+    exists.
+
+    Args:
+        record -- a BroRecord instances
+
+    Return:
+        Either the amazon session token, as a string, or None if there
+        was no token cookie provided in the response.
+    """
+    if not record.cookies:
+        return None
+
+    match = TOKEN_PATTERN.search(record.cookies)
+    if not match:
+        return None
+
+    return match.group(1)
+
 DOMAINS = (
     '18passwort.com',
     '3dadlltcomics.com',
@@ -67,7 +89,6 @@ DOMAINS = (
     'freepovpasswort.com',
     'freeteenpasswort.com',
     'freetrannypasswort.com',
-    'girls flashing',
     'gogoamanda.com',
     'halosweet.com',
     'hentaidreams.com',
@@ -153,6 +174,10 @@ DOMAINS = (
 class SexTronicsAffiliateHistory(AffiliateHistory):
 
     @classmethod
+    def session_id(cls, record):
+        return session_token(record)
+
+    @classmethod
     def checkout_urls(cls):
         """Returns a list of strings, each of which, if found in a url
         on the current marketer, would count as a checkout attempt.  So,
@@ -163,9 +188,7 @@ class SexTronicsAffiliateHistory(AffiliateHistory):
         Return:
             A tuple or list of zero or more strings
         """
-        return (
-            'signup.html'
-        )
+        return ('signup.html',)
 
     @classmethod
     def referrer_tag(cls, record):

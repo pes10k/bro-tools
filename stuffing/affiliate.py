@@ -55,7 +55,7 @@ class AffiliateHistory(object):
             the given request does not contain such an identifier.
         """
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
-            "must implement a `checkout_urls` class method.")
+            "must implement a `session_id` class method.")
 
 
     @classmethod
