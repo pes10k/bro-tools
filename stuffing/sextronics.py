@@ -198,7 +198,7 @@ CLASSES = []
 for domain in DOMAINS:
     domain_class_name = domain_to_class_name(domain)
     a_class_name = "SexTronics{0}AffiliateHistory".format(domain_class_name)
-    a_class = new.classobj(a_class_name, SexTronicsAffiliateHistory, {})
+    a_class = new.classobj(a_class_name, (SexTronicsAffiliateHistory,), {})
     a_class._DOMAIN = [(domain, PARTIAL_DOMAIN)]
     a_class._NAME = "Sextronics Affiliate: {0}".format(domain)
     CLASSES.append(a_class)

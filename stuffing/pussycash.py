@@ -59,7 +59,7 @@ CLASSES = []
 for domain, url in DOMAINS.items():
     domain_class_name = domain_to_class_name(domain)
     a_class_name = "PussyCash{0}AffiliateHistory".format(domain_class_name)
-    a_class = new.classobj(a_class_name, PussyCashAffiliateHistory, {})
+    a_class = new.classobj(a_class_name, (PussyCashAffiliateHistory,), {})
     a_class._DOMAIN = [(domain, FULL_DOMAIN)]
     a_class._NAME = "PuussyCash Affiliate: {0}".format(domain)
     a_class._CHECKOUT_URL = url

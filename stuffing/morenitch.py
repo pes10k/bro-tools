@@ -71,7 +71,7 @@ CLASSES = []
 for domain, url, affiliate_id in DOMAINS:
     domain_class_name = domain_to_class_name(domain)
     a_class_name = "MoreNitch{0}AffiliateHistory".format(domain_class_name)
-    a_class = new.classobj(a_class_name, MoreNitchAffiliateHistory, {})
+    a_class = new.classobj(a_class_name, (MoreNitchAffiliateHistory,), {})
     a_class._DOMAIN = [(domain, FULL_DOMAIN)]
     a_class._NAME = "MoreNitch Affiliate: {0}".format(domain)
     a_class._CHECKOUT_URL = url
