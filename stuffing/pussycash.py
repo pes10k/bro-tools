@@ -64,7 +64,7 @@ class PussyCashAffiliateHistory(AffiliateHistory):
 
     @classmethod
     def name(cls):
-        return "PussyCash Affiliate"
+        return cls._NAME
 
 CLASSES = []
 for domain, url, pattern in DOMAINS:
