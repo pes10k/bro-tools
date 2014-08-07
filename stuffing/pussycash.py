@@ -11,7 +11,7 @@ DOMAINS = (
     ("www.fetishgalaxy.com", "buycredit", r'vi=([^\;]+)'),
     ("www.shemale.com", "buycredit", r'vi=([^\;]+)'),
     ("www.supermen.com", "buycredit", r'vi=([^\;]+)'),
-    ("phonemates.com", "Services/ControlLoader.ashx", r'vi=([^\;]+)')
+    ("phonemates.com", "Services/ControlLoader.ashx", r'vi=([^\;]+)'),
     ("wildmatch.com", "join", r'vi=([^\;]+)'),
     ("bangmatch.com", "join", r'vi=([^\;]+)'),
 )
