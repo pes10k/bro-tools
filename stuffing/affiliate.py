@@ -2,6 +2,7 @@
 a collection of browsing history."""
 
 import urlparse
+import string
 
 # Values used for tracking whether a given bro record represents a cookie
 # stuffing incident (STUFF), a seemingly valid one (SET), or a request
@@ -15,6 +16,20 @@ CART = 2
 # sub.example.org or example.org)
 PARTIAL_DOMAIN = 0
 FULL_DOMAIN = 1
+
+def domain_to_class_name(name):
+    """Some affiliates have a large number of individually, but identically
+    tracked child domains.  This function converts a domain name into
+    something that makes sense to use in constructing a class name
+
+    Args:
+        name -- A domain name as a string, such as "example.org"
+
+    Return:
+        A string appropriate for using as a, or part of a, class name.
+        For example, "example.org" -> ExampleOrg
+    """
+    return string.capwords(name.replace(".", " ")).replace(" ", "")
 
 class AffiliateHistory(object):
     """Stores a history of a clients interactions with a site we
@@ -203,7 +218,7 @@ class AffiliateHistory(object):
             and otherwise False.
         """
         for segment in cls.checkout_urls():
-            if segment in record.uri:
+            if segment in record.url:
                 return True
         return False
 

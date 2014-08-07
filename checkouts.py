@@ -6,6 +6,9 @@ for the purchase."""
 import sys
 import brotools.reports
 import brotools.records
+import stuffing.pussycash
+import stuffing.sextronics
+import stuffing.morenitch
 from stuffing.godaddy import GodaddyAffiliateHistory
 from stuffing.amazon import AmazonAffiliateHistory
 
@@ -26,18 +29,35 @@ parser.add_argument('--godaddy', action="store_true",
                     help="Whether to look for GoDaddy cookie stuffing.  Note " +
                     "that if no marketer is specified, all will be used " +
                     "(Amazon, GoDaddy, etc.)")
+parser.add_argument('--pussycash', action="store_true",
+                    help="Whether to look for PussyCash affilate marketing " +
+                    "cookie stuffing.")
+parser.add_argument('--sextronics', action="store_true",
+                    help="Whether to look for Sextronics affilate marketing " +
+                    "cookie stuffing.")
+parser.add_argument('--morenitch', action="store_true",
+                    help="Whether to look for MoreNitch affiliate marketing " +
+                    "cookie stuffing.")
 count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 
 marketers = []
-if not args.amazon and not args.godaddy:
+any_affiliates = any([args.amazon, args.godaddy, args.pussycash,
+                      args.sextronics, args.morenitch])
+
+if not any_affiliates or args.pussycash:
+    marketers += stuffing.pussycash.CLASSES
+
+if not any_affiliates or args.sextronics:
+    marketers += stuffing.sextronics.CLASSES
+
+if not any_affiliates or args.amazon:
     marketers.append(AmazonAffiliateHistory)
+
+if not any_affiliates or args.godaddy:
     marketers.append(GodaddyAffiliateHistory)
 
-if args.amazon:
-    marketers.append(AmazonAffiliateHistory)
-
-if args.godaddy:
-    marketers.append(GodaddyAffiliateHistory)
+if not any_affiliates or args.morenitch:
+    marketers += stuffing.morenitch.CLASSES
 
 # Multi indexed dict, in the following format:
 #
