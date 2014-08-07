@@ -27,7 +27,6 @@ for path, graphs in ins():
     for g in graphs:
         for marketer in marketers:
             marketer_name = marketer.name()
-            debug("{0}. Considering marketer {1}".format(index, marketer_name))
             session_id = marketer.session_id_for_graph(g)
             if not session_id:
                 continue

@@ -16,7 +16,6 @@ for path, graphs in ins():
     debug("{0}. Found {1} graphs".format(index, len(graphs)))
     for g in graphs:
         for marketer in marketers:
-            debug("{0}. Considering marketer {1}".format(index, marketer.name()))
             # Iterate over all nodes in the graph until we hit one that has
             # a cookie stuffing attempt in it.  But no need to iterate further
             # after we hit the first stuffing node
