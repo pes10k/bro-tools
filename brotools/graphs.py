@@ -124,6 +124,11 @@ class BroRecordGraph(object):
         Keyword Args:
             detailed -- boolean, if true, the returned summary includes the
                         client's IP and the date of the inital request
+
+        Returns:
+            A string, describing the requests contained in this graph, and
+            optionally information about the client and time the initial
+            request was made.
         """
         def _print_sub_tree(node, parent=None, level=0):
             response = ("  " * level)
