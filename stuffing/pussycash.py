@@ -72,7 +72,7 @@ for domain, url, pattern in DOMAINS:
     a_class_name = "PussyCash{0}AffiliateHistory".format(domain_class_name)
     a_class = new.classobj(a_class_name, (PussyCashAffiliateHistory,), {})
     a_class._DOMAIN = [(domain, FULL_DOMAIN)]
-    a_class._NAME = "PuussyCash Affiliate: {0}".format(domain)
+    a_class._NAME = "PussyCash Affiliate: {0}".format(domain)
     a_class._CHECKOUT_URL = url
     a_class._TOKEN_PATTERN = re.compile(pattern)
     CLASSES.append(a_class)
