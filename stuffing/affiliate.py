@@ -546,7 +546,7 @@ class AffiliateCheckout(object):
             type_str = "STUFF" if t == STUFF else "SET  "
             output += "{0} {1} {2}\n     {3}".format(
                 type_str, r.date_str, self.site_h.__class__.get_referrer_tag(r),
-                str(g).replace("\n", "\n     "))
+                g.summary(detailed=False).replace("\n", "\n     "))
         return output
 
     def add_cookie_set(self, record, graph):

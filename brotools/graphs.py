@@ -113,7 +113,18 @@ class BroRecordGraph(object):
         self._nodes_by_host[br.host] = [br]
 
     def __str__(self):
+        return self.summary()
 
+    def __len__(self):
+        return len(self._nodes_sorted)
+
+    def summary(self, detailed=True):
+        """Returns a string description of the current graph.
+
+        Keyword Args:
+            detailed -- boolean, if true, the returned summary includes the
+                        client's IP and the date of the inital request
+        """
         def _print_sub_tree(node, parent=None, level=0):
             response = ("  " * level)
             if parent:
@@ -126,14 +137,14 @@ class BroRecordGraph(object):
                 response += _print_sub_tree(c, parent=node, level=(level + 1))
             return response
 
-        output = self.ip + "\n" + self._root.date_str + "\n"
-        if self._root.name:
-            output += self._root.name + "\n"
-        output += "-----\n"
+        if detailed:
+            output = self.ip + "\n" + self._root.date_str + "\n"
+            if self._root.name:
+                output += self._root.name + "\n"
+            output += "-----\n"
+        else:
+            output = ""
         return output + _print_sub_tree(self._root)
-
-    def __len__(self):
-        return len(self._nodes_sorted)
 
     def referrer_record(self, br):
         """Returns the BroRecord that could be the referrer of the given
