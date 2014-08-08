@@ -80,7 +80,7 @@ class BroRecord(object):
 
     @cached_property
     def query_params(self):
-        return urlparse.parse_qs(self.uri)
+        return urlparse.parse_qs(self.url)
 
     @cached_property
     def date_str(self):

@@ -544,9 +544,9 @@ class AffiliateCheckout(object):
         output += "--------------------\n"
         for r, g, t in self.cookie_history():
             type_str = "STUFF" if t == STUFF else "SET  "
-            output += "{0} {1} {2} {3}\n".format(
+            output += "{0} {1} {2}\n     {3}".format(
                 type_str, r.date_str, self.site_h.__class__.get_referrer_tag(r),
-                r.url)
+                str(g).replace("\n", "\n     "))
         return output
 
     def add_cookie_set(self, record, graph):
