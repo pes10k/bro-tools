@@ -544,7 +544,7 @@ class AffiliateCheckout(object):
         output += "--------------------\n"
         for r, g, t in self.cookie_history():
             type_str = "STUFF" if t == STUFF else "SET  "
-            output += "{0} {1} {2}\n     {3}".format(
+            output += "{0} {1} {2}\n     {3}\n".format(
                 type_str, r.date_str, self.site_h.__class__.get_referrer_tag(r),
                 g.summary(detailed=False).replace("\n", "\n     "))
         return output
