@@ -15,6 +15,7 @@ debug("Preparing to reading {0} sets o fgraphs".format(count))
 num_records = 0
 num_with_referrers = 0
 num_graphs = 0
+num_invalid_urls = 0
 hosts = {}
 index = 0
 for path, graphs in ins():
@@ -27,7 +28,12 @@ for path, graphs in ins():
         if not head.referrer:
             continue
         num_with_referrers += 1
-        url_parts = urlparse.urlparse("http://{0}".format(head.referrer))
+        try:
+            url_parts = urlparse.urlparse("http://{0}".format(head.referrer))
+        except ValueError:
+            num_invalid_urls += 1
+            out.write("\tInvalid referrer: {0}\n".format(head.referrer))
+            continue
         referrer_host = url_parts.netloc
         try:
             hosts[referrer_host] += 1
@@ -37,6 +43,7 @@ for path, graphs in ins():
 sorted_hosts = sorted(hosts.iteritems(), key=lambda x: x[1], reverse=True)
 out.write("# records found: {0}\n".format(num_records))
 out.write("# with unmatched referrer: {0}\n".format(num_with_referrers))
+out.write("# invalid referrers: {0}\n".format(num_invalid_urls))
 out.write("Referrer hosts\n")
 for host, count in sorted_hosts:
     out.write("{0}: {1}\n".format(host, count))
