@@ -27,7 +27,7 @@ for path, graphs in ins():
         if not head.referrer:
             continue
         num_with_referrers += 1
-        url_parts = urlparse.urlparse(head.referrer)
+        url_parts = urlparse.urlparse("http://{0}".format(head.referrer))
         referrer_host = url_parts.netloc
         try:
             hosts[referrer_host] += 1
