@@ -13,7 +13,8 @@ count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 
 debug("Preparing to reading {0} sets o fgraphs".format(count))
 num_records = 0
-num_with_referrers = 0
+num_with_no_referrers = 0
+num_unmatched_referrers = 0
 num_graphs = 0
 num_invalid_urls = 0
 hosts = {}
@@ -26,8 +27,9 @@ for path, graphs in ins():
         num_records += len(g)
         head = g._root
         if not head.referrer:
+            num_with_no_referrers += 1
             continue
-        num_with_referrers += 1
+        num_unmatched_referrers += 1
         try:
             url_parts = urlparse.urlparse("http://{0}".format(head.referrer))
         except ValueError:
@@ -42,7 +44,8 @@ for path, graphs in ins():
 
 sorted_hosts = sorted(hosts.iteritems(), key=lambda x: x[1], reverse=True)
 out.write("# records found: {0}\n".format(num_records))
-out.write("# with unmatched referrer: {0}\n".format(num_with_referrers))
+out.write("# no referrer: {0}\n".format(num_with_no_referrers))
+out.write("# with unmatched referrer: {0}\n".format(num_unmatched_referrers))
 out.write("# invalid referrers: {0}\n".format(num_invalid_urls))
 out.write("Referrer hosts\n")
 for host, count in sorted_hosts:
