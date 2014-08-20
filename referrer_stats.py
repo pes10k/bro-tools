@@ -67,7 +67,6 @@ for path, graphs in ins():
         except KeyError:
             hosts[referrer_host] = 1
 
-sorted_hosts = sorted(hosts.iteritems(), key=lambda x: x[1], reverse=True)
 out.write("General Stats\n")
 out.write("===\n")
 out.write("# graphs: {0}\n".format(num_graphs))
@@ -89,7 +88,9 @@ out.write("\n")
 
 out.write("Referrer hosts\n")
 out.write("===\n")
+
 sorted_host_index = 0
+sorted_hosts = sorted(hosts.iteritems(), key=lambda x: x[1], reverse=True)
 # Lets not get crazy, lets only print out the top 250 hosts
 for host, count in sorted_hosts[:250]:
     sorted_host_index += 1

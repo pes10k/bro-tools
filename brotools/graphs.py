@@ -40,13 +40,14 @@ def graphs(handle, time=.5, record_filter=None):
         try:
             graphs = all_client_graphs[hash_key]
             found_graph_for_record = False
+            dirty_graphs = []
             for g in graphs:
                 # First make sure that our graphs are not too old.  If they
                 # are, yield them and then remove them from our considered
                 # set
                 if (r.ts - g.latest_ts) > time:
                     yield g
-                    graphs.remove(g)
+                    dirty_graphs.append(g)
                     continue
 
                 # If the current graph is not too old to represent a valid
@@ -61,6 +62,9 @@ def graphs(handle, time=.5, record_filter=None):
             # create a new graph and add the record to it
             if not found_graph_for_record:
                 graphs.append(BroRecordGraph(r))
+
+            for dg in dirty_graphs:
+                graphs.remove(dg)
 
         # If we've never seen any requests for this client, then
         # there is no way the request could be part of any graph we're tracking,
@@ -151,14 +155,14 @@ class BroRecordGraph(object):
             output = ""
         return output + _print_sub_tree(self._root)
 
-    def referrer_record(self, br):
+    def referrer_record(self, candidate_record):
         """Returns the BroRecord that could be the referrer of the given
         record, if one exists, and otherwise returns None.  If there
         are multiple BroRecords in this graph that could be the referrer of
         the given record, the most recent candidate is returned.
 
         Args:
-            br -- a BroRecord object
+            candidate_record -- a BroRecord object
 
         Returns:
             The most recent candidate BroRecord that could be the referrer of
@@ -167,19 +171,19 @@ class BroRecordGraph(object):
         # We can special case situations where the IP addresses don't match,
         # in order to save ourselves having to walk the entire line of nodes
         # again in a clear miss situation
-        if br.id_orig_h != self.ip:
+        if candidate_record.id_orig_h != self.ip:
             return None
 
         # Similarly, we can special case situations where user agents
         # don't match.  Since all records in a single graph will have
         # the same user agent, we can quick reject any records that have
         # a user agent other than the first user agent seen in the graph.
-        if br.user_agent != self.user_agent:
+        if candidate_record.user_agent != self.user_agent:
             return None
 
         try:
-            for n in self._nodes_by_url[br.referrer]:
-                if n.ts < br.ts:
+            for n in self._nodes_by_url[candidate_record.referrer]:
+                if n.ts < candidate_record.ts:
                     return n
         except KeyError:
             return None
