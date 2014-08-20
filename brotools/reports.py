@@ -68,9 +68,9 @@ def _find_graphs_helper(args):
     return picked_path
 
 def find_graphs(file_sets, workers=8, time=.5, min_length=3, lite=True):
-    p = multiprocessing.Pool(workers)
+    p = multiprocessing.Pool(workers, maxtasksperchild=1)
     work_sets = [(f, time, min_length, lite) for f in file_sets]
-    graphs = p.map(_find_graphs_helper, work_sets, maxtasksperchild=1)
+    graphs = p.map(_find_graphs_helper, work_sets)
     return graphs
 
 def default_cli_parser(description=None):
