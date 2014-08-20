@@ -243,14 +243,13 @@ class BroRecordGraph(object):
             host -- a string describing a host / domain
 
         Return:
-            A list of one or more BroRecords all requesting the given
-            host, or None if there are no requests in the graph to the given
+            A list of zero or more BroRecords all requesting the given
             host.
         """
         try:
             return self._nodes_by_host[host]
         except KeyError:
-            return None
+            return []
 
     def nodes_for_hosts(self, *args):
         """Returns a list of all nodes in the graph that are requests to
