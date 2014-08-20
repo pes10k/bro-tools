@@ -1,6 +1,7 @@
 import datetime
 from cached_property import cached_property
 import urlparse
+import os.path
 
 
 def bro_records(handle, record_filter=None):
@@ -28,7 +29,9 @@ def bro_records(handle, record_filter=None):
             seperator = row[11:].decode('unicode_escape')
         elif row[0] != "#":
             try:
-                r = BroRecord(row, seperator, name="{0}:{1}".format(num_lines, handle.name))
+                logname = os.path.basename(handle.name)
+                rec_loc = "{0}:{1}".format(num_lines, logname)
+                r = BroRecord(row, seperator, name=rec_loc)
             except Exception, e:
                 print "Bad line entry"
                 print "File: {0}".format(handle.name)
