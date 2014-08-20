@@ -38,7 +38,7 @@ def _find_graphs_helper(args):
     log.info("Merging {0} files into {1}".format(len(files), dest))
 
     if not merge.merge(files, dest):
-        return []
+        return None
 
     log.info("{0}: Begining parsing".format(dest))
 
@@ -53,7 +53,7 @@ def _find_graphs_helper(args):
             err = "Ignoring {0}: formatting errors in the log".format(dest)
             log.error(err)
             raise e
-            return []
+            return None
 
     log.info("{0}: Found {1} graphs".format(dest, len(intersting_graphs)))
 
@@ -70,7 +70,7 @@ def _find_graphs_helper(args):
 def find_graphs(file_sets, workers=8, time=.5, min_length=3, lite=True):
     p = multiprocessing.Pool(workers)
     work_sets = [(f, time, min_length, lite) for f in file_sets]
-    graphs = p.map(_find_graphs_helper, work_sets)
+    graphs = p.map(_find_graphs_helper, work_sets, maxtasksperchild=1)
     return graphs
 
 def default_cli_parser(description=None):
