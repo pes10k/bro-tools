@@ -2,6 +2,7 @@ import datetime
 from cached_property import cached_property
 import urlparse
 
+
 def bro_records(handle, record_filter=None):
     """A generator function for iterating over a a collection of bro records.
     The iterator returns BroRecord objects (named tuples) for each record
@@ -13,10 +14,7 @@ def bro_records(handle, record_filter=None):
     Keyword Args:
         record_filter -- an optional function that, if provided, should take two
                          arguments of bro records, and should provide True if
-                         they should be included in the same chain or not.  Note
-                         that this is in addition to the filtering / matching
-                         already performed by the BroRecordChain.add_record
-                         function
+                         they should be included in the same chain or not.
 
     Return:
         An iterator returning BroRecord objects
@@ -68,11 +66,8 @@ class BroRecord(object):
             self.cookies = values[11]
         except IndexError:
             self.cookies = None
-        self.line = line
+        self.line = None # Kept so that we don't wreck all the pickels...
         self.name = name
-
-    def __str__(self):
-        return self.line
 
     @cached_property
     def url(self):
