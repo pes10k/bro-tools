@@ -13,8 +13,6 @@ try:
 except ImportError:
     import pickle
 
-sys.modules[__name__].counter = multiprocessing.Value('i', 0)
-
 # Helpers for extracting chains from bro data
 
 def _find_graphs_helper(args):
@@ -66,11 +64,12 @@ def _find_graphs_helper(args):
     # collection.
     with open(picked_path, 'w') as ph:
         pickle.dump(intersting_graphs, ph)
+    log.info("{0}: Successfully completed work".format(dest))
     return picked_path
 
 def find_graphs(file_sets, workers=8, time=.5, min_length=3, lite=True):
     p = multiprocessing.Pool(workers)
-    work_sets = ((f, time, min_length, lite) for f in file_sets)
+    work_sets = [(f, time, min_length, lite) for f in file_sets]
     graphs = p.map(_find_graphs_helper, work_sets)
     return graphs
 

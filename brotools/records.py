@@ -28,7 +28,7 @@ def bro_records(handle, record_filter=None):
             seperator = row[11:].decode('unicode_escape')
         elif row[0] != "#":
             try:
-                r = BroRecord(row, seperator, name=handle.name)
+                r = BroRecord(row, seperator, name="{0}:{1}".format(num_lines, handle.name))
             except Exception, e:
                 print "Bad line entry"
                 print "File: {0}".format(handle.name)
@@ -70,7 +70,7 @@ class BroRecord(object):
         self.name = name
 
     def __str__(self):
-        return u"{url} in {file_name}".format(url=self.url, self.name)
+        return u"{url} in {name}".format(url=self.url, name=self.name)
 
     @cached_property
     def url(self):
