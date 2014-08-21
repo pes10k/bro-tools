@@ -54,12 +54,15 @@ for path, graph in ins():
     count_graphs += 1
     prune_collection(graph)
     hash_key = graph.ip + "|" + graph.user_agent
-    client_graphs = g_items['graphs_for_client'][hash_key]
-    for client_graph in client_graphs:
-        if client_graph.referrer_record(graph._root):
-            debug(" * Found possible merge: {0}".format(graph._root.url))
-            debug(" * * In: {0}".format(path))
-            count_merges += 1
+    try:
+        client_graphs = g_items['graphs_for_client'][hash_key]
+        for client_graph in client_graphs:
+            if client_graph.referrer_record(graph._root):
+                debug(" * Found possible merge: {0}".format(graph._root.url))
+                debug(" * * In: {0}".format(path))
+                count_merges += 1
+    except KeyError:
+        pass
     insert_into_collection(graph)
 
 out.write("Found graphs: {0}\n".format(count_graphs))
