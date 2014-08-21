@@ -75,10 +75,7 @@ def merge_graphs(handle, time=10):
             g_items['graphs_by_date'] = g_items['graphs_by_date'][remove_count:]
         return to_remove
 
-    count_merges = 0
-    count_graphs = 0
     for graph in handle:
-        count_graphs += 1
         for old_graph in prune_collection(graph):
             yield old_graph
         hash_key = graph_hash(graph)
@@ -88,7 +85,6 @@ def merge_graphs(handle, time=10):
             for client_graph in client_graphs:
                 if client_graph.add_graph(graph):
                     log.info(" * Found possible merge: {0}".format(graph._root.url))
-                    count_merges += 1
                     graph_is_merged = True
                     break
         except KeyError:
@@ -325,12 +321,24 @@ class BroRecordGraph(object):
         """
         child_head = child_graph._root
 
+        print "CHILD"
+        print str(child_graph)
+        print ""
+        print "PARENT"
+        print str(self)
+        print ""
+
         referrer_node = self.referrer_record(child_head)
         if not referrer_node:
             return False
 
         for n in child_graph.nodes():
             self.add_node(n)
+
+        print "MERGED"
+        print str(self)
+        import sys
+        sys.exit()
         return True
 
     def nodes(self):
