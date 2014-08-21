@@ -5,8 +5,101 @@ lead to a given page, and its children being the pages visted next."""
 import networkx as nx
 from .records import bro_records
 from .chains import BroRecordChain
+import logging
 
-def graphs(handle, time=.5, record_filter=None):
+def merge_graphs(handle, time=10):
+    """Takes an iterator of BroRecordGraph objects, and yields back
+    BroRecordGraphs, with the records merged together as possible.
+
+    Args:
+        handle -- An iterator that returns BroRecordGraph objects
+
+    Keyword Args:
+        time -- the maximum amount of time that can have passed in
+                a browsing session before the graph is closed and yielded
+
+    Return:
+        Yields BroRecordGraph objects
+    """
+    log = logging.getLogger("brorecords")
+
+    g_items = {
+        "graphs_for_client": {},
+        # Graphs sorted by latest child record timestamp, earliest value first
+        "graphs_by_date": []
+    }
+
+    def graph_hash(graph):
+        return graph.ip + "|" + graph.user_agent
+
+    def insert_into_collection(candidate_graph):
+        hash_key = graph_hash(candidate_graph)
+
+        # Special case for considering the first graph
+        if len(g_items['graphs_by_date']) == 0:
+            g_items['graphs_for_client'][hash_key] = [candidate_graph]
+            g_items['graphs_by_date'].append(candidate_graph)
+            return True
+
+        index = -1
+        match = None
+        for sorted_g in g_items['graphs_by_date']:
+            index += 1
+            if sorted_g.latest_ts > candidate_graph.latest_ts:
+                match = True
+                break
+
+        if not match:
+            return False
+
+        try:
+            g_items['graphs_for_client'][hash_key].append(candidate_graph)
+        except KeyError:
+            g_items['graphs_for_client'][hash_key] = [candidate_graph]
+        g_items['graphs_by_date'].insert(index, candidate_graph)
+        return True
+
+    def prune_collection(most_recent_graph):
+        latest_valid_time = most_recent_graph.latest_ts - time
+        remove_count = 0
+        for sorted_g in g_items['graphs_by_date']:
+            if sorted_g.latest_ts >= latest_valid_time:
+                break
+            remove_count += 1
+            hash_key = graph_hash(sorted_g)
+            g_items['graphs_for_client'][hash_key].remove(sorted_g)
+
+        to_remove = []
+        if remove_count > 0:
+            to_remove = g_items['graphs_by_date'][:remove_count]
+            g_items['graphs_by_date'] = g_items['graphs_by_date'][remove_count:]
+        return to_remove
+
+    count_merges = 0
+    count_graphs = 0
+    for graph in handle:
+        count_graphs += 1
+        for old_graph in prune_collection(graph):
+            yield old_graph
+        hash_key = graph_hash(graph)
+        graph_is_merged = False
+        try:
+            client_graphs = g_items['graphs_for_client'][hash_key]
+            for client_graph in client_graphs:
+                if client_graph.add_graph(graph):
+                    log.info(" * Found possible merge: {0}".format(graph._root.url))
+                    count_merges += 1
+                    graph_is_merged = True
+                    break
+        except KeyError:
+            pass
+        if not graph_is_merged:
+            insert_into_collection(graph)
+
+    for graph in g_items['graphs_by_date']:
+        yield graph
+
+def graphs(handle, time=10, record_filter=None):
     """A generator function yields BroRecordGraph objects that represent
     pages visited in a browsing session.
 
