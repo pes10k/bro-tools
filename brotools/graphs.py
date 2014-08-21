@@ -6,7 +6,6 @@ import networkx as nx
 from .records import bro_records
 from .chains import BroRecordChain
 import logging
-import sys
 
 def merge_graphs(handle, time=10):
     """Takes an iterator of BroRecordGraph objects, and yields back
