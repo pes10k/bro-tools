@@ -6,6 +6,7 @@ import networkx as nx
 from .records import bro_records
 from .chains import BroRecordChain
 import logging
+import sys
 
 def merge_graphs(handle, time=10):
     """Takes an iterator of BroRecordGraph objects, and yields back
@@ -86,6 +87,7 @@ def merge_graphs(handle, time=10):
                 if client_graph.add_graph(graph):
                     log.info(" * Found possible merge: {0}".format(graph._root.url))
                     graph_is_merged = True
+                    sys.exit()
                     break
         except KeyError:
             pass
