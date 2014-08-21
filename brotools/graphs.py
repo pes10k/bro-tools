@@ -51,8 +51,7 @@ def merge_graphs(handle, time=10):
                 break
 
         if not match:
-            print "NO MATCH?"
-            return False
+            index = len(g_items['graphs_by_date'])
 
         try:
             g_items['graphs_for_client'][hash_key].append(candidate_graph)
