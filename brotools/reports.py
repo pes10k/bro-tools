@@ -65,7 +65,7 @@ def _find_graphs_helper(args):
     # collection.
     os.rename(tmp_path, final_path)
     log.info("{0}: Successfully completed work, wrote to {1}".format(dest, final_path))
-    return picked_path
+    return final_path
 
 def find_graphs(file_sets, workers=8, time=.5, min_length=3, lite=True):
     p = multiprocessing.Pool(workers, maxtasksperchild=1)
