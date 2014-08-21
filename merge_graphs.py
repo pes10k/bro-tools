@@ -29,10 +29,10 @@ num_graphs = 0
 for graph, is_changed, path in merge_graphs(ins(), args.time):
     counts['out'] += 1
     if is_changed:
-        with open(os.path.join(path, "changed"), 'a') as h:
+        with open(path + ".changed", 'a') as h:
             pickle.dump(graph, h)
     else:
-        with open(os.path.join(path, "unchanged"), 'a') as h:
+        with open(path + ".unchanged"), 'a') as h:
             pickle.dump(graph, h)
 
 out.write("Found graphs: {0}\n".format(counts['in']))
