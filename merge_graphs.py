@@ -5,7 +5,7 @@ are for."""
 import sys
 import brotools.reports
 import brotools.records
-from .brotools.graphs import merge_graphs
+from brotools.graphs import merge_graphs
 
 try:
     import cPickle as pickle
