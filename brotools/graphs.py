@@ -59,6 +59,7 @@ def merge_graphs(handle, time=10):
             g_items['graphs_for_client'][hash_key].append(candidate_graph)
         except KeyError:
             g_items['graphs_for_client'][hash_key] = [candidate_graph]
+        g_items['changed'].append(candidate_graph)
         g_items['graphs_by_date'].insert(index, candidate_graph)
         return True
 

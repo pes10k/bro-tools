@@ -4,7 +4,6 @@ split apart across different bro logs."""
 import sys
 import brotools.reports
 import brotools.records
-import os
 from brotools.graphs import merge_graphs
 
 try:
