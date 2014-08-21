@@ -326,18 +326,9 @@ class BroRecordGraph(object):
         if not referrer_node:
             return False
 
-        print "CHILD"
-        print str(child_graph)
-        print ""
-        print "PARENT"
-        print str(self)
-        print ""
-
         for n in child_graph.nodes():
             self.add_node(n)
 
-        print "MERGED"
-        print str(self)
         return True
 
     def nodes(self):
