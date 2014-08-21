@@ -231,17 +231,19 @@ def unpickled_inputs(paths):
     processed_in_paths.sort()
 
     def _unpickled_files():
+        index = 0
         for p in processed_in_paths:
             with open(p, 'r') as h:
                 while True:
                     try:
+                        index += 1
+                        if index % 1000 == 0:
+                            log.info(" * Completed graph: {0}".format(index))
                         yield p, pickle.load(h)
                     except EOFError:
-                        return
+                        break
                     except:
                         log.info(" * Pickle error, skipping: {0}".format(p))
                         pass
 
     return len(processed_in_paths), _unpickled_files
-
-
