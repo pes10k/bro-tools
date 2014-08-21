@@ -218,6 +218,28 @@ class BroRecordGraph(object):
 
         return True
 
+    def add_graph(self, child_graph):
+        """Attempts to merge in a child group into the current graph.
+        This is done by seeing if the head of the child graph can find any
+        referrer in the parent graph.
+
+        Args:
+            child_graph -- a BroRecordGraph instance
+
+        Return:
+            True if the child graph could be added to / merged into the current
+            graph, otherwise False.
+        """
+        child_head = child_graph._root
+
+        referrer_node = self.referrer_record(child_head)
+        if not referrer_node:
+            return False
+
+        for n in child_graph.nodes():
+            self.add_node(n)
+        return True
+
     def nodes(self):
         """Returns an list of BroRecords, from oldest to newest, that are in
         the graph.
