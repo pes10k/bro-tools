@@ -155,6 +155,13 @@ def parse_default_cli_args(parser):
         if is_debug:
             print msg
 
+    logging.basicConfig()
+    logger = logging.getLogger("brorecords")
+    if is_debug:
+        logger.setLevel(logging.INFO)
+    else:
+        logger.setLevel(logging.ERROR)
+
     return num_inputs, inputs, output_h, debug, args
 
 def parse_marketing_cli_args(parser):
