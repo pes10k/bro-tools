@@ -82,9 +82,9 @@ def merge_graphs(handle, time=10):
             g_items['graphs_by_date'] = g_items['graphs_by_date'][remove_count:]
         return to_remove
 
-    for graph in handle:
+    for path, graph in handle:
         for old_graph in prune_collection(graph):
-            yield old_graph, (old_graph in g_items['changed'])
+            yield old_graph, (old_graph in g_items['changed']), path
         hash_key = graph_hash(graph)
         graph_is_merged = False
         try:
@@ -100,7 +100,7 @@ def merge_graphs(handle, time=10):
             insert_into_collection(graph)
 
     for graph in g_items['graphs_by_date']:
-        yield graph, (graph in g_items['changed'])
+        yield graph, (graph in g_items['changed']), path
 
 def graphs(handle, time=10, record_filter=None):
     """A generator function yields BroRecordGraph objects that represent
