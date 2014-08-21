@@ -244,7 +244,7 @@ def unpickled_inputs(paths):
                 while True:
                     try:
                         index += 1
-                        if index % 1000 == 0:
+                        if index % 10000 == 0:
                             log.info(" * Completed graph: {0}".format(index))
                         yield p, pickle.load(h)
                     except EOFError:

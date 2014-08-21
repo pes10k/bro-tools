@@ -20,7 +20,18 @@ g_items = {
     "graphs_by_date": []
 }
 
+def graph_hash(graph):
+    return graph.ip + "|" + graph.user_agent
+
 def insert_into_collection(candidate_graph):
+    hash_key = graph_hash(candidate_graph)
+
+    # Special case for considering the first graph
+    if len(g_items['graphs_by_date']) == 0:
+        g_items['graphs_for_client'][hash_key] = [candidate_graph]
+        g_items['graphs_by_date'].append(candidate_graph)
+        return True
+
     index = -1
     match = None
     for sorted_g in g_items['graphs_by_date']:
@@ -28,10 +39,13 @@ def insert_into_collection(candidate_graph):
         if sorted_g.latest_ts > candidate_graph.latest_ts:
             match = True
             break
+
     if not match:
         return False
-    hash_key = candidate_graph.ip + "|" + candidate_graph.user_agent
-    g_items['graphs_for_client'][hash_key].append(candidate_graph)
+    try:
+        g_items['graphs_for_client'][hash_key].append(candidate_graph)
+    except KeyError:
+        g_items['graphs_for_client'][hash_key] = [candidate_graph]
     g_items['graphs_by_date'].insert(index, candidate_graph)
     return True
 
@@ -42,7 +56,7 @@ def prune_collection(most_recent_graph):
         if sorted_g.latest_ts >= latest_valid_time:
             break
         remove_count += 1
-        hash_key = sorted_g.ip + "|" + sorted_g.user_agent
+        hash_key = graph_hash(sorted_g)
         g_items['graphs_for_client'][hash_key].remove(sorted_g)
 
     if remove_count > 0:
@@ -53,7 +67,7 @@ count_graphs = 0
 for path, graph in ins():
     count_graphs += 1
     prune_collection(graph)
-    hash_key = graph.ip + "|" + graph.user_agent
+    hash_key = graph_hash(graph)
     try:
         client_graphs = g_items['graphs_for_client'][hash_key]
         for client_graph in client_graphs:
