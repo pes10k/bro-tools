@@ -19,14 +19,17 @@ def merge_graphs(handle, time=10):
                 a browsing session before the graph is closed and yielded
 
     Return:
-        Yields BroRecordGraph objects
+        Yields pairs of values.  The first value is aBroRecordGraph, and
+        the second value is a boolean description of whether the graph has been
+        changed (ie if it has absorbed another graph)
     """
     log = logging.getLogger("brorecords")
 
     g_items = {
         "graphs_for_client": {},
         # Graphs sorted by latest child record timestamp, earliest value first
-        "graphs_by_date": []
+        "graphs_by_date": [],
+        "changed": []
     }
 
     def graph_hash(graph):
@@ -68,6 +71,10 @@ def merge_graphs(handle, time=10):
             remove_count += 1
             hash_key = graph_hash(sorted_g)
             g_items['graphs_for_client'][hash_key].remove(sorted_g)
+            try:
+                g_items['changed'].remove(sorted_g)
+            except:
+                pass
 
         to_remove = []
         if remove_count > 0:
@@ -77,7 +84,7 @@ def merge_graphs(handle, time=10):
 
     for graph in handle:
         for old_graph in prune_collection(graph):
-            yield old_graph
+            yield old_graph, (old_graph in g_items['changed'])
         hash_key = graph_hash(graph)
         graph_is_merged = False
         try:
@@ -86,7 +93,6 @@ def merge_graphs(handle, time=10):
                 if client_graph.add_graph(graph):
                     log.info(" * Found possible merge: {0}".format(graph._root.url))
                     graph_is_merged = True
-                    return
                     break
         except KeyError:
             pass
@@ -94,7 +100,7 @@ def merge_graphs(handle, time=10):
             insert_into_collection(graph)
 
     for graph in g_items['graphs_by_date']:
-        yield graph
+        yield graph, (graph in g_items['changed'])
 
 def graphs(handle, time=10, record_filter=None):
     """A generator function yields BroRecordGraph objects that represent
