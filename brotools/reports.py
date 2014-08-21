@@ -30,10 +30,11 @@ def _find_graphs_helper(args):
     # extracted graphs from this given work set.  If so, we can quick out
     # here.  For simplicty sake, we just append .pickle to the name of the
     # path for the combined bro records
-    picked_path = "{0}.pickle".format(dest)
-    if os.path.isfile(picked_path):
-        log.info("Found picked records already at {0}".format(picked_path))
-        return picked_path
+    tmp_path = "{0}.pickles.tmp".format(dest)
+    final_path = "{0}.pickles".format(dest)
+    if os.path.isfile(final_path):
+        log.info("Found picked records already at {0}".format(final_path))
+        return final_path
 
     log.info("Merging {0} files into {1}".format(len(files), dest))
 
@@ -41,30 +42,29 @@ def _find_graphs_helper(args):
         return None
 
     log.info("{0}: Begining parsing".format(dest))
-
-    with open(dest, 'r') as h:
-        intersting_graphs = []
+    graph_count = 0
+    with open(dest, 'r') as source_h, open(tmp_path, 'w') as dest_h:
         try:
-            for g in graphs(h, time=time, record_filter=_filter):
+            for g in graphs(source_h, time=time, record_filter=_filter):
+                graph_count += 0
                 if len(g) < min_length:
                     continue
-                intersting_graphs.append(g)
+                pickle.dump(g, dest_h)
         except Exception, e:
             err = "Ignoring {0}: formatting errors in the log".format(dest)
             log.error(err)
             raise e
             return None
 
-    log.info("{0}: Found {1} graphs".format(dest, len(intersting_graphs)))
+    log.info("{0}: Found {1} graphs".format(dest, graph_count))
 
     if lite:
         os.remove(dest)
 
     # Now write the resulting collection of graphs to disk as a pickled
     # collection.
-    with open(picked_path, 'w') as ph:
-        pickle.dump(intersting_graphs, ph)
-    log.info("{0}: Successfully completed work".format(dest))
+    os.rename(tmp_path, final_path)
+    log.info("{0}: Successfully completed work, wrote to {1}".format(dest, final_path))
     return picked_path
 
 def find_graphs(file_sets, workers=8, time=.5, min_length=3, lite=True):
@@ -233,11 +233,14 @@ def unpickled_inputs(paths):
     def _unpickled_files():
         for p in processed_in_paths:
             with open(p, 'r') as h:
-                try:
-                    yield p, pickle.load(h)
-                except:
-                    log.info(" * Pickle error, skipping: {0}".format(p))
-                    pass
+                while True:
+                    try:
+                        yield p, pickle.load(h)
+                    except EOFError:
+                        return
+                    except:
+                        log.info(" * Pickle error, skipping: {0}".format(p))
+                        pass
 
     return len(processed_in_paths), _unpickled_files
 
