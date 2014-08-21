@@ -87,7 +87,7 @@ def merge_graphs(handle, time=10):
                 if client_graph.add_graph(graph):
                     log.info(" * Found possible merge: {0}".format(graph._root.url))
                     graph_is_merged = True
-                    sys.exit()
+                    return
                     break
         except KeyError:
             pass
@@ -339,8 +339,6 @@ class BroRecordGraph(object):
 
         print "MERGED"
         print str(self)
-        import sys
-        sys.exit()
         return True
 
     def nodes(self):
