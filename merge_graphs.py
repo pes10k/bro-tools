@@ -12,7 +12,6 @@ parser.add_argument('--time', '-t', type=float, default=10,
                     "requests for them to still be counted in the same graph.")
 count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 
-index = 0
 debug("Preparing to reading {0} sets of graphs".format(count))
 
 g_items = {
@@ -51,20 +50,17 @@ def prune_collection(most_recent_graph):
 
 count_merges = 0
 count_graphs = 0
-for path, graphs in ins():
-    index += 1
-    debug("{0}-{1}. Considering {2}".format(index, count, path))
-    debug("{0}-{1}. Found {2} graphs".format(index, count, len(graphs)))
-    for new_graph in graphs:
-        count_graphs += 1
-        prune_collection(new_graph)
-        hash_key = new_graph.ip + "|" + new_graph.user_agent
-        client_graphs = g_items['graphs_for_client'][hash_key]
-        for client_graph in client_graphs:
-            if client_graph.referrer_record(new_graph._root):
-                debug(" * Found possible merge: {0}".format(new_graph._root.url))
-                count_merges += 1
-        insert_into_collection(new_graph)
+for path, graph in ins():
+    count_graphs += 1
+    prune_collection(graph)
+    hash_key = graph.ip + "|" + graph.user_agent
+    client_graphs = g_items['graphs_for_client'][hash_key]
+    for client_graph in client_graphs:
+        if client_graph.referrer_record(graph._root):
+            debug(" * Found possible merge: {0}".format(graph._root.url))
+            debug(" * * In: {0}".format(path))
+            count_merges += 1
+    insert_into_collection(graph)
 
 out.write("Found graphs: {0}\n".format(count_graphs))
 out.write("Possible merges in the collection: {0}\n".format(count_merges))

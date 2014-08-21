@@ -46,7 +46,7 @@ def _find_graphs_helper(args):
     with open(dest, 'r') as source_h, open(tmp_path, 'w') as dest_h:
         try:
             for g in graphs(source_h, time=time, record_filter=_filter):
-                graph_count += 0
+                graph_count += 1
                 if len(g) < min_length:
                     continue
                 pickle.dump(g, dest_h)
@@ -64,7 +64,7 @@ def _find_graphs_helper(args):
     # Now write the resulting collection of graphs to disk as a pickled
     # collection.
     os.rename(tmp_path, final_path)
-    log.info("{0}: Successfully completed work, wrote to {1}".format(dest, final_path))
+    log.info("{0}: Successfully completed work".format(dest))
     return final_path
 
 def find_graphs(file_sets, workers=8, time=.5, min_length=3, lite=True):
