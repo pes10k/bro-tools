@@ -51,6 +51,7 @@ def merge_graphs(handle, time=10):
                 break
 
         if not match:
+            print "NO MATCH?"
             return False
 
         try:
