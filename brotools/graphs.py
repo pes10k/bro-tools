@@ -37,7 +37,7 @@ def merge_graphs(handle, time=10):
     def graph_hash(graph):
         return graph.ip + "|" + graph.user_agent
 
-    def insert_into_collection(candidate_graph):
+    def add_to_state(candidate_graph):
         hash_key = graph_hash(candidate_graph)
 
         # Special case for considering the first graph.  If this is the cae,
@@ -47,7 +47,6 @@ def merge_graphs(handle, time=10):
         if len(state['graphs_by_date']) == 0:
             state['graphs_for_client'][hash_key] = [candidate_graph]
             state['graphs_by_date'].append(candidate_graph)
-            return True
 
         try:
             state['graphs_for_client'][hash_key].append(candidate_graph)
@@ -73,9 +72,7 @@ def merge_graphs(handle, time=10):
 
         # state['graphs_by_date'].insert(index, candidate_graph)
 
-        return True
-
-    def remove_from_collection(graph):
+    def remove_from_state(graph):
         hash_key = graph_hash(graph)
 
         if graph in state['changed']:
@@ -89,7 +86,7 @@ def merge_graphs(handle, time=10):
         except KeyError:
             pass
 
-    def prune_collection(most_recent_graph):
+    def prune_state(most_recent_graph):
         latest_valid_time = most_recent_graph.latest_ts - time
         removed = []
 
@@ -101,12 +98,12 @@ def merge_graphs(handle, time=10):
             if graph.latest_ts >= latest_valid_time:
                 break
             removed.append(graph)
-            remove_from_collection(graph)
+            remove_from_state(graph)
         return removed
 
     for path, graph in handle:
 
-        for old_graph in prune_collection(graph):
+        for old_graph in prune_state(graph):
             yield old_graph, (old_graph in state['changed']), path
 
         hash_key = graph_hash(graph)
@@ -121,15 +118,15 @@ def merge_graphs(handle, time=10):
                 # If we succeed in merging the new graph into an existing
                 # graph, we need to read it to our state collections,
                 # to make sure it is sorted correctly
-                remove_from_collection(existing_graph)
-                insert_into_collection(existing_graph)
+                remove_from_state(existing_graph)
+                add_to_state(existing_graph)
                 state['changed'].append(existing_graph)
                 log.info(" * Found merge: {0}".format(graph._root.url))
                 graph_is_merged = True
                 break
 
         if not graph_is_merged:
-            insert_into_collection(graph)
+            add_to_state(graph)
 
     for graph in state['graphs_by_date']:
         yield graph, (graph in state['changed']), path
@@ -365,6 +362,8 @@ class BroRecordGraph(object):
 
         for n in child_graph.nodes():
             self.add_node(n)
+
+        self._nodes_sorted.sort(key=lambda x: x.ts)
 
         return True
 

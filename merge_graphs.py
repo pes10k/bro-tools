@@ -17,7 +17,7 @@ parser.add_argument('--time', '-t', type=float, default=10,
                     "requests for them to still be counted in the same graph.")
 count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 
-debug("Preparing to reading {0} sets of graphs".format(count))
+debug("Preparing to read {0} sets of graphs".format(count))
 
 counts = {
     "in" : 0,
