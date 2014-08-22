@@ -116,7 +116,8 @@ def merge_graphs(handle, time=10):
         graph_is_merged = False
         client_graphs = state['graphs_for_client'][hash_key]
         for existing_graph in client_graphs:
-            if existing_graph.add_graph(graph):
+            if (graph.latest_ts - existing_graph.latest_ts <= time and
+                existing_graph.add_graph(graph)):
                 # If we succeed in merging the new graph into an existing
                 # graph, we need to read it to our state collections,
                 # to make sure it is sorted correctly
