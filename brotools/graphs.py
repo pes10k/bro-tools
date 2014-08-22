@@ -25,10 +25,12 @@ def merge_graphs(handle, time=10):
     """
     log = logging.getLogger("brorecords")
 
-    g_items = {
+    state = {
         "graphs_for_client": {},
         # Graphs sorted by latest child record timestamp, earliest value first
         "graphs_by_date": [],
+        # Keep track of which graphs were altered by having child graphs
+        # merged into them
         "changed": []
     }
 
@@ -38,61 +40,84 @@ def merge_graphs(handle, time=10):
     def insert_into_collection(candidate_graph):
         hash_key = graph_hash(candidate_graph)
 
-        # Special case for considering the first graph
-        if len(g_items['graphs_by_date']) == 0:
-            g_items['graphs_for_client'][hash_key] = [candidate_graph]
-            g_items['graphs_by_date'].append(candidate_graph)
+        # Special case for considering the first graph.  If this is the cae,
+        # then we know there is no sorting or other change needed,
+        # and that this will be the first graph for this client.  We can
+        # easy out then
+        if len(state['graphs_by_date']) == 0:
+            state['graphs_for_client'][hash_key] = [candidate_graph]
+            state['graphs_by_date'].append(candidate_graph)
             return True
 
+        # Now we need to figure out where to insert the new record into
+        # the existing sorted collection of graphs.  We do this by just
+        # walking through the collection until we find one with a timestamp
+        # after us and inserting the graph there.  Index is the index we might
+        # insert the graph into
         index = -1
         match = None
-        for sorted_g in g_items['graphs_by_date']:
+        for graph in state['graphs_by_date']:
             index += 1
-            if sorted_g.latest_ts > candidate_graph.latest_ts:
+            if graph.latest_ts > candidate_graph.latest_ts:
                 match = True
                 break
 
         if not match:
-            index = len(g_items['graphs_by_date'])
+            index = len(state['graphs_by_date'])
 
         try:
-            g_items['graphs_for_client'][hash_key].append(candidate_graph)
+            state['graphs_for_client'][hash_key].append(candidate_graph)
         except KeyError:
-            g_items['graphs_for_client'][hash_key] = [candidate_graph]
-        g_items['changed'].append(candidate_graph)
-        g_items['graphs_by_date'].insert(index, candidate_graph)
+            state['graphs_for_client'][hash_key] = [candidate_graph]
+        state['graphs_by_date'].insert(index, candidate_graph)
         return True
+
+    def remove_from_collection(graph):
+        hash_key = graph_hash(graph)
+
+        if graph in state['changed']:
+            state['changed'].remove(graph)
+
+        if graph in state['graphs_by_date']:
+            state['graphs_by_date'].remove(graph)
+
+        try:
+            if graph in state['graphs_for_client'][hash_key]:
+                state['graphs_for_client'][hash_key].remove(graph)
+        except KeyError:
+            pass
 
     def prune_collection(most_recent_graph):
         latest_valid_time = most_recent_graph.latest_ts - time
-        remove_count = 0
-        for sorted_g in g_items['graphs_by_date']:
-            if sorted_g.latest_ts >= latest_valid_time:
-                break
-            remove_count += 1
-            hash_key = graph_hash(sorted_g)
-            g_items['graphs_for_client'][hash_key].remove(sorted_g)
-            try:
-                g_items['changed'].remove(sorted_g)
-            except:
-                pass
+        removed = []
 
-        to_remove = []
-        if remove_count > 0:
-            to_remove = g_items['graphs_by_date'][:remove_count]
-            g_items['graphs_by_date'] = g_items['graphs_by_date'][remove_count:]
-        return to_remove
+        # Look for any graphs in the collection that are too old to still be
+        # considered.  If there are any, eject them.  Since the graphs
+        # are by oldest to newest, we can stop looking through the collection
+        # the moment we find a valid one
+        for graph in state['graphs_by_date']:
+            if graph.latest_ts >= latest_valid_time:
+                break
+            removed.append(graph)
+            remove_from_collection(graph)
+        return removed
 
     for path, graph in handle:
         for old_graph in prune_collection(graph):
-            yield old_graph, (old_graph in g_items['changed']), path
+            yield old_graph, (old_graph in state['changed']), path
         hash_key = graph_hash(graph)
         graph_is_merged = False
         try:
-            client_graphs = g_items['graphs_for_client'][hash_key]
-            for client_graph in client_graphs:
-                if client_graph.add_graph(graph):
-                    log.info(" * Found possible merge: {0}".format(graph._root.url))
+            client_graphs = state['graphs_for_client'][hash_key]
+            for existing_graph in client_graphs:
+                if existing_graph.add_graph(graph):
+                    # If we succeed in merging the new graph into an existing
+                    # graph, we need to read it to our state collections,
+                    # to make sure it is sorted correctly
+                    remove_from_collection(existing_graph)
+                    insert_into_collection(existing_graph)
+                    state['changed'].append(existing_graph)
+                    log.info(" * Found merge: {0}".format(graph._root.url))
                     graph_is_merged = True
                     break
         except KeyError:
@@ -100,8 +125,8 @@ def merge_graphs(handle, time=10):
         if not graph_is_merged:
             insert_into_collection(graph)
 
-    for graph in g_items['graphs_by_date']:
-        yield graph, (graph in g_items['changed']), path
+    for graph in state['graphs_by_date']:
+        yield graph, (graph in state['changed']), path
 
 def graphs(handle, time=10, record_filter=None):
     """A generator function yields BroRecordGraph objects that represent

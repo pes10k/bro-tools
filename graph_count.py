@@ -23,6 +23,4 @@ for path, graph in ins():
     total_count += 1
 
 out.write("{0}: {1}\n".format(path, current_count))
-
-
 out.write("Total: {0}\n".format(total_count))
