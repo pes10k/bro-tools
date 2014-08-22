@@ -25,8 +25,9 @@ counts = {
 }
 
 num_graphs = 0
-for graph, is_changed, path in merge_graphs(ins(), args.time):
+for path, graph, is_changed, state in merge_graphs(ins(), args.time, state=True):
     counts['out'] += 1
+    counts['in'] = state['count']
     if is_changed:
         with open(path + ".changed", 'a') as h:
             pickle.dump(graph, h)

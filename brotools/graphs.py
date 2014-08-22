@@ -7,7 +7,7 @@ from .records import bro_records
 from .chains import BroRecordChain
 import logging
 
-def merge_graphs(handle, time=10):
+def merge_graphs(handle, time=10, state=False):
     """Takes an iterator of BroRecordGraph objects, and yields back
     BroRecordGraphs, with the records merged together as possible.
 
@@ -15,8 +15,10 @@ def merge_graphs(handle, time=10):
         handle -- An iterator that returns BroRecordGraph objects
 
     Keyword Args:
-        time -- the maximum amount of time that can have passed in
-                a browsing session before the graph is closed and yielded
+        time  -- the maximum amount of time that can have passed in
+                 a browsing session before the graph is closed and yielded
+        state -- if set, the iterator also yields back the state of the
+                 generator.  Only really useful for debugging
 
     Return:
         Yields pairs of values.  The first value is aBroRecordGraph, and
@@ -26,6 +28,7 @@ def merge_graphs(handle, time=10):
     log = logging.getLogger("brorecords")
 
     state = {
+        "count": 0,
         "graphs_for_client": {},
         # Graphs sorted by latest child record timestamp, earliest value first
         "graphs_by_date": [],
@@ -34,27 +37,34 @@ def merge_graphs(handle, time=10):
         "changed": []
     }
 
+    def _yield_values(graph, path):
+        if state:
+            return path, graph, (graph in state['changed']), state
+        else:
+            return path, graph, (graph in state['changed'])
+
     def graph_hash(graph):
         return graph.ip + "|" + graph.user_agent
 
-    def add_to_state(candidate_graph):
+    def add_to_state(candidate_graph, path):
         hash_key = graph_hash(candidate_graph)
+        record = (candidate_graph, path)
 
         # Special case for considering the first graph.  If this is the cae,
         # then we know there is no sorting or other change needed,
         # and that this will be the first graph for this client.  We can
         # easy out then
         if len(state['graphs_by_date']) == 0:
-            state['graphs_for_client'][hash_key] = [candidate_graph]
-            state['graphs_by_date'].append(candidate_graph)
+            state['graphs_for_client'][hash_key] = [record]
+            state['graphs_by_date'].append(record)
 
         try:
-            state['graphs_for_client'][hash_key].append(candidate_graph)
+            state['graphs_for_client'][hash_key].append(record)
         except KeyError:
-            state['graphs_for_client'][hash_key] = [candidate_graph]
+            state['graphs_for_client'][hash_key] = [record]
 
-        state['graphs_by_date'].append(candidate_graph)
-        state['graphs_by_date'].sort(key=lambda x: x.latest_ts)
+        state['graphs_by_date'].append(record)
+        state['graphs_by_date'].sort(key=lambda x: x[0].latest_ts)
 
         # Now we need to figure out where to insert the new record into
         # the existing sorted collection of graphs.  We do this by just
@@ -72,21 +82,22 @@ def merge_graphs(handle, time=10):
 
         # state['graphs_by_date'].insert(index, candidate_graph)
 
-    def remove_from_state(graph):
+    def remove_from_state(graph, path):
         hash_key = graph_hash(graph)
+        record = (graph, path)
 
         if graph in state['changed']:
             state['changed'].remove(graph)
 
-        if graph in state['graphs_by_date']:
-            state['graphs_by_date'].remove(graph)
+        if record in state['graphs_by_date']:
+            state['graphs_by_date'].remove(record)
 
         try:
-            state['graphs_for_client'][hash_key].remove(graph)
+            state['graphs_for_client'][hash_key].remove(record)
         except KeyError:
             pass
 
-    def prune_state(most_recent_graph):
+    def prune_state(most_recent_graph, path):
         latest_valid_time = most_recent_graph.latest_ts - time
         removed = []
 
@@ -94,17 +105,19 @@ def merge_graphs(handle, time=10):
         # considered.  If there are any, eject them.  Since the graphs
         # are by oldest to newest, we can stop looking through the collection
         # the moment we find a valid one
-        for graph in state['graphs_by_date']:
-            if graph.latest_ts >= latest_valid_time:
+        for prev_graph, prev_path in state['graphs_by_date']:
+            if prev_graph.latest_ts >= latest_valid_time:
                 break
-            removed.append(graph)
-            remove_from_state(graph)
+            removed.append((prev_graph, prev_path))
+            remove_from_state((prev_graph, prev_path))
         return removed
 
     for path, graph in handle:
 
-        for old_graph in prune_state(graph):
-            yield old_graph, (old_graph in state['changed']), path
+        state['count'] += 1
+
+        for old_graph, old_path in prune_state(graph):
+            yield _yield_values(old_graph, old_path)
 
         hash_key = graph_hash(graph)
         if hash_key not in state['graphs_for_client']:
@@ -112,24 +125,24 @@ def merge_graphs(handle, time=10):
 
         graph_is_merged = False
         client_graphs = state['graphs_for_client'][hash_key]
-        for existing_graph in client_graphs:
+        for existing_graph, existing_path in client_graphs:
             if (graph.latest_ts - existing_graph.latest_ts <= time and
                 existing_graph.add_graph(graph)):
                 # If we succeed in merging the new graph into an existing
                 # graph, we need to read it to our state collections,
                 # to make sure it is sorted correctly
-                remove_from_state(existing_graph)
-                add_to_state(existing_graph)
+                remove_from_state((existing_graph, existing_path))
+                add_to_state((existing_graph, existing_path))
                 state['changed'].append(existing_graph)
                 log.info(" * Found merge: {0}".format(graph._root.url))
                 graph_is_merged = True
                 break
 
         if not graph_is_merged:
-            add_to_state(graph)
+            add_to_state((graph, path))
 
-    for graph in state['graphs_by_date']:
-        yield graph, (graph in state['changed']), path
+    for prev_graph, prev_path in state['graphs_by_date']:
+        _yield_values(prev_graph, prev_path)
 
 def graphs(handle, time=10, record_filter=None):
     """A generator function yields BroRecordGraph objects that represent
