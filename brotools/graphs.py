@@ -151,7 +151,7 @@ def merge_graphs(handle, time=10, state=False):
             add_to_state(graph, path)
 
     for prev_graph, prev_path in state['graphs_by_date']:
-        _yield_values(prev_graph, prev_path)
+        yield _yield_values(prev_graph, prev_path)
 
 def graphs(handle, time=10, record_filter=None):
     """A generator function yields BroRecordGraph objects that represent
