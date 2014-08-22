@@ -49,27 +49,30 @@ def merge_graphs(handle, time=10):
             state['graphs_by_date'].append(candidate_graph)
             return True
 
+        try:
+            state['graphs_for_client'][hash_key].append(candidate_graph)
+        except KeyError:
+            state['graphs_for_client'][hash_key] = [candidate_graph]
+
+        state['graphs_by_date'].append(candidate_graph)
+        state['graphs_by_date'].sort(key=lambda x: x.latest_ts)
+
         # Now we need to figure out where to insert the new record into
         # the existing sorted collection of graphs.  We do this by just
         # walking through the collection until we find one with a timestamp
         # after us and inserting the graph there.  Index is the index we might
         # insert the graph into
-        index = -1
-        match = None
-        for graph in state['graphs_by_date']:
-            index += 1
-            if graph.latest_ts > candidate_graph.latest_ts:
-                match = True
-                break
+        # match = None
+        # for index in range(len(state['graphs_by_date'])):
+        #     if graph.latest_ts > candidate_graph.latest_ts:
+        #         match = True
+        #         break
 
-        if not match:
-            index = len(state['graphs_by_date'])
+        # if not match:
+        #     index = len(state['graphs_by_date'])
 
-        try:
-            state['graphs_for_client'][hash_key].append(candidate_graph)
-        except KeyError:
-            state['graphs_for_client'][hash_key] = [candidate_graph]
-        state['graphs_by_date'].insert(index, candidate_graph)
+        # state['graphs_by_date'].insert(index, candidate_graph)
+
         return True
 
     def remove_from_collection(graph):
@@ -82,8 +85,7 @@ def merge_graphs(handle, time=10):
             state['graphs_by_date'].remove(graph)
 
         try:
-            if graph in state['graphs_for_client'][hash_key]:
-                state['graphs_for_client'][hash_key].remove(graph)
+            state['graphs_for_client'][hash_key].remove(graph)
         except KeyError:
             pass
 
@@ -103,25 +105,28 @@ def merge_graphs(handle, time=10):
         return removed
 
     for path, graph in handle:
+
         for old_graph in prune_collection(graph):
             yield old_graph, (old_graph in state['changed']), path
+
         hash_key = graph_hash(graph)
+        if hash_key not in state['graphs_for_client']:
+            state['graphs_for_client'][hash_key] = []
+
         graph_is_merged = False
-        try:
-            client_graphs = state['graphs_for_client'][hash_key]
-            for existing_graph in client_graphs:
-                if existing_graph.add_graph(graph):
-                    # If we succeed in merging the new graph into an existing
-                    # graph, we need to read it to our state collections,
-                    # to make sure it is sorted correctly
-                    remove_from_collection(existing_graph)
-                    insert_into_collection(existing_graph)
-                    state['changed'].append(existing_graph)
-                    log.info(" * Found merge: {0}".format(graph._root.url))
-                    graph_is_merged = True
-                    break
-        except KeyError:
-            pass
+        client_graphs = state['graphs_for_client'][hash_key]
+        for existing_graph in client_graphs:
+            if existing_graph.add_graph(graph):
+                # If we succeed in merging the new graph into an existing
+                # graph, we need to read it to our state collections,
+                # to make sure it is sorted correctly
+                remove_from_collection(existing_graph)
+                insert_into_collection(existing_graph)
+                state['changed'].append(existing_graph)
+                log.info(" * Found merge: {0}".format(graph._root.url))
+                graph_is_merged = True
+                break
+
         if not graph_is_merged:
             insert_into_collection(graph)
 
