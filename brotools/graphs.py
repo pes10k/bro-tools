@@ -116,7 +116,7 @@ def merge_graphs(handle, time=10, state=False):
 
         state['count'] += 1
 
-        for old_graph, old_path in prune_state(graph):
+        for old_graph, old_path in prune_state(graph, path):
             yield _yield_values(old_graph, old_path)
 
         hash_key = graph_hash(graph)
