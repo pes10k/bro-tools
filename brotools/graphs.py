@@ -131,15 +131,15 @@ def merge_graphs(handle, time=10, state=False):
                 # If we succeed in merging the new graph into an existing
                 # graph, we need to read it to our state collections,
                 # to make sure it is sorted correctly
-                remove_from_state((existing_graph, existing_path))
-                add_to_state((existing_graph, existing_path))
+                remove_from_state(existing_graph, existing_path)
+                add_to_state(existing_graph, existing_path)
                 state['changed'].append(existing_graph)
                 log.info(" * Found merge: {0}".format(graph._root.url))
                 graph_is_merged = True
                 break
 
         if not graph_is_merged:
-            add_to_state((graph, path))
+            add_to_state(graph, path)
 
     for prev_graph, prev_path in state['graphs_by_date']:
         _yield_values(prev_graph, prev_path)
