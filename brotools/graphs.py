@@ -135,6 +135,7 @@ def merge_graphs(handle, time=10, state=False):
                 add_to_state(existing_graph, existing_path)
                 state['changed'].append(existing_graph)
                 log.info(" * Found merge: {0}".format(graph._root.url))
+                log.info("     Changed graphs: {0}".format(len(state['changed'])))
                 graph_is_merged = True
                 break
 
