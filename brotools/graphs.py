@@ -28,8 +28,8 @@ def merge_graphs(handle, time=10, state=False):
     log = logging.getLogger("brorecords")
 
     state = {
-        "changed": 0,
-        "unchanged": 0,
+        "# changed": 0,
+        "# unchanged": 0,
         "merges": 0,
         "count": 0,
         "graphs_for_client": {},
@@ -42,9 +42,9 @@ def merge_graphs(handle, time=10, state=False):
 
     def _yield_values(graph, path):
         if graph in state['changed']:
-            state['changed'] += 1
+            state['# changed'] += 1
         else:
-            state['unchanged'] += 1
+            state['# unchanged'] += 1
         if state:
             return path, graph, (graph in state['changed']), state
         else:

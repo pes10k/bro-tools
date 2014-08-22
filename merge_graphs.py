@@ -39,6 +39,6 @@ for path, graph, is_changed, state in merge_graphs(ins(), args.time, state=True)
 out.write("""Changed: {}
 Unchanged: {}
 Merges: {}
-Count: {}\n""".format(state['changed'], state['unchanged'], state['merges'], state['count']))
+Count: {}\n""".format(state['# changed'], state['# unchanged'], state['merges'], state['count']))
 out.write("Found graphs: {0}\n".format(counts['in']))
 out.write("Written graphs: {0}\n".format(counts['out']))
