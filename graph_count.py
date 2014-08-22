@@ -16,9 +16,13 @@ for path, graph in ins():
 
     if last_path and last_path != path:
         out.write("{0}: {1}\n".format(last_path, current_count))
+        current_count = 0
 
     last_path = path
     current_count += 1
     total_count += 1
+
+out.write("{0}: {1}\n".format(path, current_count))
+
 
 out.write("Total: {0}\n".format(total_count))
