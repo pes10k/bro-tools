@@ -28,6 +28,9 @@ def merge_graphs(handle, time=10, state=False):
     log = logging.getLogger("brorecords")
 
     state = {
+        "changed": 0,
+        "unchanged": 0,
+        "merges": 0,
         "count": 0,
         "graphs_for_client": {},
         # Graphs sorted by latest child record timestamp, earliest value first
@@ -38,6 +41,10 @@ def merge_graphs(handle, time=10, state=False):
     }
 
     def _yield_values(graph, path):
+        if graph in state['changed']:
+            state['changed'] += 1
+        else:
+            state['unchanged'] += 1
         if state:
             return path, graph, (graph in state['changed']), state
         else:
@@ -114,20 +121,21 @@ def merge_graphs(handle, time=10, state=False):
 
     for path, graph in handle:
 
+        hash_key = graph_hash(graph)
+        if hash_key not in state['graphs_for_client']:
+            state['graphs_for_client'][hash_key] = []
+
         state['count'] += 1
 
         for old_graph, old_path in prune_state(graph, path):
             yield _yield_values(old_graph, old_path)
 
-        hash_key = graph_hash(graph)
-        if hash_key not in state['graphs_for_client']:
-            state['graphs_for_client'][hash_key] = []
-
-        graph_is_merged = False
         client_graphs = state['graphs_for_client'][hash_key]
+        graph_is_merged = False
         for existing_graph, existing_path in client_graphs:
             if (graph.latest_ts - existing_graph.latest_ts <= time and
                 existing_graph.add_graph(graph)):
+                state['merges'] += 1
                 # If we succeed in merging the new graph into an existing
                 # graph, we need to read it to our state collections,
                 # to make sure it is sorted correctly
