@@ -109,7 +109,7 @@ def merge_graphs(handle, time=10, state=False):
             if prev_graph.latest_ts >= latest_valid_time:
                 break
             removed.append((prev_graph, prev_path))
-            remove_from_state((prev_graph, prev_path))
+            remove_from_state(prev_graph, prev_path)
         return removed
 
     for path, graph in handle:
