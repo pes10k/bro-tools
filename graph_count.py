@@ -12,7 +12,7 @@ debug("Preparing to reading {0} sets of graphs".format(count))
 last_path = None
 current_count = 0
 total_count = 0
-for graph, path in ins():
+for path, graph in ins():
 
     if last_path and last_path != path:
         out.write("{0}: {1}\n".format(last_path, current_count))
