@@ -33,7 +33,6 @@ counts = {
     "out" : 0
 }
 
-num_graphs = 0
 prev_path = None
 for path, graph, is_changed, state in merge(ins(), args.time, state=True):
     if args.light and prev_path and prev_path != path:
