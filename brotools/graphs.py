@@ -78,7 +78,7 @@ def merge(handle, time=10, state=False):
         # their most recent bro record being more recent then the given
         # graphs timestamp less the current passed `time` parameter
         state['graphs_by_date'].append(record)
-        state['graphs_by_date'].sort(key=lambda g, p: g.latest_ts)
+        state['graphs_by_date'].sort(key=lambda x: x[0].latest_ts)
 
     def _remove_from_state(graph, path):
         hash_key = _graph_hash(graph)
