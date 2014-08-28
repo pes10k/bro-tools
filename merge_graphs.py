@@ -35,11 +35,14 @@ counts = {
 
 prev_path = None
 for path, graph, is_changed, state in merge(ins(), args.time, state=True):
+    removed_dirty_path = False
     if args.light and prev_path and prev_path != path:
         try:
             os.remove(prev_path)
         except OSError:
             pass
+        removed_dirty_path = True
+
 
     counts['out'] += 1
     counts['in'] = state['count']
@@ -49,7 +52,8 @@ for path, graph, is_changed, state in merge(ins(), args.time, state=True):
     else:
         with open(path + ".unchanged", 'a') as h:
             pickle.dump(graph, h)
-    prev_path = path
+    if not removed_dirty_path:
+        prev_path = path
 
 if args.light and prev_path and prev_path != path:
     try:
