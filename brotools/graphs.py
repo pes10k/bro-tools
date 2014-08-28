@@ -3,16 +3,69 @@ of BroRecords as a DAG, with each node's successor being the page that
 lead to a given page, and its children being the pages visted next."""
 
 import networkx as nx
+import logging
+import re
 from .records import bro_records
 from .chains import BroRecordChain
-import logging
 
-def merge(handle, time=10, state=False):
-    """Takes an iterator of BroRecordGraph objects, and yields back
-    BroRecordGraphs, with the records merged together as possible.
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
+FILE_TS_PATTERN = re.compile('[0-9]{10}')
+def _timestamp_for_filename(filename):
+    """Collections of BroRecordGraphs are are saved with filenames like
+    http-requests.1388592000.log.pickles, which refer to the lower bound of the
+    request time of the earliest BroRecord contained in the graph.
+
+    This function returns the earliest possible time that a BroRecord
+    was sent in the collection of graphs in the given file.
 
     Args:
-        handle -- An iterator that returns BroRecordGraph objects
+        filename -- A filename, as a string in a format, such as
+                    http-requests.1388592000.log.pickles
+
+    Return:
+        None if no date could be returned, otherwise an integer unix timestamp
+    """
+    match = FILE_TS_PATTERN.search(filename)
+    if not match:
+        return None
+    return int(match.group())
+
+def _graphs_from_file(filename):
+    """Creates an iterator that returns completed graphs that are read out
+    of the given filename.
+
+    Args:
+        filename -- a filename, or filepath, to a file on disk containing
+                    pickled graphs
+    """
+    log = logging.getLogger("brorecords")
+    index = 0
+    with open(filename, 'r') as h:
+        while True:
+            try:
+                index += 1
+                if index % 10000 == 0:
+                    log.info(" * Completed graph: {0}".format(index))
+                yield pickle.load(h)
+            except EOFError:
+                break
+            except:
+                log.info(" * Pickle error, skipping: {0}".format(filename))
+                pass
+
+def merge(filelist, time=10):
+    """Attempts to merge BroRecordGraph that represent one logical graph /
+    browsing session, but where the log divisions cause the single session
+    to be split across multiple different graphs.
+
+    Args:
+        filelist -- a list of filenames, in the format
+                    http-requests.1388592000.log.pickles. This list should be
+                    sorted by the timestamps in the filenames
 
     Keyword Args:
         time  -- the maximum amount of time that can have passed in
@@ -21,159 +74,230 @@ def merge(handle, time=10, state=False):
                  generator.  Only really useful for debugging
 
     Return:
-        Yields pairs of values.  The first value is aBroRecordGraph, and
+        Yields pairs of values.  The first value is a BroRecordGraph, and
         the second value is a boolean description of whether the graph has been
         changed (ie if it has absorbed another graph)
     """
     log = logging.getLogger("brorecords")
 
     state = {
-        "# changed": 0,
-        "# unchanged": 0,
-        "merges": 0,
-        "count": 0,
+        # A collection of graphs, keyed by a client specific hash.  Keys
+        # are the client hashes, and values are ordered lists of graphs
+        "potential_mergers_by_client": {},
         "graphs_for_client": {},
-        # Graphs sorted by latest child record timestamp, earliest value first
-        "graphs_by_date": [],
         # Keep track of which graphs were altered by having child graphs
         # merged into them
         "changed": set()
     }
 
-    def _yield_values(graph, path):
+    log_timestamps = [_timestamp_for_filename(f) for f in filelist]
+    log_merge_ranges = [(t - time, t, t + time) for t in log_timestamps]
+
+    def _client_hash(graph):
+        return graph.ip + "|" + graph.user_agent
+
+    def _could_be_merger(graph):
+        """Checks to see if the given graph could be a graph that should
+        receive other child graphs which represent the same logical browsing
+        session, but which were stored in a different graph because of how
+        the logs are segmented by time.
+
+        Args:
+            graph -- a BroRecordGraph object
+
+        Return:
+            A boolean description of whether the graph could possibly have
+            child graphs in another file.
+        """
+        latest_ts = graph.latest_ts
+
+        for start, mid, end in log_merge_ranges:
+            # If the current range is strictly later than all records in the
+            # graph, then it means that all possible range comparisons will
+            # be false, so we can stop looking any further
+            if start > latest_ts and end > latest_ts:
+                return False
+
+            if latest_ts >= start and latest_ts <= mid:
+                return True
+        return False
+
+    def _yield_back_merger(graph, path):
         try:
             state['changed'].remove(graph)
             is_changed = True
-            state['# changed'] += 1
         except KeyError:
             is_changed = False
-            state['# unchanged'] += 1
+        return path, graph, is_changed
 
-        if state:
-            return path, graph, is_changed, state
-        else:
-            return path, graph, is_changed
+    def _all_potential_mergers():
+        """Returns an iterator for all remaining, potential merger graphs
+        still in the collection, to make sure that we return the held over
+        graphs even after we've finished considering all the graphs in
+        all of the files in the workset.
 
-    def _graph_hash(graph):
-        return graph.ip + "|" + graph.user_agent
+        Return:
+            An iterator that returns pairs ofr BroRecordGraph objects
+            and filepath strings that the graph came from
+        """
+        for key in state['potential_mergers_by_client']:
+            for graph in state['potential_mergers_by_client'][key]:
+                yield graph
 
-    def _add_to_state(graph, path):
-        hash_key = _graph_hash(graph)
+    def _add_graph_as_potential_merger(graph, path):
+        """Records the given graph and path pair as potential mergers that
+        should be checked as possible parents of graphs found in future
+        files.
+
+        Args:
+            graph -- a BroRecordGraph
+            path  -- the file path that this graph was extracted from
+        """
+        client_key = _client_hash(graph)
         record = graph, path
-
-        # We can always be sure that there is a collection for the current
-        # client because we check for it elsewhere, before this function is
-        # called, in the main loop
-        state['graphs_for_client'][hash_key].add(record)
-
-        # Special case for considering the first graph.  If this is the cae,
-        # then we know there is no sorting or other change needed,
-        # and that this will be the first graph for this client.  We can
-        # easy out then
-        if len(state['graphs_by_date']) == 0:
-            state['graphs_by_date'].append(record)
-            return
-
-        # A collection of all graphs under consideration that have
-        # their most recent bro record being more recent then the given
-        # graphs timestamp less the current passed `time` parameter
-        state['graphs_by_date'].append(record)
-        state['graphs_by_date'].sort(key=lambda x: x[0].latest_ts)
-
-    def _remove_from_state(graph, path):
-        hash_key = _graph_hash(graph)
-
-        record = graph, path
-        state['graphs_by_date'].remove(record)
-
         try:
-            state['graphs_for_client'][hash_key].remove(record)
+            state['potential_mergers_by_client'][client_key].append(record)
+        except KeyError:
+            state['potential_mergers_by_client'][client_key] = [record]
+
+    def _parent_merge_graph(graph):
+        """Checks to see if the give graph should be merged with a parent
+        graph, and if so does the actual merge.
+
+        Args:
+            graph -- a BroRecordGraph object
+
+        Return:
+            None if the given graph cannot be merged into a parent graph,
+            and otherwise the BroRecordGraph object the given graph was
+            merged into.
+        """
+        client_key = _client_hash(graph)
+        try:
+            client_graphs = state['potential_mergers_by_client'][client_key]
+            for old_graph, old_path in client_graphs:
+                if old_graph.add_graph(graph):
+                    state['changed'].add(old_graph)
+                    return old_graph
         except KeyError:
             pass
+        return None
 
-    def _prune_state(most_recent_graph, path):
-        # We only ever need to hold on to, and keep considering, graphs in
-        # the collection that contain records that more recently
-        # than the most recent graph's most recent record, less the
-        # window size we want to consider (`time`).  Any graphs who
-        # have most recent records occuring before this window can be
-        # yielded back and removed from further consideration
-        latest_valid_time = most_recent_graph.latest_ts - time
+    def _prune_mergers(graph):
+        """Removes potential merger graphs that are too old to still possibly
+        be merged with anything.
 
-        removed_records = []
+        Args:
+            graph -- a BroRecordGraph object, which must always be the most
+                     recent graph (by start date) observed so far
 
-        # Look for any graphs in the collection that are too old to still be
-        # considered.  If there are any, eject them.  Since the graphs
-        # are by oldest to newest, we can stop looking through the collection
-        # the moment we find a valid one
-        for prev_graph, prev_path in state['graphs_by_date']:
-            if prev_graph.latest_ts >= latest_valid_time:
-                break
-            removed_records.append((prev_graph, prev_path))
-            _remove_from_state(prev_graph, prev_path)
-        return removed_records
+        Return:
+            A list of zero or more graphs that were pruned out of the collection
+        """
+        start = graph.earliest_ts
+        client_key = _client_hash(graph)
 
-    # All the above is setting up helper / closures over this interator.
-    # We now iterate over each graph in the given graph collection.  This
-    # is where this iterator actually starts doing work
-    for path, graph in handle:
-        hash_key = _graph_hash(graph)
-
-        # Tick +1 to keep track of how many graphs we've considered at all
-        state['count'] += 1
-
-        # Look through all the graphs we've seen so far and yield back to
-        # the caller all the graphs with latest records that are too old to
-        # possibly be merged with any future graphs (ie previously seen graphs
-        # that occured more than the passed `time` parameter ago, so all
-        # possible merge tests will fail).
-        for old_graph, old_path in _prune_state(graph, path):
-            yield _yield_values(old_graph, old_path)
-
-        # The graphs for client collection keeps track all currently active
-        # graphs for each client we see, where a client is determined by
-        # IP and user agent.  If we haven't seen the given client so
-        # far, we just create an empty set for the client, to keep track of
-        # all still-considered graphs for the client
-        #
-        # Graphs are seperated out by client to avoid needing to compare graphs
-        # to other graphs which we know can't possibly match the graph
-        # under consideration
         try:
-            client_graphs = state['graphs_for_client'][hash_key]
+            records_to_remove = []
+            client_graphs = state['potential_mergers_by_client'][client_key]
+
+            # Common case, where there are no possible mergeable graphs
+            # for the client
+            if len(client_graphs) == 0:
+                return records_to_remove
+
+            for record in client_graphs:
+                old_graph, old_path = record
+                if old_graph.latest_ts + time < start:
+                    records_to_remove.append(record)
+            for ex_record in records_to_remove:
+                client_graphs.remove(record)
+            return [g for g, p in records_to_remove]
         except KeyError:
-            state['graphs_for_client'][hash_key] = set()
-            client_graphs = state['graphs_for_client'][hash_key]
+            return []
 
-        # Now look through all the previously seen graphs for this client
-        # that have tails recent enough where its possible they could
-        # still be merged with a new record
-        graph_is_merged = False
-        for existing_graph, existing_path in client_graphs:
+    def _could_be_mergee(graph):
+        """Checks to see if the graph could possibly be a child of a graph
+        stored in an earlier file, such that both graphs represent the same
+        logical browsing session, but the underlying BroRecords were split
+        into two or more graphs because of log partition.
 
-            # Look to see if we're able to merge the currently being considered
-            # graph, "graph", into a previously seen graph, "existing_graph".
-            if existing_graph.add_graph(graph):
-                state['merges'] += 1
-                # If we succeed in merging the new graph into an existing
-                # graph, we need to read it to our state collections,
-                # to make sure it is sorted correctly
-                _remove_from_state(existing_graph, existing_path)
-                _add_to_state(existing_graph, existing_path)
-                state['changed'].add(existing_graph)
+        Args:
+            graph -- a BroRecordGraph object
+
+        Returns:
+            A boolean description of whether a graph could be merged into
+            a parent graph.
+        """
+        earliest_ts = graph.earliest_ts
+        latest_ts = graph.latest_ts
+
+        for start, mid, end in log_merge_ranges:
+            # If the current range is strictly later than all records in the
+            # graph, then it means that all possible range comparisons will
+            # be false, so we can stop looking any further
+            if start > latest_ts and end > latest_ts:
+                return False
+
+            if earliest_ts >= mid and earliest_ts <= end:
+                return True
+        return False
+
+    for path in filelist:
+        for graph in _graphs_from_file(path):
+
+            # First check to see if its possible for this graph to
+            # be merged into another one (either as a parent or a child).
+            # If not, which is the common case, we can just immediatly
+            # yield the value back as being unchanged from its source file
+            possible_merger = _could_be_merger(graph)
+            possible_mergee = _could_be_mergee(graph)
+            if not possible_merger and not possible_mergee:
+                yield path, graph, False
+                continue
+
+            # Since at this point we start interacting with the collection
+            # of previous graphs that could potentially merge with the
+            # new graph, we prune out any graphs from the previous potential
+            # mergers and yield them back.
+            #
+            # Note that by doing so here, we keep these checks out of the
+            # common path, though it means we'll disrupt the order a bit since
+            # some of these graphs will be very old at this point.  However,
+            # since the yielded back graphs were already going to be
+            # semi out of order, they'd need to be sorted anyway, so no
+            # biggie
+            pruned_merger_graphs = _prune_mergers(graph)
+            for old_graph, old_path in pruned_merger_graphs:
+                yield _yield_back_merger(old_graph, old_path)
+
+            # Next, we check to see if the graph under consideration
+            # occurs late enough in its log to be possibly the parent
+            # of a graph in a subsequent file.  If so, then don't deal with
+            # the graph now, but add it to a hanging set of graphs that we'll
+            # deal with later, when its no longer possible for them to
+            # be parents of future graphs.
+            if possible_merger:
+                _add_graph_as_potential_merger(graph, path)
+                continue
+
+            # The only remaining option then is that the graph under
+            # consideration potentially could be merged into a graph from a
+            # previous file.
+            parent_graph = _parent_merge_graph(graph)
+            if parent_graph:
+                # If we're able to find a parent graph, then no need to
+                # consider this (now-child) graph any further, as its
+                # records are now accounted for by a parent
                 log.info(" * Found merge: {0}".format(graph._root.url))
-                graph_is_merged = True
-                break
+                continue
+            # Otherwise, if we're not able to find a parent graph,
+            # then we can just yield back this graph, unchanged
+            yield path, graph, False
+            continue
 
-        # Otherwise, if we weren't able to add the newly considered graph
-        # into any previously seen graphs for this client that are still 'live'
-        # / recent enough to be considered, add the graph into the collection
-        # of graphs currently being considered for the client
-        if not graph_is_merged:
-            _add_to_state(graph, path)
-
-    for prev_graph, prev_path in state['graphs_by_date']:
-        yield _yield_values(prev_graph, prev_path)
+    for old_graph, old_path in _all_potential_mergers():
+        yield _yield_back_merger(old_graph, old_path)
 
 def graphs(handle, time=10, record_filter=None):
     """A generator function yields BroRecordGraph objects that represent

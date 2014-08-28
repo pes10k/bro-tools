@@ -33,21 +33,35 @@ counts = {
     "out" : 0
 }
 
+input_paths = args.inputs
+try:
+    in_paths = [p for p in input_paths.split("\n")]
+except AttributeError: # Catch if we're calling split on a list of files
+    in_paths = input_paths
+
+# Next, do some simple trimming to make sure we deal with common issues,
+# like a trailing empty string in a list, etc.
+input_files = [p.strip() for p in in_paths if len(p.strip()) > 0]
+input_files.sort()
+
+written_files = set()
 parsed_files = []
-for path, graph, is_changed, state in merge(ins(), args.time, state=True):
+for path, graph, is_changed in merge(input_files, args.time):
     if args.light and path in parsed_files and path != parsed_files[-1]:
         try:
             os.remove(path)
         except OSError:
             pass
 
-    counts['out'] += 1
-    counts['in'] = state['count']
     if is_changed:
-        with open(path + ".changed", 'a') as h:
+        dst_path = path + ".changed"
+        written_files.add(dst_path)
+        with open(dst_path, 'a') as h:
             pickle.dump(graph, h)
     else:
-        with open(path + ".unchanged", 'a') as h:
+        dst_path = path + ".unchanged"
+        written_files.add(dst_path)
+        with open(dst_path, 'a') as h:
             pickle.dump(graph, h)
     if path not in parsed_files:
         parsed_files.append(parsed_files)
@@ -59,9 +73,4 @@ if args.light:
         except OSError:
             pass
 
-out.write("""Changed: {}
-Unchanged: {}
-Merges: {}
-Count: {}\n""".format(state['# changed'], state['# unchanged'], state['merges'], state['count']))
-out.write("Found graphs: {0}\n".format(counts['in']))
-out.write("Written graphs: {0}\n".format(counts['out']))
+out.write("Finished writing {0} files\n".format(len(written_files)))
