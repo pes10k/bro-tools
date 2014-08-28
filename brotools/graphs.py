@@ -71,7 +71,7 @@ def merge(handle, time=10, state=False):
         # and that this will be the first graph for this client.  We can
         # easy out then
         if len(state['graphs_by_date']) == 0:
-            state['graphs_by_date'].add(record)
+            state['graphs_by_date'].append(record)
             return
 
         # A collection of all graphs under consideration that have
@@ -82,10 +82,9 @@ def merge(handle, time=10, state=False):
 
     def _remove_from_state(graph, path):
         hash_key = _graph_hash(graph)
-        record = (graph, path)
 
-        if record in state['graphs_by_date']:
-            state['graphs_by_date'].remove(record)
+        record = graph, path
+        state['graphs_by_date'].remove(record)
 
         try:
             state['graphs_for_client'][hash_key].remove(record)
