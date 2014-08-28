@@ -34,9 +34,13 @@ counts = {
 }
 
 num_graphs = 0
-paths_seen = set()
+prev_path = None
 for path, graph, is_changed, state in merge(ins(), args.time, state=True):
-    paths_seen.add(path)
+    if args.light and prev_path and prev_path != path:
+        try:
+            os.remove(prev_path)
+        except OSError:
+            pass
 
     counts['out'] += 1
     counts['in'] = state['count']
@@ -46,11 +50,13 @@ for path, graph, is_changed, state in merge(ins(), args.time, state=True):
     else:
         with open(path + ".unchanged", 'a') as h:
             pickle.dump(graph, h)
-    last_path_seen = path
+    prev_path = path
 
-if args.light:
-    for path in paths_seen:
-        os.unlink(path)
+if args.light and prev_path and prev_path != path:
+    try:
+        os.remove(prev_path)
+    except OSError:
+        pass
 
 out.write("""Changed: {}
 Unchanged: {}
