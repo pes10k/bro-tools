@@ -4,7 +4,7 @@ split apart across different bro logs."""
 import sys
 import brotools.reports
 import brotools.records
-from brotools.graphs import merge_graphs
+from brotools.graphs import merge
 
 try:
     import cPickle as pickle
@@ -25,7 +25,7 @@ counts = {
 }
 
 num_graphs = 0
-for path, graph, is_changed, state in merge_graphs(ins(), args.time, state=True):
+for path, graph, is_changed, state in merge(ins(), args.time, state=True):
     counts['out'] += 1
     counts['in'] = state['count']
     if is_changed:

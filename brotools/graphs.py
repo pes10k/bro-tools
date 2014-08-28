@@ -7,7 +7,7 @@ from .records import bro_records
 from .chains import BroRecordChain
 import logging
 
-def merge_graphs(handle, time=10, state=False):
+def merge(handle, time=10, state=False):
     """Takes an iterator of BroRecordGraph objects, and yields back
     BroRecordGraphs, with the records merged together as possible.
 
@@ -94,6 +94,7 @@ def merge_graphs(handle, time=10, state=False):
         record = (graph, path)
 
         if graph in state['changed']:
+            log.info("Found graph in changed section")
             state['changed'].remove(graph)
 
         if record in state['graphs_by_date']:
