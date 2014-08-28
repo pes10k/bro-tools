@@ -33,16 +33,13 @@ counts = {
     "out" : 0
 }
 
-prev_path = None
+parsed_files = []
 for path, graph, is_changed, state in merge(ins(), args.time, state=True):
-    removed_dirty_path = False
-    if args.light and prev_path and prev_path != path:
+    if args.light and path in parsed_files and path != parsed_files[-1]:
         try:
-            os.remove(prev_path)
+            os.remove(path)
         except OSError:
             pass
-        removed_dirty_path = True
-
 
     counts['out'] += 1
     counts['in'] = state['count']
@@ -52,14 +49,15 @@ for path, graph, is_changed, state in merge(ins(), args.time, state=True):
     else:
         with open(path + ".unchanged", 'a') as h:
             pickle.dump(graph, h)
-    if not removed_dirty_path:
-        prev_path = path
+    if path not in parsed_files:
+        parsed_files.append(parsed_files)
 
-if args.light and prev_path and prev_path != path:
-    try:
-        os.remove(prev_path)
-    except OSError:
-        pass
+if args.light:
+    for prev_path in parsed_files:
+        try:
+            os.remove(prev_path)
+        except OSError:
+            pass
 
 out.write("""Changed: {}
 Unchanged: {}
