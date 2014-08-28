@@ -37,65 +37,52 @@ def merge(handle, time=10, state=False):
         "graphs_by_date": [],
         # Keep track of which graphs were altered by having child graphs
         # merged into them
-        "changed": []
+        "changed": set()
     }
 
     def _yield_values(graph, path):
-        if graph in state['changed']:
+        try:
+            state['changed'].remove(graph)
+            is_changed = True
             state['# changed'] += 1
-        else:
+        except KeyError:
+            is_changed = False
             state['# unchanged'] += 1
-        if state:
-            return path, graph, (graph in state['changed']), state
-        else:
-            return path, graph, (graph in state['changed'])
 
-    def graph_hash(graph):
+        if state:
+            return path, graph, is_changed, state
+        else:
+            return path, graph, is_changed
+
+    def _graph_hash(graph):
         return graph.ip + "|" + graph.user_agent
 
-    def add_to_state(candidate_graph, path):
-        hash_key = graph_hash(candidate_graph)
-        record = (candidate_graph, path)
+    def _add_to_state(graph, path):
+        hash_key = _graph_hash(graph)
+        record = graph, path
+
+        # We can always be sure that there is a collection for the current
+        # client because we check for it elsewhere, before this function is
+        # called, in the main loop
+        state['graphs_for_client'][hash_key].add(record)
 
         # Special case for considering the first graph.  If this is the cae,
         # then we know there is no sorting or other change needed,
         # and that this will be the first graph for this client.  We can
         # easy out then
         if len(state['graphs_by_date']) == 0:
-            state['graphs_for_client'][hash_key] = [record]
-            state['graphs_by_date'].append(record)
+            state['graphs_by_date'].add(record)
+            return
 
-        try:
-            state['graphs_for_client'][hash_key].append(record)
-        except KeyError:
-            state['graphs_for_client'][hash_key] = [record]
-
+        # A collection of all graphs under consideration that have
+        # their most recent bro record being more recent then the given
+        # graphs timestamp less the current passed `time` parameter
         state['graphs_by_date'].append(record)
-        state['graphs_by_date'].sort(key=lambda x: x[0].latest_ts)
+        state['graphs_by_date'].sort(key=lambda g, p: g.latest_ts)
 
-        # Now we need to figure out where to insert the new record into
-        # the existing sorted collection of graphs.  We do this by just
-        # walking through the collection until we find one with a timestamp
-        # after us and inserting the graph there.  Index is the index we might
-        # insert the graph into
-        # match = None
-        # for index in range(len(state['graphs_by_date'])):
-        #     if graph.latest_ts > candidate_graph.latest_ts:
-        #         match = True
-        #         break
-
-        # if not match:
-        #     index = len(state['graphs_by_date'])
-
-        # state['graphs_by_date'].insert(index, candidate_graph)
-
-    def remove_from_state(graph, path):
-        hash_key = graph_hash(graph)
+    def _remove_from_state(graph, path):
+        hash_key = _graph_hash(graph)
         record = (graph, path)
-
-        if graph in state['changed']:
-            log.info("Found graph in changed section")
-            state['changed'].remove(graph)
 
         if record in state['graphs_by_date']:
             state['graphs_by_date'].remove(record)
@@ -105,9 +92,17 @@ def merge(handle, time=10, state=False):
         except KeyError:
             pass
 
-    def prune_state(most_recent_graph, path):
+    def _prune_state(most_recent_graph, path):
+
+        # We only ever need to hold on to, and keep considering, graphs in
+        # the collection that contain records that more recently
+        # than the most recent graph's most recent record, less the
+        # window size we want to consider (`time`).  Any graphs who
+        # have most recent records occuring before this window can be
+        # yielded back and removed from further consideration
         latest_valid_time = most_recent_graph.latest_ts - time
-        removed = []
+
+        removed_records = []
 
         # Look for any graphs in the collection that are too old to still be
         # considered.  If there are any, eject them.  Since the graphs
@@ -116,40 +111,68 @@ def merge(handle, time=10, state=False):
         for prev_graph, prev_path in state['graphs_by_date']:
             if prev_graph.latest_ts >= latest_valid_time:
                 break
-            removed.append((prev_graph, prev_path))
-            remove_from_state(prev_graph, prev_path)
-        return removed
+            removed_records.append((prev_graph, prev_path))
+            _remove_from_state(prev_graph, prev_path)
+        return removed_records
 
+    # All the above is setting up helper / closures over this interator.
+    # We now iterate over each graph in the given graph collection.  This
+    # is where this iterator actually starts doing work
     for path, graph in handle:
+        hash_key = _graph_hash(graph)
 
-        hash_key = graph_hash(graph)
-        if hash_key not in state['graphs_for_client']:
-            state['graphs_for_client'][hash_key] = []
-
+        # Tick +1 to keep track of how many graphs we've considered at all
         state['count'] += 1
 
-        for old_graph, old_path in prune_state(graph, path):
+        # Look through all the graphs we've seen so far and yield back to
+        # the caller all the graphs with latest records that are too old to
+        # possibly be merged with any future graphs (ie previously seen graphs
+        # that occured more than the passed `time` parameter ago, so all
+        # possible merge tests will fail).
+        for old_graph, old_path in _prune_state(graph, path):
             yield _yield_values(old_graph, old_path)
 
-        client_graphs = state['graphs_for_client'][hash_key]
+        # The graphs for client collection keeps track all currently active
+        # graphs for each client we see, where a client is determined by
+        # IP and user agent.  If we haven't seen the given client so
+        # far, we just create an empty set for the client, to keep track of
+        # all still-considered graphs for the client
+        #
+        # Graphs are seperated out by client to avoid needing to compare graphs
+        # to other graphs which we know can't possibly match the graph
+        # under consideration
+        try:
+            client_graphs = state['graphs_for_client'][hash_key]
+        except KeyError:
+            state['graphs_for_client'][hash_key] = set()
+            client_graphs = state['graphs_for_client'][hash_key]
+
+        # Now look through all the previously seen graphs for this client
+        # that have tails recent enough where its possible they could
+        # still be merged with a new record
         graph_is_merged = False
         for existing_graph, existing_path in client_graphs:
-            if (graph.latest_ts - existing_graph.latest_ts <= time and
-                existing_graph.add_graph(graph)):
+
+            # Look to see if we're able to merge the currently being considered
+            # graph, "graph", into a previously seen graph, "existing_graph".
+            if existing_graph.add_graph(graph):
                 state['merges'] += 1
                 # If we succeed in merging the new graph into an existing
                 # graph, we need to read it to our state collections,
                 # to make sure it is sorted correctly
-                remove_from_state(existing_graph, existing_path)
-                add_to_state(existing_graph, existing_path)
-                state['changed'].append(existing_graph)
+                _remove_from_state(existing_graph, existing_path)
+                _add_to_state(existing_graph, existing_path)
+                state['changed'].add(existing_graph)
                 log.info(" * Found merge: {0}".format(graph._root.url))
-                log.info("     Changed graphs: {0}".format(len(state['changed'])))
                 graph_is_merged = True
                 break
 
+        # Otherwise, if we weren't able to add the newly considered graph
+        # into any previously seen graphs for this client that are still 'live'
+        # / recent enough to be considered, add the graph into the collection
+        # of graphs currently being considered for the client
         if not graph_is_merged:
-            add_to_state(graph, path)
+            _add_to_state(graph, path)
 
     for prev_graph, prev_path in state['graphs_by_date']:
         yield _yield_values(prev_graph, prev_path)
