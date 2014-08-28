@@ -92,7 +92,6 @@ def merge(handle, time=10, state=False):
             pass
 
     def _prune_state(most_recent_graph, path):
-
         # We only ever need to hold on to, and keep considering, graphs in
         # the collection that contain records that more recently
         # than the most recent graph's most recent record, less the
