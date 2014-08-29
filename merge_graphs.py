@@ -10,6 +10,7 @@ import sys
 import os
 import brotools.reports
 import brotools.records
+import datetime
 from brotools.graphs import merge
 
 try:
@@ -45,7 +46,8 @@ for path, graph, is_changed in merge(input_files, args.time):
 
     if path not in parsed_files:
         parsed_files.append(path)
-        out.write("Moving to file: {0}".format(path))
+        now = datetime.datetime.now()
+        out.write("{0}: Moving to file {1}".format(str(now), path))
 
     if args.light and path != parsed_files[-1]:
         try:
