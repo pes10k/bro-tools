@@ -154,11 +154,12 @@ def merge(filelist, time=10):
             path  -- the file path that this graph was extracted from
         """
         client_key = _client_hash(graph)
-        record = graph, path
+        record = (graph, path)
         try:
             state['potential_mergers_by_client'][client_key].add(record)
         except KeyError:
-            state['potential_mergers_by_client'][client_key] = set(record)
+            state['potential_mergers_by_client'][client_key] = set()
+            state['potential_mergers_by_client'][client_key].add(record)
 
     def _parent_merge_graph(graph):
         """Checks to see if the give graph should be merged with a parent
