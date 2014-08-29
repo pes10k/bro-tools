@@ -42,7 +42,12 @@ input_files.sort()
 written_files = set()
 parsed_files = []
 for path, graph, is_changed in merge(input_files, args.time):
-    if args.light and path in parsed_files and path != parsed_files[-1]:
+
+    if path not in parsed_files:
+        parsed_files.append(path)
+        out.write("Moving to file: {0}".format(path))
+
+    if args.light and path != parsed_files[-1]:
         try:
             os.remove(path)
         except OSError:
