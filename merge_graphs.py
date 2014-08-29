@@ -28,11 +28,6 @@ count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 
 debug("Preparing to read {0} collections of graphs".format(count))
 
-counts = {
-    "in" : 0,
-    "out" : 0
-}
-
 input_paths = args.inputs
 try:
     in_paths = [p for p in input_paths.split("\n")]

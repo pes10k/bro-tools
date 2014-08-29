@@ -212,7 +212,7 @@ def merge(filelist, time=10):
                     records_to_remove.append(record)
             for ex_record in records_to_remove:
                 client_graphs.remove(record)
-            return [g for g, p in records_to_remove]
+            return records_to_remove
         except KeyError:
             return []
 
@@ -291,6 +291,7 @@ def merge(filelist, time=10):
                 # records are now accounted for by a parent
                 log.info(" * Found merge: {0}".format(graph._root.url))
                 continue
+
             # Otherwise, if we're not able to find a parent graph,
             # then we can just yield back this graph, unchanged
             yield path, graph, False
