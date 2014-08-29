@@ -82,7 +82,7 @@ def merge(filelist, time=10):
 
     state = {
         # A collection of graphs, keyed by a client specific hash.  Keys
-        # are the client hashes, and values are ordered lists of graphs
+        # are the client hashes, and values are a set of graph, path pairs
         "potential_mergers_by_client": {},
         "graphs_for_client": {},
         # Keep track of which graphs were altered by having child graphs
@@ -137,12 +137,12 @@ def merge(filelist, time=10):
         all of the files in the workset.
 
         Return:
-            An iterator that returns pairs ofr BroRecordGraph objects
+            An iterator that returns pairs of BroRecordGraph objects
             and filepath strings that the graph came from
         """
         for key in state['potential_mergers_by_client']:
-            for graph in state['potential_mergers_by_client'][key]:
-                yield graph
+            for record in state['potential_mergers_by_client'][key]:
+                yield record
 
     def _add_graph_as_potential_merger(graph, path):
         """Records the given graph and path pair as potential mergers that
@@ -156,9 +156,9 @@ def merge(filelist, time=10):
         client_key = _client_hash(graph)
         record = graph, path
         try:
-            state['potential_mergers_by_client'][client_key].append(record)
+            state['potential_mergers_by_client'][client_key].add(record)
         except KeyError:
-            state['potential_mergers_by_client'][client_key] = [record]
+            state['potential_mergers_by_client'][client_key] = set(record)
 
     def _parent_merge_graph(graph):
         """Checks to see if the give graph should be merged with a parent
@@ -174,8 +174,8 @@ def merge(filelist, time=10):
         """
         client_key = _client_hash(graph)
         try:
-            client_graphs = state['potential_mergers_by_client'][client_key]
-            for old_graph, old_path in client_graphs:
+            client_records = state['potential_mergers_by_client'][client_key]
+            for old_graph, old_path in client_records:
                 if old_graph.add_graph(graph):
                     state['changed'].add(old_graph)
                     return old_graph
@@ -199,19 +199,21 @@ def merge(filelist, time=10):
 
         try:
             records_to_remove = []
-            client_graphs = state['potential_mergers_by_client'][client_key]
+            client_records = state['potential_mergers_by_client'][client_key]
 
             # Common case, where there are no possible mergeable graphs
             # for the client
-            if len(client_graphs) == 0:
+            if len(client_records) == 0:
                 return records_to_remove
 
-            for record in client_graphs:
+            for record in client_records:
                 old_graph, old_path = record
                 if old_graph.latest_ts + time < start:
                     records_to_remove.append(record)
+
             for ex_record in records_to_remove:
-                client_graphs.remove(record)
+                client_records.remove(record)
+
             return records_to_remove
         except KeyError:
             return []
