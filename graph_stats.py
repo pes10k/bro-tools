@@ -33,39 +33,38 @@ num_amazon_stuffs = 0
 
 hosts = {}
 index = 0
-for path, graphs in ins():
+for path, graph in ins():
     index += 1
+    num_graphs += 1
     debug("{0}-{1}. Considering {2}".format(index, count, path))
-    debug("{0}-{1}. Found {2} graphs".format(index, count, len(graphs)))
-    for g in graphs:
-        num_requests += len(g)
-        num_amazon_requests += sum([len(g.nodes_for_host(h)) for h in amazon_ish_hosts])
-        num_amazon_stuffs += len(AmazonAffiliateHistory.stuffs_in_graph(g))
-        num_amazon_checkouts += len(AmazonAffiliateHistory.checkouts_in_graph(g))
-        num_amazon_sets += len(AmazonAffiliateHistory.cookie_sets_in_graph(g))
-        head_record = g._root
-        is_amazon_head = "amazon.com" in head_record.host
+    num_requests += len(graph)
+    num_amazon_requests += sum([len(graph.nodes_for_host(h)) for h in amazon_ish_hosts])
+    num_amazon_stuffs += len(AmazonAffiliateHistory.stuffs_in_graph(graph))
+    num_amazon_checkouts += len(AmazonAffiliateHistory.checkouts_in_graph(graph))
+    num_amazon_sets += len(AmazonAffiliateHistory.cookie_sets_in_graph(graph))
+    head_record = graph._root
+    is_amazon_head = "amazon.com" in head_record.host
 
-        if is_amazon_head:
-            num_amazon_roots += 1
+    if is_amazon_head:
+        num_amazon_roots += 1
 
-        if not head_record.referrer:
-            num_with_no_referrers += 1
-            num_amazon_no_referrer += 1
-            continue
+    if not head_record.referrer:
+        num_with_no_referrers += 1
+        num_amazon_no_referrer += 1
+        continue
 
-        num_unmatched_referrers += 1
-        try:
-            url_parts = urlparse.urlparse("http://{0}".format(head_record.referrer))
-        except ValueError:
-            num_invalid_urls += 1
-            out.write("\tInvalid referrer: {0}\n".format(head_record.referrer))
-            continue
-        referrer_host = url_parts.netloc
-        try:
-            hosts[referrer_host] += 1
-        except KeyError:
-            hosts[referrer_host] = 1
+    num_unmatched_referrers += 1
+    try:
+        url_parts = urlparse.urlparse("http://{0}".format(head_record.referrer))
+    except ValueError:
+        num_invalid_urls += 1
+        out.write("\tInvalid referrer: {0}\n".format(head_record.referrer))
+        continue
+    referrer_host = url_parts.netloc
+    try:
+        hosts[referrer_host] += 1
+    except KeyError:
+        hosts[referrer_host] = 1
 
 out.write("General Stats\n")
 out.write("===\n")
