@@ -12,7 +12,7 @@ from stuffing.amazon import AmazonAffiliateHistory
 parser = brotools.reports.default_cli_parser(sys.modules[__name__].__doc__)
 count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 
-debug("Preparing to reading {0} sets o fgraphs".format(count))
+debug("Preparing to reading {0} sets of graphs".format(count))
 amazon_ish_hosts = (
     'amazon.com',
     'www.amazon.com',
@@ -71,6 +71,7 @@ out.write("General Stats\n")
 out.write("===\n")
 out.write("# graphs: {0}\n".format(num_graphs))
 out.write("# requests: {0}\n".format(num_requests))
+out.write("Avg Graph size: {0}\n".format(num_requests / int(num_graphs)))
 out.write("# no referrer: {0}\n".format(num_with_no_referrers))
 out.write("# unmatched referrer: {0}\n".format(num_unmatched_referrers))
 out.write("# invalid referrers: {0}\n".format(num_invalid_urls))
