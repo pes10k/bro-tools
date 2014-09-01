@@ -215,7 +215,7 @@ def merge(filelist, time=10):
                 removed_graphs.append(record)
 
         for ex_record in removed_graphs:
-            client_records.remove(record)
+            client_records.remove(ex_record)
         return removed_graphs
 
     def _could_be_mergee(graph):
