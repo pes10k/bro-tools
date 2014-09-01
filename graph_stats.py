@@ -32,6 +32,7 @@ num_amazon_sets = 0
 num_amazon_stuffs = 0
 
 hosts = {}
+invalid_referrers = []
 index = 0
 for path, graph in ins():
     index += 1
@@ -58,7 +59,7 @@ for path, graph in ins():
         url_parts = urlparse.urlparse("http://{0}".format(head_record.referrer))
     except ValueError:
         num_invalid_urls += 1
-        out.write("\tInvalid referrer: {0}\n".format(head_record.referrer))
+        invalid_referrers.append(head_record.referrer)
         continue
     referrer_host = url_parts.netloc
     try:
@@ -70,10 +71,10 @@ out.write("General Stats\n")
 out.write("===\n")
 out.write("# graphs: {0}\n".format(num_graphs))
 out.write("# requests: {0}\n".format(num_requests))
-out.write("Avg Graph size: {0}\n".format(num_requests / int(num_graphs)))
 out.write("# no referrer: {0}\n".format(num_with_no_referrers))
 out.write("# unmatched referrer: {0}\n".format(num_unmatched_referrers))
 out.write("# invalid referrers: {0}\n".format(num_invalid_urls))
+out.write("Avg Graph size: {0}\n".format(num_requests / float(num_graphs)))
 out.write("\n")
 
 out.write("Amazon Stats\n")
@@ -86,7 +87,13 @@ out.write("# Amazon sets: {0}\n".format(num_amazon_sets))
 out.write("# Amazon stuffs: {0}\n".format(num_amazon_stuffs))
 out.write("\n")
 
-out.write("Referrer hosts\n")
+out.write("Invalid Looking Referrers\n")
+out.write("===\n")
+for r in invalid_referrers:
+    out.write("{0}\n".format(r))
+out.write("\n")
+
+out.write("Unmatched Referrer hosts\n")
 out.write("===\n")
 
 sorted_host_index = 0

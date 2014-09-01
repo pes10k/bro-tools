@@ -197,27 +197,26 @@ def merge(filelist, time=10):
         """
         start = graph.earliest_ts
         client_key = _client_hash(graph)
+        removed_graphs = []
 
         try:
-            records_to_remove = []
             client_records = state['potential_mergers_by_client'][client_key]
-
-            # Common case, where there are no possible mergeable graphs
-            # for the client
-            if len(client_records) == 0:
-                return records_to_remove
-
-            for record in client_records:
-                old_graph, old_path = record
-                if old_graph.latest_ts + time < start:
-                    records_to_remove.append(record)
-
-            for ex_record in records_to_remove:
-                client_records.remove(record)
-
-            return records_to_remove
         except KeyError:
-            return []
+            return removed_graphs
+
+        # Common case, where there are no possible mergeable graphs
+        # for the client
+        if len(client_records) == 0:
+            return removed_graphs
+
+        for record in client_records:
+            old_graph, old_path = record
+            if old_graph.latest_ts + time < start:
+                removed_graphs.append(record)
+
+        for ex_record in removed_graphs:
+            client_records.remove(record)
+        return removed_graphs
 
     def _could_be_mergee(graph):
         """Checks to see if the graph could possibly be a child of a graph
@@ -246,6 +245,8 @@ def merge(filelist, time=10):
                 return True
         return False
 
+    # Everything above is just creating closures to ease managing the merging
+    # -tracking-data-structures.  Actual code / usage / action starts here...
     for path in filelist:
         for graph in _graphs_from_file(path):
 
@@ -504,14 +505,17 @@ class BroRecordGraph(object):
         self._g.add_weighted_edges_from([(referrer_node, br, time_difference)])
         self.latest_ts = max(br.ts, self.latest_ts)
         self._nodes_sorted.append(br)
+        self._nodes_sorted.sort(key=lambda x: x.ts)
 
-        if br.url not in self._nodes_by_url:
-            self._nodes_by_url[br.url] = []
-        self._nodes_by_url[br.url].append(br)
+        try:
+            self._nodes_by_url[br.url].append(br)
+        except KeyError:
+            self._nodes_by_url[br.url] = [br]
 
-        if br.host not in self._nodes_by_host:
-            self._nodes_by_host[br.host] = []
-        self._nodes_by_host[br.host].append(br)
+        try:
+            self._nodes_by_host[br.host].append(br)
+        except KeyError:
+            self._nodes_by_host[br.host] = [br]
 
         return True
 
@@ -534,8 +538,6 @@ class BroRecordGraph(object):
 
         for n in child_graph.nodes():
             self.add_node(n)
-
-        self._nodes_sorted.sort(key=lambda x: x.ts)
 
         return True
 

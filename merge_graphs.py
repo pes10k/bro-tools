@@ -42,15 +42,20 @@ input_files.sort()
 
 written_files = set()
 parsed_files = []
+removed_files = []
 for path, graph, is_changed in merge(input_files, args.time):
 
     if path not in parsed_files:
         parsed_files.append(path)
         now = datetime.datetime.now()
-        out.write("{0}: Moving to file {1}".format(str(now), path))
+        out.write("{0}: Moving onto file {1}\n".format(str(now), path))
 
-    if args.light and path != parsed_files[-1]:
+    # If we've been passed the `light` flag (meaning we should try and
+    # limit use of the filesystem), delete each source file once we're
+    # done processing it (ie its not the current one we're reading from)
+    if args.light and path != parsed_files[-1] and path not in removed_files:
         try:
+            removed_files.append(path)
             os.remove(path)
         except OSError:
             pass
