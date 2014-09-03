@@ -537,7 +537,9 @@ class BroRecordGraph(object):
             return False
 
         for n in child_graph.nodes():
-            self.add_node(n)
+            if not self.add_node(n):
+                raise LookupError("Unable to reattach child node when " +
+                                  "merging graphs")
 
         return True
 
