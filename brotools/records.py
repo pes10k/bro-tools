@@ -69,7 +69,6 @@ class BroRecord(object):
             self.cookies = values[11]
         except IndexError:
             self.cookies = None
-        self.line = None # Kept so that we don't wreck all the pickels...
         self.name = name
 
     def __str__(self):

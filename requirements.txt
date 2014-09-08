@@ -1,3 +1,6 @@
 python-dateutil
+pyyaml
+ua-parser
+user-agents
 networkx
 cached-property

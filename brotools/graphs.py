@@ -448,6 +448,7 @@ class BroRecordGraph(object):
             output = self.ip + "\n" + self._root.date_str + "\n"
             if self._root.name:
                 output += self._root.name + "\n"
+            output += "Referrer: {0}\n".format(self._root.referrer or "None")
             output += "-----\n"
         else:
             output = ""
