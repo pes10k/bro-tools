@@ -121,7 +121,7 @@ for path, graph in ins():
     # we can save some double duty, and only try and slot new graphs into
     # a purchase history if there is at least one already found interesting
     # graph
-    num_local_interesting_graphs = sum(local_amazon_stuff_records + local_amazon_checkout_records + local_amazon_set_records)
+    num_local_interesting_graphs = len(local_amazon_stuff_records + local_amazon_checkout_records + local_amazon_set_records)
     if num_local_interesting_graphs == 0:
         continue
 
