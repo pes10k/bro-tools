@@ -144,9 +144,9 @@ for path, graph in ins():
     # Next, try to extract a history object for this client
     # out of the dict of clients for the given AmazonAffiliateHistory
     try:
-        client_dict[hash_key].consider(num_local_interesting_graphs)
+        client_dict[hash_key].consider(graph)
     except KeyError:
-        client_dict[hash_key] = AmazonAffiliateHistory(num_local_interesting_graphs)
+        client_dict[hash_key] = AmazonAffiliateHistory(graph)
 
 out.write("General Stats\n")
 out.write("===\n")
