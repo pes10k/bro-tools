@@ -109,46 +109,44 @@ for path, graph in ins():
 
     num_amazon_requests += sum([len(graph.nodes_for_host(h)) for h in amazon_ish_hosts])
 
-    local_amazon_stuff_graphs = AmazonAffiliateHistory.stuffs_in_graph(graph)
-    local_amazon_checkout_graphs = AmazonAffiliateHistory.checkouts_in_graph(graph)
-    local_amazon_set_graphs = AmazonAffiliateHistory.cookie_sets_in_graph(graph)
+    local_amazon_stuff_records = AmazonAffiliateHistory.stuffs_in_graph(graph)
+    local_amazon_checkout_records = AmazonAffiliateHistory.checkouts_in_graph(graph)
+    local_amazon_set_records = AmazonAffiliateHistory.cookie_sets_in_graph(graph)
 
-    amazon_stuff_graphs += local_amazon_stuff_graphs
-    amazon_checkout_graphs += local_amazon_checkout_graphs
-    amazon_set_graphs += local_amazon_set_graphs
+    amazon_stuff_graphs += local_amazon_stuff_records
+    amazon_checkout_graphs += local_amazon_checkout_records
+    amazon_set_graphs += local_amazon_set_records
 
     # Since we already have to check to see if there are any match graphs,
     # we can save some double duty, and only try and slot new graphs into
     # a purchase history if there is at least one already found interesting
     # graph
-    interesting_graphs = amazon_stuff_graphs + amazon_checkout_graphs + amazon_set_graphs
-    if len(interesting_graphs) == 0:
+    num_local_interesting_graphs = sum([len(r) for r in local_amazon_stuff_records + local_amazon_checkout_records + local_amazon_set_records])
+    if num_local_interesting_graphs == 0:
         continue
 
     # First extract the dict for this AmazonAffiliateHistory
     try:
         client_dict = history_by_client[AmazonAffiliateHistory.name()]
-    except:
+    except KeyError:
         client_dict = {}
         history_by_client[AmazonAffiliateHistory.name()] = client_dict
 
-    for g in interesting_graphs:
+    # See if we can find a session tracking cookie for this visitor
+    # in this graph.  If not, then we know there are no cookie stuffs,
+    # checkouts, or other relevant activity in the graph we
+    # care about, so we can continue
+    hash_key = AmazonAffiliateHistory.session_id_for_graph(graph)
+    if not hash_key:
+        amazon_missing_sess_id += 1
+        continue
 
-        # See if we can find a session tracking cookie for this visitor
-        # in this graph.  If not, then we know there are no cookie stuffs,
-        # checkouts, or other relevant activity in the graph we
-        # care about, so we can continue
-        hash_key = AmazonAffiliateHistory.session_id_for_graph(g)
-        if not hash_key:
-            amazon_missing_sess_id += 1
-            continue
-
-        # Next, try to extract a history object for this client
-        # out of the dict of clients for the given AmazonAffiliateHistory
-        try:
-            client_dict[hash_key].consider(g)
-        except KeyError:
-            client_dict[hash_key] = AmazonAffiliateHistory(g)
+    # Next, try to extract a history object for this client
+    # out of the dict of clients for the given AmazonAffiliateHistory
+    try:
+        client_dict[hash_key].consider(num_local_interesting_graphs)
+    except KeyError:
+        client_dict[hash_key] = AmazonAffiliateHistory(num_local_interesting_graphs)
 
 out.write("General Stats\n")
 out.write("===\n")
