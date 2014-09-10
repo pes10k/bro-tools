@@ -10,7 +10,7 @@ import user_agents
 from stuffing.amazon import AmazonAffiliateHistory
 
 
-parser = brotools.reports.default_cli_parser(sys.modules[__name__].__doc__)
+parser = brotools.reports.marketing_cli_parser(sys.modules[__name__].__doc__)
 parser.add_argument('--ttl', type=int, default=84600,
                     help="The time, in seconds, that an Amazon set affiliate " +
                     "marketing cookie is expected to be valid.  Default is " +
