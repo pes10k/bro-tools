@@ -173,16 +173,17 @@ out.write("Stuff / Set / Checkout Stats\n")
 out.write("===\n")
 for marketer_name, histories in history_by_client.items():
     for client_hash, h in histories.items():
-        for c in h.checkouts(seconds=args.secs, cookie_ttl=args.ttl):
-            num_stuffs, num_sets, num_carts = c.counts()
-            # Only print out graph information here if there is at least
-            # two items of interest in the graph (ie a stuff and a set, or
-            # something similar)
-            if num_stuffs == 0 and num_sets == 0:
-                continue
+        num_stuffs, num_sets, num_carts = h.counts()
+        # Only print out graph information here if there is at least
+        # two items of interest in the graph (ie a stuff and a set, or
+        # something similar)
+        if num_stuffs == 0 and num_sets == 0:
+            continue
 
+        for c in h.checkouts(seconds=args.secs, cookie_ttl=args.ttl):
             out.write(str(c))
             out.write("\n\n")
+
 out.write("\n")
 
 out.write("Checkout / set / stuff graph Stats\n")
