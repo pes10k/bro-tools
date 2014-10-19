@@ -17,5 +17,5 @@ import brotools.graphs
 
 for path in sys.stdin:
     count = 0
-    with open(path, 'r') as h:
+    with open(path.strip(), 'r') as h:
         print sum([len(g) for g in brotools.graphs.graphs(h)])
