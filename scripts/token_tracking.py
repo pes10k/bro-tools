@@ -1,8 +1,12 @@
+#/usr/bin/env python
 """Track amazon session tokens across multiple IPs, to see how much
 possible Amazon tracking / stuffing we're missing due to IP jumping by clients.
 """
 
 import sys
+import os.path
+sys.path.append(os.path.join('..'))
+
 import brotools.reports
 import brotools.records
 import stuffing.amazon

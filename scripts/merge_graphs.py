@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Merges graphs together, to stitch together graphs that were
 split apart across different bro logs.
 
@@ -7,6 +8,9 @@ records from at least two graphs in the input file, and the second containg
 graphs that are unchanged from the merge operation."""
 
 import sys
+import os.path
+sys.path.append(os.path.join('..'))
+
 import os
 import brotools.reports
 import brotools.records

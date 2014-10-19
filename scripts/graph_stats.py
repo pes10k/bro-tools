@@ -1,8 +1,12 @@
+#!/usr/bin/env python
 """Checks a collection of bro log graphs to measure two values, 1) how many
 graph heads have referrer heads, and 2) what hosts each of those referrer heads
 are for."""
 
 import sys
+import os.path
+sys.path.append(os.path.join('..'))
+
 import brotools.reports
 import brotools.records
 import urlparse

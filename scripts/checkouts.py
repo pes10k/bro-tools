@@ -1,11 +1,13 @@
+#!/usr/bin/env python
 """Commandline utility for examining pickled collections of BroRecordGraph
 objects, looking for instances of checkouts from Amazon and examining what
 requests could have influenced the affiliate marketing cookie that got credit
 for the purchase."""
 
 import sys
+import os.path
+sys.path.append(os.path.join('..'))
 import brotools.reports
-import brotools.records
 
 parser = brotools.reports.marketing_cli_parser(sys.modules[__name__].__doc__)
 parser.add_argument('--ttl', type=int, default=84600,

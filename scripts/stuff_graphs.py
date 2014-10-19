@@ -1,7 +1,11 @@
+#!/usr/bin/env python
 """Generate images of graphs of all found graphs that contain a possible
 cookie stuffing instance."""
 
 import sys
+import os.path
+sys.path.append(os.path.join('..'))
+
 import brotools.reports
 import brotools.records
 

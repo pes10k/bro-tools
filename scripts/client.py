@@ -2,6 +2,8 @@
 time.  Input data is read from collections of pickled BroRecordGraphs"""
 
 import sys
+import os.path
+sys.path.append(os.path.join('..'))
 import brotools.reports
 import brotools.records
 import dateutil.parser

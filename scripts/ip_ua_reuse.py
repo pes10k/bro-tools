@@ -1,8 +1,12 @@
+#!/usr/bin/env python
 """Checks to see how often the same ip and user agent appear with different
 amazon session tokens, as a loose proxy for how many clients are sharing an ip
 behind a NAT."""
 
 import sys
+import os.path
+sys.path.append(os.path.join('..'))
+
 import brotools.reports
 import brotools.records
 import stuffing.amazon

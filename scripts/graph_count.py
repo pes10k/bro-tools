@@ -1,6 +1,10 @@
+#!/usr/bin/python
 """Count the number of graphs in one or more files."""
 
 import sys
+import os.path
+sys.path.append(os.path.join('..'))
+
 import brotools.reports
 import brotools.records
 

@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+import sys
+import os.path
+sys.path.append(os.path.join('..'))
+
 import brotools.merge
 import brotools.reports
 import argparse

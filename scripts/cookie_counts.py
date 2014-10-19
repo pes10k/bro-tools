@@ -8,6 +8,8 @@ are provided will look for all marketers.
 """
 
 import sys
+import os.path
+sys.path.append(os.path.join('..'))
 import brotools.reports
 
 parser = brotools.reports.marketing_cli_parser(sys.modules[__name__].__doc__)
