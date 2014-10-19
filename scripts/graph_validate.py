@@ -13,10 +13,15 @@ import os.path
 sys.path.append(os.path.join('..'))
 
 import argparse
-import brotools.graphs
+from brotools.graphs import graphs
 import gzip
+
+def record_filter(record):
+    short_content_type = record.content_type[:9]
+    return (short_content_type in ('text/plai', 'text/html') or
+            record.status_code == "301")
 
 for path in sys.stdin:
     count = 0
     with gzip.open(path.strip(), 'rb') as h:
-        print sum([len(g) for g in brotools.graphs.graphs(h)])
+        print sum([len(g) for g in graphs(h, record_filter=record_filter)])
