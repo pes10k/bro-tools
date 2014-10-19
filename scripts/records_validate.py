@@ -4,7 +4,7 @@ BroRecord objects parsed out of the file.
 """
 import sys
 import os.path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)), os.path.join('..'))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
 import argparse
 from brotools.records import bro_records
