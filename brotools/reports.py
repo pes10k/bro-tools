@@ -25,9 +25,9 @@ def record_filter(record):
         True if it looks like the bro record referrs to a request for HTML or
         a 301 redirect to the same, otherwise False.
     """
-    short_content_type = r.content_type[:9]
+    short_content_type = record.content_type[:9]
     return (short_content_type in ('text/plai', 'text/html') or
-            r.status_code == "301")
+            record.status_code == "301")
 
 # Helpers for extracting chains from bro data
 def _find_graphs_helper(args):
