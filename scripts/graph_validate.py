@@ -14,12 +14,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)), os.path.join('..'))
 
 import argparse
 from brotools.graphs import graphs
+from brotools.reports import record_filter
 import gzip
-
-def record_filter(record):
-    short_content_type = record.content_type[:9]
-    return (short_content_type in ('text/plai', 'text/html') or
-            record.status_code == "301")
 
 for path in sys.stdin:
     count = 0

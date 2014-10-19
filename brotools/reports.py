@@ -13,15 +13,24 @@ try:
 except ImportError:
     import pickle
 
+def record_filter(record):
+    """Common filter expression, used for reducing bro records extracted from
+    log files down to only those that carry HTML content (or redirections
+    to the same).
+
+    Args:
+        record -- a BroRecord object
+
+    Return:
+        True if it looks like the bro record referrs to a request for HTML or
+        a 301 redirect to the same, otherwise False.
+    """
+    short_content_type = r.content_type[:9]
+    return (short_content_type in ('text/plai', 'text/html') or
+            r.status_code == "301")
+
 # Helpers for extracting chains from bro data
-
 def _find_graphs_helper(args):
-
-    def _filter(r):
-        short_content_type = r.content_type[:9]
-        return (short_content_type in ('text/plai', 'text/html') or
-                r.status_code == "301")
-
     merge_rules, time, min_length, lite = args
     files, dest = merge_rules
     log = logging.getLogger("brorecords")
@@ -45,7 +54,7 @@ def _find_graphs_helper(args):
     graph_count = 0
     with open(dest, 'r') as source_h, open(tmp_path, 'w') as dest_h:
         try:
-            for g in graphs(source_h, time=time, record_filter=_filter):
+            for g in graphs(source_h, time=time, record_filter=record_filter):
                 graph_count += 1
                 if len(g) < min_length:
                     continue
