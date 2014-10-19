@@ -14,16 +14,17 @@ import argparse
 from brotools.records import bro_records
 from brotools.reports import record_filter, unpickled_inputs
 from brotools.merge import merge, group_records
+from brotools.graphs import graphs
 import tempfile
 import gzip
 
-files_to_merge = sys.stdin.read().strip().split("\n")
+files_to_merge = sys.stdin.read().strip().split()
 grouped_files = group_records(files_to_merge)
 temp_dir = tempfile.mkdtemp()
 
 count = 0
 for orig_files, dest_file in grouped_files:
     merge(orig_files, os.path.join(temp_dir, dest_file))
-    with open(dest_file, 'r') as h:
+    with open(os.path.join(temp_dir, dest_file), 'r') as h:
         count += sum([len(g) for g in graphs(h, record_filter=record_filter)])
 print count
