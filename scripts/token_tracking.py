@@ -5,7 +5,7 @@ possible Amazon tracking / stuffing we're missing due to IP jumping by clients.
 
 import sys
 import os.path
-sys.path.append(os.path.join('..'))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
 import brotools.reports
 import brotools.records
