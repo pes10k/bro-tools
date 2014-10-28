@@ -216,7 +216,7 @@ out.write("===\n")
 
 sorted_host_index = 0
 sorted_hosts = sorted(hosts.iteritems(), key=lambda x: x[1], reverse=True)
-# Lets not get crazy, lets only print out the top 250 hosts
-for host, count in sorted_hosts[:100]:
+# Lets not get crazy, lets only print out the top 50 hosts
+for host, count in sorted_hosts[:50]:
     sorted_host_index += 1
     out.write("{0}. {1}: {2}\n".format(sorted_host_index, host, count))
