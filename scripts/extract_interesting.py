@@ -19,17 +19,16 @@ except:
 parser = brotools.reports.marketing_cli_parser(sys.modules[__name__].__doc__)
 count, ins, out, debug, marketers, args = brotools.reports.parse_marketing_cli_args(parser)
 
-for path, graphs in ins():
+index = 0
+for path, g in ins():
 
     index += 1
-    debug("{0}. Considering {1}".format(index, path))
-    debug("{0}. Found {1} graphs".format(index, len(graphs)))
-    for g in graphs:
-        for marketer in marketers:
-            if len(marketer.nodes_for_domains(g)) == 0:
-                continue
-            debug("{0}. Found graph for {1}".format(index, marketer.name()))
-            dst_path = path + ".important"
-            with open(dst_path, 'a') as h:
-                pickle.dump(graph, h)
-            break
+    # debug("{0}. Found {1} graphs".format(index, len(graphs)))
+    for marketer in marketers:
+        if len(marketer.nodes_for_domains(g)) == 0:
+            continue
+        debug("{0}. Found graph for {1}".format(index, marketer.name()))
+        dst_path = path + ".important"
+        with open(dst_path, 'a') as h:
+            pickle.dump(g, h)
+        break
