@@ -141,7 +141,8 @@ def get_referrer_id(referrer, session):
 
 
 def get_referrer(referrer, session):
-    query = session.query(Domain).filter(Referrer.url == referrer.url)
+    query = session.query(Domain).\
+        filter(Referrer.url == "http://{0}".format(referrer.url))
     try:
         return query.one()
     except NoResultFound, e:
@@ -153,9 +154,9 @@ def save_referrer(referrer, session):
 
     referrer_host = get_domain(ref_host, session)
     if referrer_host:
-        referrer_id = referrer_host.id
+        domain_id = referrer_host.id
     else:
-        referrer_id = save_domain(referrer.host, session)
+        domain_id = save_domain(referrer.host, session)
 
     ref_url = "http://{0}".format(referrer.url)
     is_ref_reachable = features.is_url_live(ref_url)
@@ -166,7 +167,7 @@ def save_referrer(referrer, session):
         ref_page_rank = None
         ref_alexia = None
 
-    new_referrer = Referrer(domain_id=None, url=ref_url,
+    new_referrer = Referrer(domain_id=domain_id, url=ref_url,
                             is_reachable=is_ref_reachable,
                             page_rank=ref_page_rank,
                             alexa_rank=ref_alexia)
