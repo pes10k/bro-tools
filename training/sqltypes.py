@@ -170,6 +170,9 @@ def save_referrer(referrer, session):
                             is_reachable=is_ref_reachable,
                             page_rank=ref_page_rank,
                             alexa_rank=ref_alexia)
+    session.add(new_referrer)
+    session.commit()
+    return new_referrer.id
 
 
 def get_domain(domain, session):
@@ -197,4 +200,5 @@ def save_domain(domain, session):
                         registration_date=domain_reg_date,
                         is_ssl=domain_is_ssl)
     session.add(new_domain)
+    session.commit()
     return new_domain.id

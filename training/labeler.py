@@ -87,5 +87,6 @@ for path, graph in inputs():
         time_after_set=time_after_set, label=label
     )
     session.add(new_set)
+    session.commit()
     print ""
     print ""
