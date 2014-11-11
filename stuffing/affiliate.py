@@ -261,7 +261,7 @@ class AffiliateHistory(object):
             record, and otherwise the tag as a string.
         """
         tag = cls.referrer_tag(cls)
-        matches = re.search(tag + "=(.*?)(?:&|^)", record.url)
+        matches = re.search(tag + "=(.*?)(?:&|$)", record.url)
         if not matches:
             return None
         return matches.group(1)
