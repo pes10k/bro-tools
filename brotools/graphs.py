@@ -5,6 +5,7 @@ lead to a given page, and its children being the pages visted next."""
 import networkx as nx
 import logging
 import re
+import hashlib
 from .records import bro_records
 from .chains import BroRecordChain
 
@@ -14,6 +15,8 @@ except ImportError:
     import pickle
 
 FILE_TS_PATTERN = re.compile('[0-9]{10}')
+
+
 def _timestamp_for_filename(filename):
     """Collections of BroRecordGraphs are are saved with filenames like
     http-requests.1388592000.log.pickles, which refer to the lower bound of the
@@ -33,6 +36,7 @@ def _timestamp_for_filename(filename):
     if not match:
         return None
     return int(match.group())
+
 
 def _graphs_from_file(filename):
     """Creates an iterator that returns completed graphs that are read out
@@ -56,6 +60,7 @@ def _graphs_from_file(filename):
             except:
                 log.info(" * Pickle error, skipping: {0}".format(filename))
                 pass
+
 
 def merge(filelist, time=10):
     """Attempts to merge BroRecordGraph that represent one logical graph /
@@ -193,7 +198,8 @@ def merge(filelist, time=10):
                      recent graph (by start date) observed so far
 
         Return:
-            A list of zero or more graphs that were pruned out of the collection
+            A list of zero or more graphs that were pruned out of the
+            collection
         """
         start = graph.earliest_ts
         client_key = _client_hash(graph)
@@ -304,6 +310,7 @@ def merge(filelist, time=10):
     for old_graph, old_path in _all_potential_mergers():
         yield _yield_back_merger(old_graph, old_path)
 
+
 def graphs(handle, time=10, record_filter=None):
     """A generator function yields BroRecordGraph objects that represent
     pages visited in a browsing session.
@@ -315,12 +322,12 @@ def graphs(handle, time=10, record_filter=None):
         time          -- the maximum amount of time that can have passed in
                          a browsing session before the graph is closed and
                          yielded
-        record_filter -- an optional function that, if provided, should take two
-                         arguments of bro records, and should provide True if
-                         they should be included in the same chain or not.  Note
-                         that this is in addition to the filtering / matching
-                         already performed by the BroRecordChain.add_record
-                         function
+        record_filter -- an optional function that, if provided, should take
+                         two arguments of bro records, and should provide True
+                         if they should be included in the same chain or not.
+                         Note that this is in addition to the filtering /
+                         matching already performed by the
+                         `BroRecordChain.add_record` function
 
     Return:
         An iterator returns BroRecordGraph objects
@@ -365,7 +372,7 @@ def graphs(handle, time=10, record_filter=None):
                 graphs.remove(dg)
 
         # If we've never seen any requests for this client, then
-        # there is no way the request could be part of any graph we're tracking,
+        # there is no way the request could be part of any graph we're tracking
         # so create a new collection of graphs to search
         except KeyError:
             all_client_graphs[hash_key] = [BroRecordGraph(r)]
@@ -419,6 +426,24 @@ class BroRecordGraph(object):
 
     def __len__(self):
         return len(self._nodes_sorted)
+
+    def hash(self):
+        """Returns a sha1 hex string used for uniquely identifying this graph.
+        The hash is a concatination of the URL of
+            * the initial request URL
+            * the timestamp of the initial request (as a string)
+            * the user agent making the request
+            * the number of nodes in the graph (as a string)
+
+        Returns:
+            A string, which will be in shape of a sha1 hash.
+        """
+        sha1 = hashlib.sha1()
+        hash_components = (self._root.url(), self._root.date_str(),
+                           self.user_agent, len(self))
+        for param in hash_components:
+            sha1.update(param)
+        return sha1.hexdigest()
 
     def summary(self, detailed=True):
         """Returns a string description of the current graph.
@@ -495,9 +520,10 @@ class BroRecordGraph(object):
             br -- a BroRecord object
 
         Returns:
-            True if a referrer of the the BroRecord could be found and the given
-            record was added as its child / successor.  Otherwise, False is
-            returned, indicating no changes were made."""
+            True if a referrer of the the BroRecord could be found and the
+            given record was added as its child / successor.  Otherwise,
+            False is returned, indicating no changes were made.
+        """
         referrer_node = self.referrer_record(br)
         if not referrer_node:
             return False
@@ -597,7 +623,8 @@ class BroRecordGraph(object):
 
     def leaves(self):
         """Returns a iterator of BroRecords, each of which are leaves in t
-        graph (meaining record nodes that are there referrer for no other node).
+        graph (meaining record nodes that are there referrer for no other
+        node).
 
         Returns:
             An iterator of BroRecord nodes"""
@@ -675,11 +702,11 @@ class BroRecordGraph(object):
                 return cur_time + max_time
             except RuntimeError:
                 msg = ("Infinite recursive loop in `remaining_child_time`\n" +
-                      "\n" +
-                      "Node:\n" +
-                      str(node) + "\n\n" +
-                      "Graph:\n" +
-                      str(self))
+                       "\n" +
+                       "Node:\n" +
+                       str(node) + "\n\n" +
+                       "Graph:\n" +
+                       str(self))
                 raise(Exception(msg))
 
         return _time_below(self._root)

@@ -13,9 +13,9 @@ def bro_records(handle, record_filter=None):
         handle -- a file handle like object to read lines of bro data off of.
 
     Keyword Args:
-        record_filter -- an optional function that, if provided, should take two
-                         arguments of bro records, and should provide True if
-                         they should be included in the same chain or not.
+        record_filter -- an optional function that, if provided, should take
+                         two arguments of bro records, and should provide True
+                         if they should be included in the same chain or not.
 
     Return:
         An iterator returning BroRecord objects
@@ -24,7 +24,7 @@ def bro_records(handle, record_filter=None):
     num_lines = 0
     for raw_row in handle:
         num_lines += 1
-        row = raw_row[:-1] # Strip off line end
+        row = raw_row[:-1]  # Strip off line end
         if not seperator and row[0:10] == "#separator":
             seperator = row[11:].decode('unicode_escape')
         elif row[0] != "#":

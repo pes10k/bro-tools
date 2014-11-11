@@ -4,3 +4,4 @@ ua-parser
 user-agents
 networkx
 cached-property
+sqlalchemy
