@@ -7,7 +7,6 @@ import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
-import readline
 import datetime
 import training.sqltypes
 import training.features
@@ -63,7 +62,7 @@ for path, graph in inputs():
     valid_responses = ("y", "n", "u")
     response = False
     while response not in valid_responses:
-        response = raw_input("Yes/No/Uncertain")
+        response = raw_input("[Y]es/[N]o/[U]ncertain: ")
         response = response.lower()
 
     if response == "y":
@@ -75,7 +74,7 @@ for path, graph in inputs():
 
     ref = graph.parent_of_node(a_set)
     if ref:
-        referrer_id = training.sqltypes.get_referrer_id(ref)
+        referrer_id = training.sqltypes.get_referrer_id(ref, session)
     else:
         referrer_id = None
 

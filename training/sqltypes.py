@@ -134,7 +134,7 @@ def get_set(graph, session):
 
 
 def get_referrer_id(referrer, session):
-    found_referrer = get_referrer(referrer, sesssion)
+    found_referrer = get_referrer(referrer, session)
     if found_referrer:
         return found_referrer.id
     return save_referrer(referrer, session)
@@ -151,11 +151,11 @@ def get_referrer(referrer, session):
 def save_referrer(referrer, session):
     ref_host = referrer.host
 
-    referrer_host = get_domain(ref_host)
+    referrer_host = get_domain(ref_host, session)
     if referrer_host:
         referrer_id = referrer_host.id
     else:
-        referrer_id = save_domain(referrer_host, session)
+        referrer_id = save_domain(referrer.host, session)
 
     ref_url = referrer.url
     is_ref_reachable = features.is_url_live(ref_url)
@@ -181,12 +181,12 @@ def get_domain(domain, session):
 
 
 def save_domain(domain, session):
-    whois_rec = features.whois_for_domain(ref_host)
+    whois_rec = features.whois_for_domain(domain)
     is_domain_registered = whois_rec is not False
     if is_domain_registered:
         domain_reg_years = features.years_for_domain(whois_rec)
         domain_reg_date = whois_rec.creation_date[0]
-        domain_is_ssl = features.fetch_cert(ref_host) is not None
+        domain_is_ssl = features.fetch_cert(domain) is not None
     else:
         domain_reg_years = None
         domain_reg_date = None
