@@ -101,7 +101,7 @@ def is_url_live(url):
         return False
 
 
-def pagerank_for_domain(url):
+def page_rank(url):
     """Returns the PageRank score for the given domain.
 
     Args:
@@ -114,7 +114,7 @@ def pagerank_for_domain(url):
     return ranker.get_rank(url)
 
 
-def alexa_for_domain(url):
+def alexa_rank(url):
     """Returns the Alexa traffic score for the given domain.
 
     Args:

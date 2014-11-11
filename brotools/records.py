@@ -114,6 +114,7 @@ class BroRecord(object):
 
         return True
 
+
 class BroRecordWindow(object):
     """Keep track of a sliding window of BroRecord objects, and don't keep more
     than a given amount (defined by a time range) in memory at a time"""
