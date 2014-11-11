@@ -30,6 +30,10 @@ training.sqltypes.Base.metadata.create_all(engine)
 session = sessionmaker(bind=engine)()
 
 for path, graph in inputs():
+    if len(graph) == 1:
+       debug("Don't bother trying to label graphs with only one request in them")
+       continue
+
     # Check to see if we've already reviewed this graph
     if training.sqltypes.get_set(graph, session):
         debug("Skipping graph, already considered it")
@@ -40,7 +44,19 @@ for path, graph in inputs():
         debug("Skipping graph, no cookie sets found")
         continue
 
-    a_set = sets[0]
+    # Try to find a cookie set that is not the root of the graph, since
+    # these will not be intersting cases for training
+    a_set = None
+    for test_set in sets:
+        if test_set is graph._root:
+            continue
+        a_set = test_set
+        break
+
+    if a_set is None:
+        debug("Don't bother trying to label graphs where cookie set is the root of the tree")
+        continue
+   
     a_set_hash = graph.hash()
     a_set_file = path
     a_set_url = a_set.url
