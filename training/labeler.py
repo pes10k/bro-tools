@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 An interactive tool used for label amazon stuff data in graphs.
 """
