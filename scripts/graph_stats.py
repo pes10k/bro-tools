@@ -15,6 +15,9 @@ from stuffing.amazon import AmazonAffiliateHistory
 
 
 parser = brotools.reports.marketing_cli_parser(sys.modules[__name__].__doc__)
+parser.add_argument('--points', '-p', type=int, default=1,
+                    help="The number of data points needed before the given " +
+                    "checkout / stuff / etc is included in the report")
 parser.add_argument('--ttl', type=int, default=84600,
                     help="The time, in seconds, that an Amazon set affiliate " +
                     "marketing cookie is expected to be valid.  Default is " +
@@ -160,6 +163,7 @@ out.write("# browser:               {0:10}\n".format(num_graphs - num_non_browse
 out.write("# no referrer:           {0:10}\n".format(num_with_no_referrers))
 out.write("# unmatched referrer:    {0:10}\n".format(num_unmatched_referrers))
 out.write("# invalid referrers:     {0:10}\n".format(num_invalid_urls))
+print num_requests, num_graphs, num_non_browser
 out.write("Avg Graph size:          {0:10}\n".format(num_requests / float(num_graphs - num_non_browser)))
 out.write("\n")
 
@@ -182,6 +186,9 @@ for marketer_name, histories in history_by_client.items():
         # two items of interest in the graph (ie a stuff and a set, or
         # something similar)
         if num_stuffs == 0 and num_sets == 0:
+            continue
+
+        if num_stuffs + num_sets < args.points:
             continue
 
         for c in h.checkouts(seconds=args.secs, cookie_ttl=args.ttl):
