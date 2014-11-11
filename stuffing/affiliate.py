@@ -260,13 +260,11 @@ class AffiliateHistory(object):
             None if no affiliate marketing tag could be found for the given
             record, and otherwise the tag as a string.
         """
-
-        query_params = record.query_params
-        try:
-            tags = query_params[cls.referrer_tag(cls)]
-            return None if len(tags) == 0 else tags[0]
-        except KeyError:
+        tag = cls.referrer_tag(cls)
+        matches = re.search(tag + "=(.*?)(?:&|^)", record.url)
+        if not matches:
             return None
+        return matches.group(1)
 
     @classmethod
     def stuffs_in_graph(cls, graph, time=2, sub_time=2):
