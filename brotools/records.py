@@ -148,7 +148,7 @@ class BroRecordWindow(object):
         window_low_bound = self._time
 
         while (len(self._collection) > 1 and
-            self._collection[0].ts + window_low_bound < most_recent_time):
+               self._collection[0].ts + window_low_bound < most_recent_time):
             self._collection = self._collection[1:]
             removed_count += 1
 

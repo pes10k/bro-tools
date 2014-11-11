@@ -2,6 +2,7 @@
 a collection of browsing history."""
 
 import urlparse
+import re
 import string
 
 # Values used for tracking whether a given bro record represents a cookie
@@ -259,9 +260,10 @@ class AffiliateHistory(object):
             None if no affiliate marketing tag could be found for the given
             record, and otherwise the tag as a string.
         """
+
         query_params = record.query_params
         try:
-            tags = query_params[cls.referrer_tag(record)]
+            tags = query_params[cls.referrer_tag()]
             return None if len(tags) == 0 else tags[0]
         except KeyError:
             return None
