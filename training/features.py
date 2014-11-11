@@ -82,7 +82,6 @@ def years_for_domain(whois_rec):
     delta = relativedelta(exp_date, reg_date)
     return delta.years
 
-
 def is_url_live(url):
     """Checks to see whether a given URL is live and valid,
     and returns some non-error HTTP code.

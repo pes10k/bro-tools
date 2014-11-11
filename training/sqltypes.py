@@ -182,7 +182,7 @@ def get_domain(domain, session):
 
 def save_domain(domain, session):
     whois_rec = features.whois_for_domain(domain)
-    is_domain_registered = whois_rec is not False
+    is_domain_registered = whois_rec is not None
     if is_domain_registered:
         domain_reg_years = features.years_for_domain(whois_rec)
         domain_reg_date = whois_rec.creation_date[0]

@@ -48,12 +48,14 @@ for path, graph in inputs():
     a_set_tag = training.features.affiliate_tag_for_cookie_set(graph)
     time_from_referrer = training.features.amazon_time_from_referrer(graph)
     time_after_set = training.features.amazon_time_after_cookie_set(graph)
+    ref = graph.parent_of_node(a_set)
 
     print "-----------------------------------------------------------"
-    print "Hash:    {0}".format(a_set_hash)
-    print "File:    {0}".format(path)
-    print "Set URL: {0}".format(a_set_url)
-    print "Tag:     {0}".format(a_set_tag)
+    print "Hash:               {0}".format(a_set_hash)
+    print "File:               {0}".format(path)
+    print "Set URL:            {0}".format(a_set_url)
+    print "Referrer URL:       {0}".format(ref.url if ref else None)
+    print "Tag:                {0}".format(a_set_tag)
     print "Time From Referrer: {0}".format(time_from_referrer)
     print "Time to bottom:     {0}".format(time_after_set)
     print graph.summary(detailed=False)
@@ -72,7 +74,6 @@ for path, graph in inputs():
     elif response == "u":
         label = "uncertain"
 
-    ref = graph.parent_of_node(a_set)
     if ref:
         referrer_id = training.sqltypes.get_referrer_id(ref, session)
     else:
