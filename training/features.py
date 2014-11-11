@@ -61,9 +61,10 @@ def whois_for_domain(domain):
         if the domain is currently registered.  Otherwise, None.
     """
     try:
-        return whois.whois(domain)
+        query = whois.whois(domain)
     except whois.parser.PywhoisError:
         return None
+    return query
 
 
 def years_for_domain(whois_rec):
