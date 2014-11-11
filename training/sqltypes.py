@@ -157,11 +157,11 @@ def save_referrer(referrer, session):
     else:
         referrer_id = save_domain(referrer.host, session)
 
-    ref_url = referrer.url
+    ref_url = "http://{0}".format(referrer.url)
     is_ref_reachable = features.is_url_live(ref_url)
     if is_ref_reachable:
-        ref_page_rank = training.features.page_rank(ref_url)
-        ref_alexia = training.features.alexia(ref_url)
+        ref_page_rank = features.page_rank(ref_url)
+        ref_alexia = features.alexia_rank(ref_url)
     else:
         ref_page_rank = None
         ref_alexia = None

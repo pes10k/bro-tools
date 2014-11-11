@@ -6,7 +6,7 @@ the stuffing data.
 import ssl
 import os
 import whois
-import urllib2
+import requests
 from dateutil.relativedelta import relativedelta
 import sys
 import os.path
@@ -94,10 +94,10 @@ def is_url_live(url):
         True if the url is reachable without an error.
     """
     try:
-        result = urllib2.urlopen(url)
+        result = requests.get(url)
         status_code = result.status_code
         return (status_code >= 200 and status_code < 300)
-    except urllib2.URLError, e:
+    except:
         return False
 
 
@@ -114,14 +114,14 @@ def page_rank(url):
     return ranker.get_rank(url)
 
 
-def alexa_rank(url):
+def alexia_rank(url):
     """Returns the Alexa traffic score for the given domain.
 
     Args:
         url -- A valid url, as a string
 
     Return:
-        An integer value of the alexa traffic score for the url.
+        An integer value of the alexia traffic score for the url.
     """
     ranker = contrib.pagerank.AlexaTrafficRank()
     return ranker.get_rank(url)
