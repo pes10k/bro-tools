@@ -439,8 +439,8 @@ class BroRecordGraph(object):
             A string, which will be in shape of a sha1 hash.
         """
         sha1 = hashlib.sha1()
-        hash_components = (self._root.url(), self._root.date_str(),
-                           self.user_agent, len(self))
+        hash_components = (self._root.url, self._root.date_str,
+                           self.user_agent, str(len(self)))
         for param in hash_components:
             sha1.update(param)
         return sha1.hexdigest()

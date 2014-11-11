@@ -141,7 +141,7 @@ def get_referrer_id(referrer, session):
 
 
 def get_referrer(referrer, session):
-    query = session.query(Domain).filter(Referrer.url == referrer.url())
+    query = session.query(Domain).filter(Referrer.url == referrer.url)
     try:
         return query.one()
     except NoResultFound, e:
@@ -157,7 +157,7 @@ def save_referrer(referrer, session):
     else:
         referrer_id = save_domain(referrer_host, session)
 
-    ref_url = referrer.url()
+    ref_url = referrer.url
     is_ref_reachable = features.is_url_live(ref_url)
     if is_ref_reachable:
         ref_page_rank = training.features.page_rank(ref_url)

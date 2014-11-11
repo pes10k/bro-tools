@@ -28,27 +28,27 @@ engine = create_engine(args.dburi, echo=args.verbose)
 
 # Create any needed, missing tables in the given database
 training.sqltypes.Base.metadata.create_all(engine)
-session = sessionmaker(bind=engine)
+session = sessionmaker(bind=engine)()
 
 for path, graph in inputs():
     # Check to see if we've already reviewed this graph
-    if training.sqltypes.get_set(g):
+    if training.sqltypes.get_set(graph, session):
         debug("Skipping graph, already considered it")
         continue
 
-    sets = AmazonAffiliateHistory.cookie_sets_in_graph(g)
+    sets = AmazonAffiliateHistory.cookie_sets_in_graph(graph)
     if len(sets) == 0:
         debug("Skipping graph, no cookie sets found")
         continue
 
     a_set = sets[0]
-    a_set_hash = g.hash()
+    a_set_hash = graph.hash()
     a_set_file = path
-    a_set_url = a_set.url()
+    a_set_url = a_set.url
     a_set_reqest_time = datetime.datetime.fromtimestamp(int(a_set.ts))
-    a_set_tag = training.features.affiliate_tag_for_cookie_set(g)
-    time_from_referrer = training.features.amazon_time_from_referrer(g)
-    time_after_set = training.features.amazon_time_after_cookie_set(g)
+    a_set_tag = training.features.affiliate_tag_for_cookie_set(graph)
+    time_from_referrer = training.features.amazon_time_from_referrer(graph)
+    time_after_set = training.features.amazon_time_after_cookie_set(graph)
 
     print "-----------------------------------------------------------"
     print "Hash:    {0}".format(a_set_hash)
@@ -56,8 +56,8 @@ for path, graph in inputs():
     print "Set URL: {0}".format(a_set_url)
     print "Tag:     {0}".format(a_set_tag)
     print "Time From Referrer: {0}".format(time_from_referrer)
-    print "Time to bottom:     {0}".format(time_to_bottom)
-    print g.summary(detailed=False)
+    print "Time to bottom:     {0}".format(time_after_set)
+    print graph.summary(detailed=False)
     print ""
 
     valid_responses = ("y", "n", "u")
@@ -72,7 +72,7 @@ for path, graph in inputs():
     elif response == "u":
         label = "uncertain"
 
-    ref = g.parent_of_node(a_set)
+    ref = graph.parent_of_node(a_set)
     if ref:
         referrer_id = training.sqltypes.get_referrer_id(ref)
     else:
