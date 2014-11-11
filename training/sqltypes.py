@@ -83,5 +83,9 @@ class Domain(Base):
     # The Google PageRank score for this domain.
     page_rank = Column(Integer)
 
+    # The position of the site in the Alexa Traffic Rankings.
+    # Null if the site is not listed
+    alexa_rank = Column(Integer, nullable=True)
+
     # Timestamp for when the record was created
     created = Column(DateTime, default=datetime.datetime.now)
