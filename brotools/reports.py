@@ -165,6 +165,7 @@ def parse_default_cli_args(parser):
     output_h = open(args.output, 'w') if args.output else sys.stdout
 
     is_debug = args.verbose
+
     def debug(msg):
         if is_debug:
             print msg
@@ -177,6 +178,7 @@ def parse_default_cli_args(parser):
         logger.setLevel(logging.ERROR)
 
     return num_inputs, inputs, output_h, debug, args
+
 
 def parse_marketing_cli_args(parser):
     """Parses the arguments passed with the commandline, and returns objects
@@ -234,8 +236,8 @@ def unpickled_inputs(paths):
     Returns:
         Two values, first an integer count of the number of values it will
         parse and return, and second, a generator function that returns
-        pairs of values, the first being the path on disk, as a string, that was
-        unpickled, and the second being the object that was unpickled.
+        pairs of values, the first being the path on disk, as a string, that
+        was unpickled, and the second being the object that was unpickled.
     """
     log = logging.getLogger("brorecords")
 
@@ -243,7 +245,7 @@ def unpickled_inputs(paths):
     # that doesn't seem right, assume we've gotten a list of file paths
     try:
         in_paths = [p for p in paths.split("\n")]
-    except AttributeError: # Catch if we're calling split on a list of files
+    except AttributeError:  # Catch if we're calling split on a list of files
         in_paths = paths
 
     # Next, do some simple trimming to make sure we deal with common issues,
