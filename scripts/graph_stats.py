@@ -19,13 +19,14 @@ parser.add_argument('--points', '-p', type=int, default=1,
                     help="The number of data points needed before the given " +
                     "checkout / stuff / etc is included in the report")
 parser.add_argument('--ttl', type=int, default=84600,
-                    help="The time, in seconds, that an Amazon set affiliate " +
-                    "marketing cookie is expected to be valid.  Default is " +
-                    "one day (84600 seconds)")
+                    help="The time, in seconds, that an Amazon set " +
+                    "affiliate marketing cookie is expected to be valid. " +
+                    "Default is one day (84600 seconds)")
 parser.add_argument('--secs', type=int, default=3600,
-                    help="The minimum time in seconds that must pass between " +
-                    "a client's requests to the marketers 'add to cart' page " +
-                    "for those requests to be treated as a seperate checkout")
+                    help="The minimum time in seconds that must pass " +
+                    "between a client's requests to the marketers 'add to " +
+                    "cart' page for those requests to be treated as a " +
+                    "seperate checkout")
 count, ins, out, debug, marketers, args = brotools.reports.parse_marketing_cli_args(parser)
 
 debug("Preparing to reading {0} sets of graphs".format(count))

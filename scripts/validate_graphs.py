@@ -18,6 +18,5 @@ from brotools.reports import record_filter
 import gzip
 
 for path in sys.stdin:
-    count = 0
     with gzip.open(path.strip(), 'rb') as h:
         print sum([len(g) for g in graphs(h, record_filter=record_filter)])

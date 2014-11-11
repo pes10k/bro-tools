@@ -13,6 +13,7 @@ try:
 except ImportError:
     import pickle
 
+
 def record_filter(record):
     """Common filter expression, used for reducing bro records extracted from
     log files down to only those that carry HTML content (or redirections
@@ -76,11 +77,13 @@ def _find_graphs_helper(args):
     log.info("{0}: Successfully completed work".format(dest))
     return final_path
 
+
 def find_graphs(file_sets, workers=8, time=.5, min_length=3, lite=True):
     p = multiprocessing.Pool(workers, maxtasksperchild=1)
     work_sets = [(f, time, min_length, lite) for f in file_sets]
     graphs = p.map(_find_graphs_helper, work_sets)
     return graphs
+
 
 def default_cli_parser(description=None):
     """Returns a default command line parser argument, to reduce the number of
@@ -103,6 +106,7 @@ def default_cli_parser(description=None):
                    help="If provided, prints out status information to " +
                    "STDOUT.")
     return p
+
 
 def marketing_cli_parser(description=None):
     """Provides the same extended functionality of the `default_cli_parser`
@@ -136,6 +140,7 @@ def marketing_cli_parser(description=None):
                         help="Whether to look for MoreNitch affiliate " +
                         "marketing cookie stuffing.")
     return parser
+
 
 def parse_default_cli_args(parser):
     """Parses the arguments passed with the commandline, and returns objects
