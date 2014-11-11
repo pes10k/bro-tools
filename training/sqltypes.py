@@ -29,11 +29,8 @@ class Graph(Base):
     # affiliate marketer got the credit for this cookie set.
     tag = Column(String, index=True)
 
-    # Reference to the host / domain that sent the request to Amazon that
-    # ended up setting the cookie.  This can be NULL if no redirect
-    # information is available
-    domain_id = Column(Integer, ForeignKey('domains.id'), nullable=True)
-    domain = relationship("Domain")
+    referrer_id = Column(Integer, ForeignKey('referrers.id'), nullable=True)
+    referrer = relationship("Referrer")
 
     # The amount of time that passed between the referrer page being loaded
     # and the request to Amazon, from that referrer page, being loaded.
@@ -54,6 +51,39 @@ class Graph(Base):
     created = Column(DateTime, default=datetime.datetime.now)
 
 
+class Referrer(Base):
+    """Defines a SQL record type for storing information about a
+    referrer page, that directed a client to an Amazon cookie setting
+    page.
+    """
+
+    __tablename__ = "referrers"
+
+    id = Column(Integer, primary_key=True)
+
+    # Reference to the host / domain that sent the request to Amazon that
+    # ended up setting the cookie.  This can be NULL if no redirect
+    # information is available
+    domain_id = Column(Integer, ForeignKey('domains.id'), nullable=True)
+    domain = relationship("Domain")
+
+    url = Column(String, unique=True)
+
+    # Whether the given page is reachable and returns some non-HTTP
+    # error code
+    is_reachable = Column(Boolean)
+
+    # The Google PageRank score for this url.
+    page_rank = Column(Integer, nullable=True)
+
+    # The position of the url in the Alexa Traffic Rankings.
+    # Null if the site is not listed
+    alexa_rank = Column(Integer, nullable=True)
+
+    # Timestamp for when the record was created
+    created = Column(DateTime, default=datetime.datetime.now)
+
+
 class Domain(Base):
     """Defines a SQL record type for storing information about a domain
     that referrers people to Amazon affiliate marketing cookie setting
@@ -67,25 +97,21 @@ class Domain(Base):
     id = Column(Integer, primary_key=True)
 
     # The name of a domain, such as "example.org".
-    domain = Column(String, primary_key=True)
+    domain = Column(String, unique=True)
 
-    # Whether the domain has a PKI certificate.
-    has_cert = Column(Boolean)
+    # Weather there is any server responding to the given domain
+    # (ie if the domain is registered)
+    is_registered = Column(Boolean)
 
-    # Whether the given cert is valid or not.  If the domain does not have
-    # a cert, this will be null.
-    is_cert_valid = Column(Boolean, nullable=True)
+    # The number of years the domain was registered for.
+    years_registered = Column(Integer)
 
-    # How long the given cert was valid for, in years.  If there is no cert,
-    # this will be null.
-    cert_ttl = Column(Integer, nullable=True)
+    # The date the domain was registered on
+    registration_date = Column(DateTime)
 
-    # The Google PageRank score for this domain.
-    page_rank = Column(Integer)
-
-    # The position of the site in the Alexa Traffic Rankings.
-    # Null if the site is not listed
-    alexa_rank = Column(Integer, nullable=True)
+    # Whether the domain talks SSL using a non-expired x509 cert
+    # (note that we're not doing OCSP checking...)
+    is_ssl = Column(Boolean)
 
     # Timestamp for when the record was created
     created = Column(DateTime, default=datetime.datetime.now)

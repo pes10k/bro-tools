@@ -6,6 +6,7 @@ import httplib
 import re
 import xml.etree.ElementTree
 
+
 class RankProvider(object):
     """Abstract class for obtaining the page rank (popularity)
     from a provider such as Google or Alexa.
@@ -118,7 +119,7 @@ GoogleToolbar 2.0.111-big; Windows XP 5.1)")]
     @classmethod
     def _compute_ch_new(cls, url):
         ch = cls._compute_ch(url)
-        ch = ((ch % 0x0d) & 7) | ((ch / 7) << 2);
+        ch = ((ch % 0x0d) & 7) | ((ch / 7) << 2)
 
         return cls._compute_ch(struct.pack("<20L", *(cls._wsub(ch, i * 9) for i in range(20))))
 
@@ -191,4 +192,3 @@ if __name__ == "__main__":
     print("Traffic stats for: %s" % (url))
     for p in providers:
         print("%s:%d" % (p.__class__.__name__, p.get_rank(url)))
-

@@ -5,3 +5,4 @@ user-agents
 networkx
 cached-property
 sqlalchemy
+python-whois

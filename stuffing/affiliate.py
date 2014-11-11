@@ -17,6 +17,7 @@ CART = 2
 PARTIAL_DOMAIN = 0
 FULL_DOMAIN = 1
 
+
 def domain_to_class_name(name):
     """Some affiliates have a large number of individually, but identically
     tracked child domains.  This function converts a domain name into
@@ -30,6 +31,7 @@ def domain_to_class_name(name):
         For example, "example.org" -> ExampleOrg
     """
     return string.capwords(name.replace(".", " ")).replace(" ", "")
+
 
 class AffiliateHistory(object):
     """Stores a history of a clients interactions with a site we
@@ -55,8 +57,8 @@ class AffiliateHistory(object):
             the given request does not contain such an identifier.
         """
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
-            "must implement a `session_id` class method.")
-
+                                  "must implement a `session_id` class " +
+                                  "method.")
 
     @classmethod
     def checkout_urls(cls):
@@ -70,7 +72,8 @@ class AffiliateHistory(object):
             A tuple or list of zero or more strings
         """
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
-            "must implement a `checkout_urls` class method.")
+                                  "must implement a `checkout_urls` class " +
+                                  "method.")
 
     @classmethod
     def referrer_tag(cls):
@@ -82,7 +85,8 @@ class AffiliateHistory(object):
             for a request that would set an affiliate marketing cookie.
         """
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
-            "must implement a `referrer_tag` class method.")
+                                  "must implement a `referrer_tag` class " +
+                                  "method.")
 
     @classmethod
     def cookie_set_pattern(cls):
@@ -93,7 +97,8 @@ class AffiliateHistory(object):
             A re.RegexObject instance
         """
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
-            "must implement a `cookie_set_pattern` class method.")
+                                  "must implement a `cookie_set_pattern` " +
+                                  "class method.")
 
     @classmethod
     def domains(cls):
@@ -112,7 +117,7 @@ class AffiliateHistory(object):
             A list of tuples, each tuple having a string and an integer in it.
         """
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
-            "must implement a `domains` class method.")
+                                  "must implement a `domains` class method.")
 
     @classmethod
     def name(cls):
@@ -127,7 +132,7 @@ class AffiliateHistory(object):
             marketing being tracked by this collection.
         """
         raise NotImplementedError("Subclasses of stuffing.AffiliateHistory " +
-            "must implement a `name` class method.")
+                                  "must implement a `name` class method.")
 
     """
     Implemented class methods

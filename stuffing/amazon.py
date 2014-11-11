@@ -6,6 +6,7 @@ from .affiliate import AffiliateHistory, FULL_DOMAIN
 
 AMZ_TOKEN_PATTERN = re.compile('session-token=([^\;]+)')
 
+
 def session_token(record):
     """Returns the amazon session token cookie in the given request, if one
     exists.
