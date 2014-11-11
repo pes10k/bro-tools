@@ -45,7 +45,7 @@ def fetch_cert(domain, port=443, ca_bundle_path=None):
                                           ssl_version=ssl.PROTOCOL_TLSv1,
                                           ca_certs=ca_bundle_path)
         return cert
-    except ssl.SSLError, e:
+    except:
         return None
 
 
@@ -82,6 +82,7 @@ def years_for_domain(whois_rec):
     exp_date = whois_rec.expiration_date[0]
     delta = relativedelta(exp_date, reg_date)
     return delta.years
+
 
 def is_url_live(url):
     """Checks to see whether a given URL is live and valid,
