@@ -465,7 +465,10 @@ class BroRecordGraph(object):
             response += node.url + "\n"
 
             children = self.children_of_node(node)
-            for c in children:
+            # Sort the children by timestamp, so that earlier occuring
+            # requests are printed out first.
+            sorted_children = sorted(children, key=lambda x: x.ts)
+            for c in sorted_children:
                 response += _print_sub_tree(c, parent=node, level=(level + 1))
             return response
 
