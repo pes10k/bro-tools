@@ -709,7 +709,7 @@ class BroRecordGraph(object):
                        str(self))
                 raise(Exception(msg))
 
-        return _time_below(self._root)
+        return _time_below(br)
 
     def max_child_depth(self, br):
         """Returns the count of the longest path from the given node to a leaf

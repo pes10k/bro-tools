@@ -63,7 +63,8 @@ for path, graph in inputs():
     valid_responses = ("y", "n", "u")
     response = False
     while response not in valid_responses:
-        response = raw_input("Yes/No/Uncertain").lower()
+        response = raw_input("Yes/No/Uncertain")
+        response = response.lower()
 
     if response == "y":
         label = "valid"
