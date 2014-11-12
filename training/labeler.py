@@ -36,6 +36,9 @@ for path, graph in inputs():
 
     debug("Graph Root: {0}".format(graph._root.url))
     if args.verbose:
+        if "www.lewnn.com" in graph._root.url:
+            print graph
+
         raw_input("next...")
     if len(graph) == 1:
         debug("Don't bother labeling graphs with only one request in them")
