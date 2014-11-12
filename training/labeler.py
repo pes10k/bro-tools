@@ -78,6 +78,7 @@ for path, graph in inputs():
     ref = graph.parent_of_node(a_set)
 
     print "-----------------------------------------------------------"
+    print "UX:                 {0}".format(graph.user_agent)
     print "Hash:               {0}".format(a_set_hash)
     print "File:               {0}".format(path)
     print "Set URL:            {0}".format(a_set_url)
