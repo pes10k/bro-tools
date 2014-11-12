@@ -4,9 +4,11 @@ database that contains information for each graph and domain found in
 the stuffing data.
 """
 import ssl
+import socket
 import os
 import whois
 import requests
+import datetime
 from dateutil.relativedelta import relativedelta
 import sys
 import os.path
@@ -64,6 +66,8 @@ def whois_for_domain(domain):
         query = whois.whois(domain)
     except whois.parser.PywhoisError:
         return None
+    except socket.error:
+        return None
     return query
 
 
@@ -78,8 +82,16 @@ def years_for_domain(whois_rec):
     Return:
         An integer number of years the registration was for.
     """
-    reg_date = whois_rec.creation_date[0]
-    exp_date = whois_rec.expiration_date[0]
+    def extract_date(date_key):
+        a_date = getattr(whois_rec, date_key)
+        if isinstance(a_date, datetime.datetime):
+            return a_date
+        elif isinstance(a_date, list) and len(a_date) > 0:
+            return a_date[0]
+        else:
+            return None
+    reg_date = extract_date('creation_date')
+    exp_date = extract_date('expiration_date')
     delta = relativedelta(exp_date, reg_date)
     return delta.years
 

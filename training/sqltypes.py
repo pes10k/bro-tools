@@ -187,9 +187,15 @@ def get_domain(domain, session):
 def save_domain(domain, session):
     whois_rec = features.whois_for_domain(domain)
     is_domain_registered = whois_rec is not None
-    if is_domain_registered and len(whois_rec.creation_date) > 0:
+    creation_date = None
+    if isinstance(whois_rec.creation_date, datetime.datetime):
+        creation_date = whois_rec.creation_date
+    elif len(whois_rec.creation_date) > 0:
+        creation_date = whois_rec.creation_date[0]
+
+    if is_domain_registered and creation_date:
         domain_reg_years = features.years_for_domain(whois_rec)
-        domain_reg_date = whois_rec.creation_date[0]
+        domain_reg_date = creation_date 
         domain_is_ssl = features.fetch_cert(domain) is not None
     else:
         domain_reg_years = None

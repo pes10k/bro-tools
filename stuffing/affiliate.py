@@ -240,8 +240,7 @@ class AffiliateHistory(object):
             True if it looks like the given request would cause an affiliate
             cookie to be set, and otherwise False.
         """
-        q = urlparse.urlparse(record.uri).query
-        if not cls.cookie_set_pattern().search(q):
+        if not cls.cookie_set_pattern().search(record.uri):
             return False
 
         return True
