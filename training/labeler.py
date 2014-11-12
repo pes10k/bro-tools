@@ -23,7 +23,7 @@ parser.add_argument('-u', '--dburi', required=True,
                          "http://docs.sqlalchemy.org/en/rel_0_9/core/engines.html#database-urls")
 num_inputs, inputs, output_h, debug, args = parse_default_cli_args(parser)
 
-engine = create_engine(args.dburi, echo=args.verbose)
+engine = create_engine(args.dburi, echo=False)
 
 # Create any needed, missing tables in the given database
 training.sqltypes.Base.metadata.create_all(engine)
