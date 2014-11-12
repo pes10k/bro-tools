@@ -50,7 +50,8 @@ class AmazonAffiliateHistory(AffiliateHistory):
         try:
             return cls._cookie_set_pattern
         except AttributeError:
-            cls._cookie_set_pattern = re.compile(r'(?:&|\?|^)tag=')
+            pattern = re.compile(r'amazon.com/(?:.*dp/.*)?[&?]tag=')
+            cls._cookie_set_pattern = pattern
             return cls._cookie_set_pattern
 
     @classmethod
