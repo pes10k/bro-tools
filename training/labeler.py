@@ -71,6 +71,9 @@ for path, graph in inputs():
     a_set_hash = graph.hash()
     a_set_file = path
     a_set_url = a_set.url
+    full_set_url = "http://{0}".format(a_set_url)
+    amazon_page_title = training.features.page_title(full_set_url)
+
     a_set_reqest_time = datetime.datetime.fromtimestamp(int(a_set.ts))
     a_set_tag = training.features.affiliate_tag_for_cookie_set(graph)
     time_from_referrer = training.features.amazon_time_from_referrer(graph)
@@ -86,18 +89,21 @@ for path, graph in inputs():
     print "Tag:                {0}".format(a_set_tag)
     print "Time From Referrer: {0}".format(time_from_referrer)
     print "Time to bottom:     {0}".format(time_after_set)
-    print graph.summary(detailed=False)
     print ""
+    print graph.summary(detailed=False)
+    print u"Root URL:           {0}".format(graph._root.url)
+    print u"Referrer URL:       {0}".format(ref.url if ref else None)
+    print u"AMZ Title:          {0}".format(amazon_page_title)
 
-    valid_responses = ("y", "n", "u")
+    valid_responses = ("v", "s", "u")
     response = False
     while response not in valid_responses:
-        response = raw_input("[Y]es/[N]o/[U]ncertain: ")
+        response = raw_input("[V]alid/[S]tuff/[U]ncertain: ")
         response = response.lower()
 
-    if response == "y":
+    if response == "v":
         label = "valid"
-    elif response == "n":
+    elif response == "s":
         label = "stuff"
     elif response == "u":
         label = "uncertain"

@@ -12,6 +12,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 import sys
 import os.path
+import re
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 import contrib.pagerank
@@ -20,6 +21,39 @@ from stuffing.amazon import AmazonAffiliateHistory
 CA_BUNDLE = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                          "..", "contrib", "ca-bundle.crt")
 CA_BUNDLE = os.path.realpath(CA_BUNDLE)
+
+
+TITLE_PATTERN = re.compile(r'<title>(.*?)</title>', re.I | re.U)
+
+def page_title(url):
+    """Returns the HTML title of the given URL, if one exists.
+    This isn't directly mapable onto a training feature, but is useful
+    for quickly labling information.
+
+    Args:
+        url -- A valid URL as a string, such as http://example.org/resource
+
+    Return:
+        The contents of the <title> tag in the HTML, if the URL is reachable
+        and the returned resource contains a title tag.  Otherwise, None.
+    """
+    rs = requests.get(url)
+    if not rs:
+        return None
+
+    status = rs.status_code
+    if status < 200 or status >= 300:
+        return None
+
+    body = rs.text
+    if not body:
+        return None
+
+    match = TITLE_PATTERN.search(body)
+    if not match:
+        return None
+
+    return match.group(1)
 
 
 def fetch_cert(domain, port=443, ca_bundle_path=None):
