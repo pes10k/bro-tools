@@ -31,8 +31,8 @@ session = sessionmaker(bind=engine)()
 
 for path, graph in inputs():
     if len(graph) == 1:
-       debug("Don't bother trying to label graphs with only one request in them")
-       continue
+        debug("Don't bother labeling graphs with only one request in them")
+        continue
 
     # Check to see if we've already reviewed this graph
     if training.sqltypes.get_set(graph, session):
@@ -54,9 +54,10 @@ for path, graph in inputs():
         break
 
     if a_set is None:
-        debug("Don't bother trying to label graphs where cookie set is the root of the tree")
+        debug("Don't bother labeling graphs where cookie set is the root " +
+              "of the tree")
         continue
-   
+
     a_set_hash = graph.hash()
     a_set_file = path
     a_set_url = a_set.url
