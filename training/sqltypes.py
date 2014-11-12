@@ -141,7 +141,7 @@ def get_referrer_id(referrer, session):
 
 
 def get_referrer(referrer, session):
-    query = session.query(Domain).\
+    query = session.query(Referrer).\
         filter(Referrer.url == "http://{0}".format(referrer.url))
     try:
         return query.one()
