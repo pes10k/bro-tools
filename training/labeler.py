@@ -30,6 +30,9 @@ training.sqltypes.Base.metadata.create_all(engine)
 session = sessionmaker(bind=engine)()
 
 for path, graph in inputs():
+    debug("Graph Root: {0}".format(graph._root.url))
+    if args.verbose:
+        raw_input("next...")
     if len(graph) == 1:
         debug("Don't bother labeling graphs with only one request in them")
         continue
