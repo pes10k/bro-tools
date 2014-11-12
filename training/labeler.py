@@ -30,6 +30,10 @@ training.sqltypes.Base.metadata.create_all(engine)
 session = sessionmaker(bind=engine)()
 
 for path, graph in inputs():
+
+    if "amazon.com" in graph._root.host:
+        continue
+
     debug("Graph Root: {0}".format(graph._root.url))
     if args.verbose:
         raw_input("next...")
