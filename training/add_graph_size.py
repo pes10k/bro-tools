@@ -37,6 +37,39 @@ session = sessionmaker(bind=engine)()
 hit = 0
 miss = 0
 for path, graph in inputs():
+
+    if "amazon.com" in graph._root.host:
+        continue
+
+    debug("Graph Root: {0}".format(graph._root.url))
+    if args.verbose:
+        if "www.lewnn.com" in graph._root.url:
+            print graph
+        raw_input("next...")
+
+    if len(graph) == 1:
+        debug("Don't bother labeling graphs with only one request in them")
+        continue
+
+    sets = AmazonAffiliateHistory.cookie_sets_in_graph(graph)
+    if len(sets) == 0:
+        debug("Skipping graph, no cookie sets found")
+        continue
+
+    # Try to find a cookie set that is not the root of the graph, since
+    # these will not be intersting cases for training
+    a_set = None
+    for test_set in sets:
+        if test_set is graph._root:
+            continue
+        a_set = test_set
+        break
+
+    if a_set is None:
+        debug("Don't bother labeling graphs where cookie set is the root " +
+              "of the tree")
+        continue
+
     graph_rec = training.sqltypes.get_set(graph, session)
     if not graph_rec:
         miss += 1
