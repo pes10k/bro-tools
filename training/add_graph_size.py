@@ -8,9 +8,11 @@ import os.path
 
 CUR_PATH = os.path.dirname(os.path.abspath(__file__))
 PARENT_PATH = os.path.join(CUR_PATH, '..')
-DEFAULT_DB_URL = os.path.join(PARENT_PATH, "contrib", "data.db")
-DEFAULT_DBURI = sys.path.append("sqlite:///{0}".format(DEFAULT_DB_URL))
+DEFAULT_DB_PATH = os.path.join("..", "contrib", "data.db")
+DEFAULT_DBURI = os.path.join("sqlite:///{0}".format(DEFAULT_DB_PATH))
+sys.path.append(PARENT_PATH)
 
+print DEFAULT_DBURI
 import datetime
 import training.sqltypes
 import training.features
@@ -32,8 +34,16 @@ engine = create_engine(args.dburi, echo=False)
 # Create any needed, missing tables in the given database
 training.sqltypes.Base.metadata.create_all(engine)
 session = sessionmaker(bind=engine)()
-
+hit = 0
+miss = 0
 for path, graph in inputs():
     graph_rec = training.sqltypes.get_set(graph, session)
+    if not graph_rec:
+        miss += 1
+    else:
+        hit += 1
+    continue
     graph_rec.graph_size = len(graph)
     session.commit()
+
+print "hit: {0}\nmiss: {1}".format(hit, miss)
