@@ -19,6 +19,8 @@ import training.features
 from brotools.reports import default_cli_parser, parse_default_cli_args
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from stuffing.amazon import AmazonAffiliateHistory
+
 
 parser = default_cli_parser(sys.modules[__name__].__doc__)
 parser.add_argument('-u', '--dburi', default=DEFAULT_DBURI,
