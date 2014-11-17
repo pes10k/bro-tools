@@ -9,6 +9,8 @@ from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime
 from sqlalchemy import ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.exc import NoResultFound
+import sqlite3
+import os.path
 import features
 
 Base = declarative_base()
@@ -127,6 +129,33 @@ class Domain(Base):
 
     # Timestamp for when the record was created
     created = Column(DateTime, default=datetime.datetime.now)
+
+
+def raw_records(db_path=None):
+
+    def dict_factory(cursor, row):
+        d = {}
+        for idx, col in enumerate(cursor.description):
+            d[col[0]] = row[idx]
+        return d
+
+    if not db_path:
+        db_path = os.path.join("..", "contrib", "data.db")
+
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = dict_factory
+    c = conn.cursor()
+    rs = c.execute("""
+        SELECT
+            *
+        FROM
+            cookiesets
+        JOIN
+            referrers ON cookiesets.referrer_id = referrers.id
+        JOIN
+            domains ON referrers.domain_id = domains.id
+    """)
+    return rs
 
 
 def get_set(graph, session):

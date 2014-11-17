@@ -25,6 +25,7 @@ CA_BUNDLE = os.path.realpath(CA_BUNDLE)
 
 TITLE_PATTERN = re.compile(r'<title>(.*?)</title>', re.I | re.U)
 
+
 def page_title(url):
     """Returns the HTML title of the given URL, if one exists.
     This isn't directly mapable onto a training feature, but is useful

@@ -7,3 +7,4 @@ cached-property
 sqlalchemy
 python-whois
 requests
+numpy
