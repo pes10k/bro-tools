@@ -51,6 +51,10 @@ class CookieSet(Base):
     # spent browsing from the Amazon setting request).
     time_after_set = Column(Float, nullable=True)
 
+    # The size of the graph containing this stuff, in terms of number
+    # of records contained in the graph.
+    graph_size = Column(Integer)
+
     # A human decided label for this graph, whether the graph represents
     # a "valid", "stuff", or "uncertain" cookie stuff event.
     label = Column(String)
