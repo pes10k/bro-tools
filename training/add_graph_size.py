@@ -12,7 +12,6 @@ DEFAULT_DB_PATH = os.path.join("..", "contrib", "data.db")
 DEFAULT_DBURI = os.path.join("sqlite:///{0}".format(DEFAULT_DB_PATH))
 sys.path.append(PARENT_PATH)
 
-print DEFAULT_DBURI
 import datetime
 import training.sqltypes
 import training.features
@@ -75,9 +74,9 @@ for path, graph in inputs():
     graph_rec = training.sqltypes.get_set(graph, session)
     if not graph_rec:
         miss += 1
+        continue
     else:
         hit += 1
-    continue
     graph_rec.graph_size = len(graph)
     session.commit()
 
