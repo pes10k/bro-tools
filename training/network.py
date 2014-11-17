@@ -2,6 +2,7 @@ import soms
 import sqltypes
 import os
 import pickle
+import numpy
 
 features = (
     ("time_from_referrer", soms.TimeFromReferrerSOM(), []),
@@ -36,3 +37,6 @@ for row in sqltypes.raw_records():
 
 for label, SOM, records in features:
     SOM.train_random(records, len(records) * 3)
+    # Also normalize the weights to be between [0, 1] and to sum to 1
+    total = numpy.sum(SOM.weights)
+    SOM.weights = numpy.divide(SOM.weights, total)
