@@ -2,36 +2,37 @@ import sqltypes
 from contrib.som import MiniSom
 import numpy
 
-class BoolSOM(MiniSom):
+class DumbSOM(object):
+
+    def add_value(self, value):
+        self.weights[self.winner(value)] += 1
+
+    def normalize(self):
+        self.weights = numpy.divide(self.weights, numpy.sum(self.weights))
+
+
+class BoolSOM(DumbSOM):
 
     def __init__(self):
-        super(BoolSOM, self).__init__(2, 1, 2, sigma=0.3)
+        self.weights = numpy.zeros(2)
 
-    @classmethod
-    def vector_for_value(cls, value):
-        vector_size = 2
-        vector = numpy.zeros(vector_size)
-        vector[1 if value else 0] = 1
-        return vector
+    def winner(self, value):
+        return 1 if value else 0
 
 
-class RangeSOM(MiniSom):
+class RangeSOM(DumbSOM):
 
     def __init__(self):
         ranges = self.__class__.ranges
-        super(RangeSOM, self).__init__(len(ranges) + 1, 1, len(ranges) + 1, sigma=0.3)
+        self.weights = numpy.zeros(len(ranges) + 1)
 
-    @classmethod
-    def vector_for_value(cls, value):
-        vector_size = len(cls.ranges)
+    def winner(self, value):
         index = 0
-        for max_value in cls.ranges:
+        for max_value in self.__class__.ranges:
             if value <= max_value:
                 break
             index += 1
-        vector = numpy.zeros(vector_size + 1)
-        vector[index] = 1
-        return vector
+        return index
 
 
 class YearsRegisteredSOM(RangeSOM):
