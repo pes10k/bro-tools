@@ -50,37 +50,49 @@ class YearsRegisteredSOM(RangeSOM):
 class TimeFromReferrerSOM(RangeSOM):
 
     ranges = [
-        1,
         2,
-        4,
         8,
-        16,
         32,
-        64,
-        128,
-        256,
-        512,
-        1024,
-        2048,
-        4096,
     ]
+
+
+    # ranges = [
+    #     1,
+    #     2,
+    #     4,
+    #     8,
+    #     16,
+    #     32,
+    #     64,
+    #     128,
+    #     256,
+    #     512,
+    #     1024,
+    #     2048,
+    #     4096,
+    # ]
 
 
 class TimeAfterSetSOM(RangeSOM):
 
     ranges = [
-        1,
         2,
-        4,
         8,
-        16,
-        32,
-        64,
-        128,
-        256,
-        512,
-        1024
     ]
+
+    # ranges = [
+    #     1,
+    #     2,
+    #     4,
+    #     8,
+    #     16,
+    #     32,
+    #     64,
+    #     128,
+    #     256,
+    #     512,
+    #     1024
+    # ]
 
 
 class TagCountSOM(RangeSOM):

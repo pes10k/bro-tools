@@ -147,6 +147,7 @@ def raw_records(db_path=None):
     c = conn.cursor()
     rs = c.execute("""
         SELECT
+            cookiesets.id as hash,
             *
         FROM
             cookiesets
