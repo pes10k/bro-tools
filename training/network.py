@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+"""
+The main entry point for this program.  This is the tool that actually performs
+the prediction and implements the LAMSTAR network.
+"""
 import soms
 import sqltypes
 import os

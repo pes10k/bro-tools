@@ -1,3 +1,7 @@
+"""
+Python classed describing each of the SOMs used in the input modules of the LAMSTAR
+network.
+"""
 import sqltypes
 from contrib.som import MiniSom
 import numpy
