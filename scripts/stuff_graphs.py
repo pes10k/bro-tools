@@ -10,7 +10,8 @@ import brotools.reports
 import brotools.records
 
 parser = brotools.reports.marketing_cli_parser(sys.modules[__name__].__doc__)
-count, ins, out, debug, marketers, args = brotools.reports.parse_marketing_cli_args(parser)
+cli_params = brotools.reports.parse_marketing_cli_args(parser)
+count, ins, out, debug, marketers, args = cli_params
 
 debug("Preparing to start reading pickled data.")
 index = 0

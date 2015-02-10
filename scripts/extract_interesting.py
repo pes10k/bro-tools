@@ -6,10 +6,8 @@ import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
-import os
 import brotools.reports
 import brotools.records
-import datetime
 
 try:
     import cPickle as pickle
@@ -17,7 +15,8 @@ except:
     import pickle
 
 parser = brotools.reports.marketing_cli_parser(sys.modules[__name__].__doc__)
-count, ins, out, debug, marketers, args = brotools.reports.parse_marketing_cli_args(parser)
+cli_params = brotools.reports.parse_marketing_cli_args(parser)
+count, ins, out, debug, marketers, args = cli_params
 
 index = 0
 for path, g in ins():

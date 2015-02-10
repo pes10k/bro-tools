@@ -10,13 +10,10 @@ import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
-import argparse
-from brotools.records import bro_records
-from brotools.reports import record_filter, unpickled_inputs
+from brotools.reports import record_filter
 from brotools.merge import merge, group_records
 from brotools.graphs import graphs
 import tempfile
-import gzip
 
 files_to_merge = sys.stdin.read().strip().split()
 grouped_files = group_records(files_to_merge)

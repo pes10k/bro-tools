@@ -1,4 +1,4 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 """Finds all instances of page requests that fit the following conditions:
     * Request to amazon.com
     * That is a leaf node (ie is not the referrer to any requests)

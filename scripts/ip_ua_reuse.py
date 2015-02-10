@@ -14,6 +14,7 @@ import stuffing.amazon
 parser = brotools.reports.default_cli_parser(sys.modules[__name__].__doc__)
 count, ins, out, debug, args = brotools.reports.parse_default_cli_args(parser)
 
+
 def collision(*args):
     """Returns a boolean description of whether there are any overlapping
     dates in the two given, sorted date ranges."""

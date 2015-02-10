@@ -12,7 +12,6 @@ import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
-import argparse
 from brotools.graphs import graphs
 from brotools.reports import record_filter
 import gzip

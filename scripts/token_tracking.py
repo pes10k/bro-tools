@@ -1,4 +1,4 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 """Track amazon session tokens across multiple IPs, to see how much
 possible Amazon tracking / stuffing we're missing due to IP jumping by clients.
 """

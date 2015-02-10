@@ -19,7 +19,8 @@ parser.add_argument('--secs', type=int, default=3600,
                     help="The minimum time in seconds that must pass between " +
                     "a client's requests to the marketers 'add to cart' page " +
                     "for those requests to be treated as a seperate checkout")
-count, ins, out, debug, marketers, args = brotools.reports.parse_marketing_cli_args(parser)
+cli_params = brotools.reports.parse_marketing_cli_args(parser)
+count, ins, out, debug, marketers, args = cli_params
 
 # Multi indexed dict, in the following format:
 #
