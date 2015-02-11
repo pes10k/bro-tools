@@ -36,7 +36,7 @@ debug("Preparing to read {0} collections of graphs".format(count))
 input_paths = args.inputs
 try:
     in_paths = [p for p in input_paths.split("\n")]
-except AttributeError: # Catch if we're calling split on a list of files
+except AttributeError:  # Catch if we're calling split on a list of files
     in_paths = input_paths
 
 # Next, do some simple trimming to make sure we deal with common issues,

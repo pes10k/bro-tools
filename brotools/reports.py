@@ -195,7 +195,8 @@ def parse_marketing_cli_args(parser):
             - a file handle for writing output to
             - a function that should be used for writing error messages
             - a list of AffiliateHistory subclasses to examine the graphs with
-            - the `Namespace` object returned from calling `parser.parse_args()`
+            - the `Namespace` object returned from calling
+              `parser.parse_args().`
     """
     num_inputs, inputs, output_h, debug, args = parse_default_cli_args(parser)
 

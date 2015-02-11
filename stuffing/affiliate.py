@@ -1,7 +1,6 @@
 """Code related to tracking potentially cookie stuffed users throughout
 a collection of browsing history."""
 
-import urlparse
 import re
 import string
 
@@ -491,9 +490,9 @@ class AffiliateCheckout(object):
     easier to track instances of where someone making a purchase on an
     affiliate marketing site was a 'victim' of cookie stuffing.
 
-    There is probably no reason to instantiate instances of this class directly.
-    Instead, really only makes sense for History instances to generate
-    them.
+    There is probably no reason to instantiate instances of this class
+    directly. Instead, really only makes sense for History instances to
+    generate them.
     """
     def __init__(self, record, graph, history, cookie_ttl=84600):
         """Initializer requires a reference to a BroRecord that represents
@@ -549,7 +548,8 @@ class AffiliateCheckout(object):
         for r, g, t in self.cookie_history():
             type_str = "STUFF" if t == STUFF else "SET  "
             output += "{0} {1} {2}\n     {3}\n".format(
-                type_str, r.date_str, self.site_h.__class__.get_referrer_tag(r),
+                type_str, r.date_str,
+                self.site_h.__class__.get_referrer_tag(r),
                 g.summary(detailed=False).replace("\n", "\n     "))
         return output
 
@@ -638,7 +638,8 @@ class AffiliateCheckout(object):
             that looks like it set an affiliate marketing cookie on the client,
             2) the BroRecordGraph that contains this BroRecord instance, and
             3) either STUFF or SET, depending on whether this request appears
-            to be a cookie stuffing instance or a valid cookie setting instance.
+            to be a cookie stuffing instance or a valid cookie setting
+            instance.
         """
         if self._dirty:
             self._history = []

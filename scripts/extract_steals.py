@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 """Commandline utility for examining pickled collections of BroRecordGraph
-objects, looking for instances of checkouts from Amazon and examining what
-requests could have influenced the affiliate marketing cookie that got credit
-for the purchase."""
+objects and looking for instances where cookie stuffing "stole" a
+credit from someone who looks like a valid cookie setter."""
 
 import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
 import brotools.reports
+from stuffing.affiliate import STUFF, SET
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 parser = brotools.reports.marketing_cli_parser(sys.modules[__name__].__doc__)
 parser.add_argument('--ttl', type=int, default=84600,
@@ -60,30 +65,20 @@ for path, graphs in ins():
             # out of the dict of clients for the given marketer
             try:
                 history = client_dict[hash_key]
-                stuffs, sets, carts = history.consider(g)
             except KeyError:
                 history = marketer(g)
                 client_dict[hash_key] = history
-                stuffs, sets, carts = history.counts()
-
-            values = stuffs + sets + carts
-            if values:
-                debug("Marketer: {0}".format(marketer.name()))
-                debug("Session: {0}".format(hash_key))
-                debug("-----")
-            if stuffs:
-                debug(" * Stuffs: {0}".format(stuffs))
-            if sets:
-                debug(" * Sets  : {0}".format(sets))
-            if carts:
-                debug(" * Carts : {0}".format(carts))
-            if values:
-                debug("")
-                break
 
 for marketer_name, histories in history_by_client.items():
     for client_hash, h in histories.items():
         for c in h.checkouts(seconds=args.secs, cookie_ttl=args.ttl):
-            if len(c.cookie_history()) > 0:
-                out.write(str(c))
-                out.write("\n\n\n")
+            set_indexes = []
+            stuff_indexes = []
+            for i, (r, g, t) in enumerate(c.cookie_history()):
+                if t == STUFF:
+                    stuff_indexes.append(i)
+                elif t == SET:
+                    set_indexes.append(i)
+            if (len(set_indexes) > 0 and len(stuff_indexes) > 0 and
+               stuff_indexes[-1] > set_indexes[-1]):
+                pickle.dump(c, out)

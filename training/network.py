@@ -47,8 +47,8 @@ def debug(msg):
 
 # Params to tune
 reward = args.reward
-punish_wrong = args.wrong 
-punish_correct = args.correct 
+punish_wrong = args.wrong
+punish_correct = args.correct
 max_weight = args.max
 normalize = args.normalize
 training_rounds = args.trains
@@ -171,24 +171,24 @@ for round in range(training_rounds):
         # but just their index in the set.
         if round == 0:
             training_row_index += 1
-        
+
             if random_assignment:
                 is_testing = random.randint(0, 2) == 0
             else:
                 is_testing = training_row_index % 3 == 0
-        
+
             if is_testing:
                 testing_indexes.add(training_row_index)
                 debug("Moving record to evaluation set.")
                 continue
-   
+
         # Find the correct, labeled index for this row, given the configured
         # number of output neurons.  Given the default setup of 3 output
         # neurons, this will be in [0, 2]
         label_index = desired_index(row)
         debug("Label: {0}".format(label_index))
         debug(row)
-        
+
         # Now iterate each of the given features, which are pairs of human
         # readable labels for each feature / subword, and the corresponding
         # SOM object.
@@ -202,7 +202,7 @@ for round in range(training_rounds):
             # the weights of the LAMSTAR NN.
             if value is None:
                 continue
-   
+
             # This code, and the SOM implementations I wrote, include
             # functionality for adjusting weights in the SOM, to allow for
             # the full self-mapping functionality of a SOM.  However, since
@@ -218,7 +218,7 @@ for round in range(training_rounds):
                 weights[subword_index][winning_neuron_index][label_index] + reward
             ))
 
-            # Once we've determined which index in the subword / input 
+            # Once we've determined which index in the subword / input
             # neuron best matches the input value, then strengthen the
             # link between the "winning" neuron in the current subword,
             # and the correct / hand labled output.  If there is a set
@@ -277,11 +277,11 @@ for row in sqltypes.raw_records():
     testing_row_index += 1
 
     # If the current row was not set aside to be included in the training set,
-    # don't consider it.  `testing_indexes` is a set of the indexes that 
+    # don't consider it.  `testing_indexes` is a set of the indexes that
     # were selected previously as being for evaluation and not for training.
     if testing_row_index not in testing_indexes:
         continue
-  
+
     # Now keep track of which output neuron each input neuron votes for,
     # with a simple counter for each output
     index_votes = numpy.zeros(num_output_neurons)
@@ -310,7 +310,7 @@ for row in sqltypes.raw_records():
 #     print winning_indexes
 #     print "Correct: {0}".format(correct)
 #     print "Predict: {0}".format(winning_index)
-# 
+#
     results[0][0 if winning_index == correct else 1] += 1
 
     nn_predictions.append(abs(winning_index - correct))

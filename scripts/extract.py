@@ -51,6 +51,6 @@ relevant_graph_pickles = brotools.reports.find_graphs(
 output_h = open(args.output, 'w') if args.output else sys.stdout
 
 output_h.write("Finished extracting graphs.  Results are saved in the "
-            "following files:\n")
+               "following files:\n")
 for p in relevant_graph_pickles:
     output_h.write(" * {0}\n".format(p))
