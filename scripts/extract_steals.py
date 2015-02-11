@@ -81,4 +81,6 @@ for marketer_name, histories in history_by_client.items():
                     set_indexes.append(i)
             if (len(set_indexes) > 0 and len(stuff_indexes) > 0 and
                stuff_indexes[-1] > set_indexes[-1]):
+                debug("Found a steal")
+                debug(str(c))
                 pickle.dump(c, out)
