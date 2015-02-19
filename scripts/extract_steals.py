@@ -103,12 +103,13 @@ for marketer_name, histories in history_by_client.items():
                 elif t == SET:
                     sets_count += 1
                     set_indexes.append(i)
-                conservative_stuffs_count += len(stuff_tags_in_checkout)
                 tags_in_checkout.add(marketer.get_referrer_tag(r))
+
             parties_count += len(tags_in_checkout)
+            conservative_stuffs_count += len(stuff_tags_in_checkout)
             if (len(set_indexes) > 0 and len(stuff_indexes) > 0 and
                 stuff_indexes[-1] > set_indexes[-1]):
                 steals_count += 1
 
 out.write("Checkouts: {}\nStuffs: {}\nSets: {}\nSteals: {}\n".format(checkout_count, stuffs_count, sets_count, steals_count))
-out.write("Parties: {}\n".format(parties_count))
+out.write("Parties: {}\nConservative Stuffs Count: {}\n".format(parties_count, conservative_stuffs_count))
