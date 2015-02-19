@@ -6,6 +6,7 @@ from .affiliate import AffiliateHistory, PARTIAL_DOMAIN
 
 TOKEN_PATTERN = re.compile('visitor=([^\;]+)')
 
+
 class GodaddyAffiliateHistory(AffiliateHistory):
 
     @classmethod
