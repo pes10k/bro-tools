@@ -140,6 +140,7 @@ for marketer_name, histories in history_by_client.items():
 names = sorted(valid_purchase_counts.keys())
 columns = (
     ("Affiliate", names),
+    ("# Requests", request_counts),
     ("# Tracking Cookies", {m: len(session_cookies[m]) for m in names}),
     ("# Cookie Sets", cookie_set_counts),
     ("# Cookie Stuffs", cookie_stuff_counts),
