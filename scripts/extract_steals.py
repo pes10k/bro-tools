@@ -54,6 +54,9 @@ valid_purchase_counts = {}
 # Marketer Name -> #
 stolen_purchase_counts = {}
 
+# Markter Name -> #
+request_counts = {}
+
 index = 0
 old_path = None
 debug("Preparing to start reading {0} pickled data".format(count))
@@ -75,6 +78,15 @@ for path, g in ins():
             stuffed_purchase_counts[marketer.name()] = 0
             valid_purchase_counts[marketer.name()] = 0
             stolen_purchase_counts[marketer.name()] = 0
+            request_counts[marketer.name()] = 0
+
+        request_counts[marketer.name()] += len(marketer.nodes_for_domains(g))
+
+        if len(marketer.stuffs_in_graph(g)) > 0:
+            cookie_stuff_counts[marketer.name()] += 1
+
+        if len(marketer.cookie_sets_in_graph(g)) > 0:
+            cookie_set_counts[marketer.name()] += 1
 
         # See if we can find a session tracking cookie for this visitor
         # in this graph.  If not, then we know there are no cookie stuffs,
@@ -85,12 +97,6 @@ for path, g in ins():
             continue
 
         session_cookies[marketer.name()].add(hash_key)
-
-        if len(marketer.stuffs_in_graph(g)) > 0:
-            cookie_stuff_counts[marketer.name()] += 1
-
-        if len(marketer.cookie_sets_in_graph(g)) > 0:
-            cookie_set_counts[marketer.name()] += 1
 
         # First extract the dict for this marketer
         try:
