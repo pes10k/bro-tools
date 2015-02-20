@@ -148,3 +148,6 @@ writer.writerow([h for h, v in columns])
 for name in names:
     row = [name] + [v[name] for h, v in columns]
     writer.writerow(row)
+
+totals_row = ["Total"] + [sum(v) for h, v in columns[1:]]
+writer.writerow(totals_row)
