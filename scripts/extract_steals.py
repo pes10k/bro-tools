@@ -130,28 +130,21 @@ for marketer_name, histories in history_by_client.items():
             if c.is_stolen_pruchase():
                 valid_purchase_counts[marketer_name] += 1
 
-writer = csv.writer(out)
+
 names = sorted(valid_purchase_counts.keys())
-header_row = [""] + names
+columns = (
+    ("Affiliate", names),
+    ("# Tracking Cookies", {m: len(session_cookies[m]) for m in names}),
+    ("# Cookie Sets", cookie_set_counts),
+    ("# Cookie Stuffs", cookie_stuff_counts),
+    ("# Checkouts", checkout_counts),
+    ("Purchases credited to valid cookie", valid_purchase_counts),
+    ("Purchases credited to a stuffed cookie", stuffed_purchase_counts),
+    ("'Stolen' purchases", stolen_purchase_counts),
+)
 
-writer.writerow(header_row)
-cookies_row = ["Tracking Cookies"] + [len(session_cookies[m]) for m in names]
-writer.writerow(cookies_row)
-
-cookie_sets_row = ["Cookie Sets"] + [cookie_set_counts[m] for m in names]
-writer.writerow(cookie_sets_row)
-
-stuffs_row = ["Cookie Stuffs"] + [cookie_stuff_counts[m] for m in names]
-writer.writerow(stuffs_row)
-
-checkouts_row = ["Checkouts"] + [checkout_counts[m] for m in names]
-writer.writerow(checkouts_row)
-
-valid_purchases_row = ["Purchases credited to valid cookie"] + [valid_purchase_counts[m] for m in names]
-writer.writerow(valid_purchases_row)
-
-stuffed_purchases_row = ["Purchases credited to a stuffed cookie"] + [stuffed_purchase_counts[m] for m in names]
-writer.writerow(stuffed_purchases_row)
-
-stolen_purchasees_row = ["'Stolen' purchases"] + [stolen_purchase_counts[m] for m in names]
-writer.writerow(stolen_purchasees_row)
+writer = csv.writer(out)
+writer.writerow([h for h, v in columns])
+for name in names:
+    row = [name] + [v[name] for h, v in colums]
+    writer.writerow(row)
