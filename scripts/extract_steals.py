@@ -74,7 +74,7 @@ for path, g in ins():
             checkout_counts[marketer.name()] = 0
             stuffed_purchase_counts[marketer.name()] = 0
             valid_purchase_counts[marketer.name()] = 0
-            valid_purchase_counts[marketer.name()] = 0
+            stolen_purchase_counts[marketer.name()] = 0
 
         # See if we can find a session tracking cookie for this visitor
         # in this graph.  If not, then we know there are no cookie stuffs,
