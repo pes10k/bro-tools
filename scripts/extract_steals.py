@@ -146,5 +146,5 @@ columns = (
 writer = csv.writer(out)
 writer.writerow([h for h, v in columns])
 for name in names:
-    row = [name] + [v[name] for h, v in colums]
+    row = [name] + [v[name] for h, v in columns]
     writer.writerow(row)
