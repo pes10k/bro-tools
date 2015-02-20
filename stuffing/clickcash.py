@@ -4,6 +4,7 @@ and collections of BroRecords."""
 import re
 from .affiliate import AffiliateHistory, FULL_DOMAIN
 
+
 class ClickCashAffiliateHistory(AffiliateHistory):
 
     @classmethod
@@ -42,7 +43,6 @@ class ClickCashAffiliateHistory(AffiliateHistory):
             ("www.sizzlingcams.com", FULL_DOMAIN),
             ("www.webcamdating.us", FULL_DOMAIN),
             ("www.babefever.net", FULL_DOMAIN),
-            ("www.model-perfect.com", FULL_DOMAIN)
         ]
 
     @classmethod

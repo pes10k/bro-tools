@@ -626,6 +626,72 @@ class AffiliateCheckout(object):
             record, graph, t = h[0][0]
             return t == STUFF
 
+    def is_purchase_with_valid_cookie(self):
+        """
+        Return:
+            True if the purchase was made while carrying an affiliate marketing
+            cookie that looks to have been validly set.
+        """
+        for r, g, t in self.cookie_history():
+            if t == CART:
+                continue
+
+            if t == STUFF:
+                return False
+
+            if t == SET:
+                return True
+        return False
+
+    def is_purchase_stuffed(self):
+        """Checks to see if this purchase was made with an affiliate
+        marketing cookie that looks to be set 'dishonestly'.
+
+        Return:
+            True if the purchase was made with a 'stuffed' affiliate tracking
+            cookie.  Otherwise, False.
+        """
+        for r, g, t in self.cookie_history():
+            if t == CART:
+                continue
+
+            if t == STUFF:
+                return True
+
+            if t == SET:
+                return False
+        return False
+
+    def is_stolen_pruchase(self):
+        """Returns a boolean description of whether the checkout was made with
+        a 'stuffed' cookie, but would have otherwise been made with a
+        'honestly' placed tracking cookie.
+
+        Return:
+            True if the purchase was made with a fradulent cookie, but would
+            have otherwise been made with a valid-looking cookie (ie credit
+            for the purchase was 'stolen' from the valid marketing partner).
+        """
+        set_indexes = []
+        stuff_indexes = []
+
+        for i, (r, g, t) in enumerate(self.cookie_history()):
+
+            if t == CART:
+                continue
+
+            if t == STUFF:
+                stuff_indexes.append(i)
+                continue
+
+            if t == SET:
+                set_indexes.append(i)
+
+        if (len(set_indexes) > 0 and len(stuff_indexes) > 0 and
+                stuff_indexes[-1] > set_indexes[-1]):
+            return True
+        return False
+
     def cookie_history(self):
         """Returns a list of requests that could set affiliate marketing cookies
         that were in place at the time of this checkout.  The returned values

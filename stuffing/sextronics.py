@@ -7,6 +7,7 @@ from .affiliate import AffiliateHistory, domain_to_class_name, PARTIAL_DOMAIN
 
 TOKEN_PATTERN = re.compile('ntc=([^\;]+)')
 
+
 def session_token(record):
     """Returns the amazon session token cookie in the given request, if one
     exists.
@@ -170,6 +171,7 @@ DOMAINS = (
     'yolngheidi.com',
     'yolngstacey.com',
 )
+
 
 class SexTronicsAffiliateHistory(AffiliateHistory):
 

@@ -8,12 +8,7 @@ import os.path
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
 import brotools.reports
-from stuffing.affiliate import STUFF, SET, CART
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
+import csv
 
 parser = brotools.reports.marketing_cli_parser(sys.modules[__name__].__doc__)
 parser.add_argument('--ttl', type=int, default=84600,
@@ -37,6 +32,28 @@ count, ins, out, debug, marketers, args = cli_params
 #    "client_hash": history object
 # },
 history_by_client = {}
+
+# Marketer Name -> set(<found cookie values>)
+session_cookies = {}
+
+# Marketer Name -> # sets
+cookie_set_counts = {}
+
+# Marketer Name -> # stuffs
+cookie_stuff_counts = {}
+
+# Marketer Name -> # checkouts
+checkout_counts = {}
+
+# Marketer Name -> #
+stuffed_purchase_counts = {}
+
+# Marketer Name -> #
+valid_purchase_counts = {}
+
+# Marketer Name -> #
+stolen_purchase_counts = {}
+
 index = 0
 old_path = None
 debug("Preparing to start reading {0} pickled data".format(count))
@@ -50,7 +67,14 @@ for path, g in ins():
     for marketer in marketers:
 
         if marketer.name() not in marketer_lookup:
-          marketer_lookup[marketer.name()] = marketer
+            marketer_lookup[marketer.name()] = marketer
+            session_cookies[marketer.name()] = set()
+            cookie_set_counts[marketer.name()] = 0
+            cookie_stuff_counts[marketer.name()] = 0
+            checkout_counts[marketer.name()] = 0
+            stuffed_purchase_counts[marketer.name()] = 0
+            valid_purchase_counts[marketer.name()] = 0
+            valid_purchase_counts[marketer.name()] = 0
 
         # See if we can find a session tracking cookie for this visitor
         # in this graph.  If not, then we know there are no cookie stuffs,
@@ -59,6 +83,14 @@ for path, g in ins():
         hash_key = marketer.session_id_for_graph(g)
         if not hash_key:
             continue
+
+        session_cookies[marketer.name()].add(hash_key)
+
+        if len(marketer.stuffs_in_graph(g)) > 0:
+            cookie_stuff_counts[marketer.name()] += 1
+
+        if len(marketer.cookie_sets_in_graph(g)) > 0:
+            cookie_set_counts[marketer.name()] += 1
 
         # First extract the dict for this marketer
         try:
@@ -87,29 +119,39 @@ for marketer_name, histories in history_by_client.items():
     marketer = marketer_lookup[marketer_name]
     for client_hash, h in histories.items():
         for c in h.checkouts(seconds=args.secs, cookie_ttl=args.ttl):
-            checkout_count += 1
-            set_indexes = []
-            stuff_indexes = []
-            tags_in_checkout = set() 
-            stuff_tags_in_checkout = set()
-            for i, (r, g, t) in enumerate(c.cookie_history()):
-                if t == CART:
-                    continue
+            checkout_counts[marketer_name] += 1
 
-                if t == STUFF:
-                    stuffs_count += 1
-                    stuff_indexes.append(i)
-                    stuff_tags_in_checkout.add(marketer.get_referrer_tag(r))
-                elif t == SET:
-                    sets_count += 1
-                    set_indexes.append(i)
-                tags_in_checkout.add(marketer.get_referrer_tag(r))
+            if c.is_purchase_stuffed():
+                stuffed_purchase_counts[marketer_name] += 1
 
-            parties_count += len(tags_in_checkout)
-            conservative_stuffs_count += len(stuff_tags_in_checkout)
-            if (len(set_indexes) > 0 and len(stuff_indexes) > 0 and
-                stuff_indexes[-1] > set_indexes[-1]):
-                steals_count += 1
+            if c.is_purchase_with_valid_cookie():
+                valid_purchase_counts[marketer_name] += 1
 
-out.write("Checkouts: {}\nStuffs: {}\nSets: {}\nSteals: {}\n".format(checkout_count, stuffs_count, sets_count, steals_count))
-out.write("Parties: {}\nConservative Stuffs Count: {}\n".format(parties_count, conservative_stuffs_count))
+            if c.is_stolen_pruchase():
+                valid_purchase_counts[marketer_name] += 1
+
+writer = csv.writer(out)
+names = sorted(valid_purchase_counts.keys())
+header_row = [""] + names
+
+writer.writerow(header_row)
+cookies_row = ["Tracking Cookies"] + [len(session_cookies[m]) for m in names]
+writer.writerow(cookies_row)
+
+cookie_sets_row = ["Cookie Sets"] + [cookie_set_counts[m] for m in names]
+writer.writerow(cookie_sets_row)
+
+stuffs_row = ["Cookie Stuffs"] + [cookie_stuff_counts[m] for m in names]
+writer.writerow(stuffs_row)
+
+checkouts_row = ["Checkouts"] + [checkout_counts[m] for m in names]
+writer.writerow(checkouts_row)
+
+valid_purchases_row = ["Purchases credited to valid cookie"] + [valid_purchase_counts[m] for m in names]
+writer.writerow(valid_purchases_row)
+
+stuffed_purchases_row = ["Purchases credited to a stuffed cookie"] + [stuffed_purchase_counts[m] for m in names]
+writer.writerow(stuffed_purchases_row)
+
+stolen_purchasees_row = ["'Stolen' purchases"] + [stolen_purchase_counts[m] for m in names]
+writer.writerow(stolen_purchasees_row)

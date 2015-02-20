@@ -18,6 +18,7 @@ DOMAINS = (
 
 SHARED_PATTERN = re.compile(r'(?:&|\?|^|;)wid=', re.I)
 
+
 class PussyCashAffiliateHistory(AffiliateHistory):
 
     # Set by the dynamically created sublcasses
