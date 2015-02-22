@@ -57,6 +57,9 @@ stolen_purchase_counts = {}
 # Markter Name -> #
 request_counts = {}
 
+# Markter Name -> set(<partner tags>)
+partner_tags = {}
+
 index = 0
 old_path = None
 debug("Preparing to start reading {0} pickled data".format(count))
@@ -79,6 +82,7 @@ for path, g in ins():
             valid_purchase_counts[marketer.name()] = 0
             stolen_purchase_counts[marketer.name()] = 0
             request_counts[marketer.name()] = 0
+            partner_tags[marketer.name()] = set()
 
         request_counts[marketer.name()] += len(marketer.nodes_for_domains(g))
 
@@ -95,6 +99,10 @@ for path, g in ins():
         hash_key = marketer.session_id_for_graph(g)
         if not hash_key:
             continue
+
+        referrer_tag = marketer.get_referrer_tag(g)
+        if referrer_tag:
+            partner_tags[marketer.name()].add(referrer_tag)
 
         session_cookies[marketer.name()].add(hash_key)
 
@@ -141,6 +149,7 @@ names = sorted(valid_purchase_counts.keys())
 columns = (
     ("Affiliate", names),
     ("# Requests", request_counts),
+    ("# AMs", {m: len(partner_tags[m]) for m in names}),
     ("# Tracking Cookies", {m: len(session_cookies[m]) for m in names}),
     ("# Cookie Sets", cookie_set_counts),
     ("# Cookie Stuffs", cookie_stuff_counts),
