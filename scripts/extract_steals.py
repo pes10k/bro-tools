@@ -100,9 +100,10 @@ for path, g in ins():
         if not hash_key:
             continue
 
-        referrer_tag = marketer.get_referrer_tag(g)
-        if referrer_tag:
-            partner_tags[marketer.name()].add(referrer_tag)
+        for cookie_set_record in marketer.cookie_sets_in_graph(g):
+            referrer_tag = marketer.get_referrer_tag(cookie_set_record)
+            if referrer_tag:
+                partner_tags[marketer.name()].add(referrer_tag)
 
         session_cookies[marketer.name()].add(hash_key)
 
