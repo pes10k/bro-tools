@@ -258,7 +258,7 @@ class AffiliateHistory(object):
             None if no affiliate marketing tag could be found for the given
             record, and otherwise the tag as a string.
         """
-        tag = cls.referrer_tag(cls)
+        tag = cls.referrer_tag(record)
         matches = re.search(tag + "=(.*?)(?:&|$)", record.url)
         if not matches:
             return None
