@@ -60,6 +60,9 @@ request_counts = {}
 # Markter Name -> set(<partner tags>)
 partner_tags = {}
 
+# Markter Name -> set(<partner tags>)
+stuffing_tags = {}
+
 index = 0
 old_path = None
 debug("Preparing to start reading {0} pickled data".format(count))
@@ -83,11 +86,17 @@ for path, g in ins():
             stolen_purchase_counts[marketer.name()] = 0
             request_counts[marketer.name()] = 0
             partner_tags[marketer.name()] = set()
+            stuffing_tags[marketer.name()] = set()
 
         request_counts[marketer.name()] += len(marketer.nodes_for_domains(g))
 
-        if len(marketer.stuffs_in_graph(g)) > 0:
+        stuffs_records = marketer.stuffs_in_graph(g)
+        if len(stuffs_records) > 0:
             cookie_stuff_counts[marketer.name()] += 1
+            for rec in stuffs_records:
+                stuffer_tag = marketer.get_referrer_tag(rec)
+                if stuffer_tag:
+                    stuffing_tags[marketer.name()].add(stuffer_tag)
 
         if len(marketer.cookie_sets_in_graph(g)) > 0:
             cookie_set_counts[marketer.name()] += 1
@@ -150,10 +159,11 @@ names = sorted(valid_purchase_counts.keys())
 columns = (
     ("Affiliate", names),
     ("# Requests", request_counts),
-    ("# AMs", {m: len(partner_tags[m]) for m in names}),
+    ("# AMIs", {m: len(partner_tags[m]) for m in names}),
     ("# Tracking Cookies", {m: len(session_cookies[m]) for m in names}),
     ("# Cookie Sets", cookie_set_counts),
     ("# Cookie Stuffs", cookie_stuff_counts),
+    ("# Stuff AMIs",  {m: len(stuffing_tags[m]) for m in names}),
     ("# Checkouts", checkout_counts),
     ("Purchases credited to valid cookie", valid_purchase_counts),
     ("Purchases credited to a stuffed cookie", stuffed_purchase_counts),
