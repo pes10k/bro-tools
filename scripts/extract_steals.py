@@ -98,6 +98,11 @@ for path, g in ins():
                 if stuffer_tag:
                     stuffing_tags[marketer.name()].add(stuffer_tag)
 
+        for cookie_set_record in marketer.cookie_sets_in_graph(g):
+            referrer_tag = marketer.get_referrer_tag(cookie_set_record)
+            if referrer_tag:
+                partner_tags[marketer.name()].add(referrer_tag)
+
         if len(marketer.cookie_sets_in_graph(g)) > 0:
             cookie_set_counts[marketer.name()] += 1
 
@@ -108,11 +113,6 @@ for path, g in ins():
         hash_key = marketer.session_id_for_graph(g)
         if not hash_key:
             continue
-
-        for cookie_set_record in marketer.cookie_sets_in_graph(g):
-            referrer_tag = marketer.get_referrer_tag(cookie_set_record)
-            if referrer_tag:
-                partner_tags[marketer.name()].add(referrer_tag)
 
         session_cookies[marketer.name()].add(hash_key)
 
@@ -160,10 +160,10 @@ columns = (
     ("Affiliate", names),
     ("# Requests", request_counts),
     ("# AMIs", {m: len(partner_tags[m]) for m in names}),
+    ("# Stuff AMIs",  {m: len(stuffing_tags[m]) for m in names}),
     ("# Tracking Cookies", {m: len(session_cookies[m]) for m in names}),
     ("# Cookie Sets", cookie_set_counts),
     ("# Cookie Stuffs", cookie_stuff_counts),
-    ("# Stuff AMIs",  {m: len(stuffing_tags[m]) for m in names}),
     ("# Checkouts", checkout_counts),
     ("Purchases credited to valid cookie", valid_purchase_counts),
     ("Purchases credited to a stuffed cookie", stuffed_purchase_counts),
