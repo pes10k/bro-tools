@@ -52,7 +52,7 @@ punish_correct = args.correct
 max_weight = args.max
 normalize = args.normalize
 training_rounds = args.trains
-random_assignment = False
+random_assignment = True
 num_output_neurons = args.outs
 
 features = (
